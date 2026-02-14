@@ -34,8 +34,8 @@ describe("schema", () => {
       | { value: string }
       | undefined;
     expect(row).toBeDefined();
-    // Version 2 after index migration runs
-    expect(row!.value).toBe("2");
+    // Version 3 after all migrations run
+    expect(row!.value).toBe("3");
     db.close();
   });
 
@@ -43,6 +43,18 @@ describe("schema", () => {
     const db = freshDb();
     initSchema(db);
     expect(() => initSchema(db)).not.toThrow();
+    db.close();
+  });
+
+  it("creates idx_oplog_task_timestamp index", () => {
+    const db = freshDb();
+    initSchema(db);
+    const indexes = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='index' AND name='idx_oplog_task_timestamp'",
+      )
+      .all();
+    expect(indexes).toHaveLength(1);
     db.close();
   });
 });

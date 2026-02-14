@@ -45,4 +45,12 @@ export const appMigrations: Migration[] = [
       d.exec("CREATE INDEX IF NOT EXISTS idx_oplog_device_id ON oplog(device_id)");
     },
   },
+  {
+    version: 3,
+    up: (d) => {
+      d.exec(
+        "CREATE INDEX IF NOT EXISTS idx_oplog_task_timestamp ON oplog(task_id, timestamp, id)",
+      );
+    },
+  },
 ];

@@ -15,15 +15,23 @@ interface TaskRow {
   deleted_at: string | null;
 }
 
+function safeParseJson<T>(raw: string, fallback: T): T {
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
 function rowToTask(row: TaskRow): Task {
   return {
     id: row.id,
     title: row.title,
     status: row.status as Status,
     priority: row.priority as Priority,
-    labels: JSON.parse(row.labels),
-    notes: JSON.parse(row.notes),
-    metadata: JSON.parse(row.metadata),
+    labels: safeParseJson<string[]>(row.labels, []),
+    notes: safeParseJson<string[]>(row.notes, []),
+    metadata: safeParseJson<Record<string, unknown>>(row.metadata, {}),
     created_at: row.created_at,
     updated_at: row.updated_at,
     deleted_at: row.deleted_at,
@@ -69,6 +77,7 @@ export interface ListFilters {
   status?: Status;
   priority?: Priority;
   label?: string;
+  search?: string;
 }
 
 export function listTasks(db: Database.Database, filters?: ListFilters): Task[] {
@@ -87,6 +96,10 @@ export function listTasks(db: Database.Database, filters?: ListFilters): Task[] 
     sql += " AND EXISTS (SELECT 1 FROM json_each(labels) WHERE json_each.value = ?)";
     params.push(filters.label);
   }
+  if (filters?.search) {
+    sql += " AND title LIKE '%' || ? || '%' COLLATE NOCASE";
+    params.push(filters.search);
+  }
 
   sql += " ORDER BY created_at ASC";
   const rows = db.prepare(sql).all(...params) as TaskRow[];
@@ -97,14 +110,29 @@ export function getTask(db: Database.Database, id: string): Task | null {
   const row = db.prepare("SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL").get(id) as
     | TaskRow
     | undefined;
-  return row ? rowToTask(row) : null;
+  if (row) return rowToTask(row);
+
+  // Prefix matching fallback for short IDs
+  if (id.length < 36) {
+    const rows = db
+      .prepare("SELECT * FROM tasks WHERE id LIKE ? || '%' AND deleted_at IS NULL")
+      .all(id) as TaskRow[];
+    if (rows.length === 1) return rowToTask(rows[0]);
+  }
+
+  return null;
 }
 
-export function updateTask(db: Database.Database, id: string, input: UpdateTaskInput): Task | null {
+export function updateTask(
+  db: Database.Database,
+  id: string,
+  input: UpdateTaskInput,
+  timestamp?: string,
+): Task | null {
   const existing = getTask(db, id);
   if (!existing) return null;
 
-  const now = new Date().toISOString();
+  const now = timestamp ?? new Date().toISOString();
   const updates: string[] = ["updated_at = ?"];
   const params: unknown[] = [now];
 
@@ -135,12 +163,17 @@ export function updateTask(db: Database.Database, id: string, input: UpdateTaskI
   return getTask(db, id);
 }
 
-export function appendNote(db: Database.Database, id: string, note: string): Task | null {
+export function appendNote(
+  db: Database.Database,
+  id: string,
+  note: string,
+  timestamp?: string,
+): Task | null {
   const existing = getTask(db, id);
   if (!existing) return null;
 
   const notes = [...existing.notes, note];
-  const now = new Date().toISOString();
+  const now = timestamp ?? new Date().toISOString();
   db.prepare("UPDATE tasks SET notes = ?, updated_at = ? WHERE id = ?").run(
     JSON.stringify(notes),
     now,
@@ -150,8 +183,8 @@ export function appendNote(db: Database.Database, id: string, note: string): Tas
   return getTask(db, id);
 }
 
-export function deleteTask(db: Database.Database, id: string): boolean {
-  const now = new Date().toISOString();
+export function deleteTask(db: Database.Database, id: string, timestamp?: string): boolean {
+  const now = timestamp ?? new Date().toISOString();
   const result = db
     .prepare("UPDATE tasks SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL")
     .run(now, now, id);

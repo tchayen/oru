@@ -1,3 +1,4 @@
+import { fileURLToPath } from "url";
 import { Command, Option } from "commander";
 import type Database from "better-sqlite3";
 import { TaskService } from "./main.js";
@@ -9,6 +10,22 @@ import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
 import type { Status, Priority } from "./tasks/types.js";
+
+const MAX_TITLE_LENGTH = 1000;
+const MAX_NOTE_LENGTH = 10000;
+const MAX_LABEL_LENGTH = 200;
+
+function parseMetadata(pairs: string[]): Record<string, string> {
+  const meta: Record<string, string> = {};
+  for (const pair of pairs) {
+    const eqIdx = pair.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = pair.slice(0, eqIdx);
+    const value = pair.slice(eqIdx + 1);
+    if (key) meta[key] = value;
+  }
+  return meta;
+}
 
 export function createProgram(
   db: Database.Database,
@@ -47,8 +64,9 @@ export function createProgram(
         .choices(priorityChoices)
         .default("medium"),
     )
-    .option("-l, --label <label>", "Add a label")
+    .option("-l, --label <labels...>", "Add labels")
     .option("-n, --note <note>", "Add an initial note")
+    .option("--meta <key=value...>", "Add metadata key=value pairs")
     .action(
       (
         title: string,
@@ -56,10 +74,46 @@ export function createProgram(
           id?: string;
           status?: Status;
           priority?: Priority;
-          label?: string;
+          label?: string[];
           note?: string;
+          meta?: string[];
         },
       ) => {
+        if (title.length > MAX_TITLE_LENGTH) {
+          write(
+            JSON.stringify({
+              error: "validation",
+              message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
+            }),
+          );
+          process.exitCode = 1;
+          return;
+        }
+        if (opts.note && opts.note.length > MAX_NOTE_LENGTH) {
+          write(
+            JSON.stringify({
+              error: "validation",
+              message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
+            }),
+          );
+          process.exitCode = 1;
+          return;
+        }
+        if (opts.label) {
+          for (const l of opts.label) {
+            if (l.length > MAX_LABEL_LENGTH) {
+              write(
+                JSON.stringify({
+                  error: "validation",
+                  message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+                }),
+              );
+              process.exitCode = 1;
+              return;
+            }
+          }
+        }
+
         // Idempotent create: if --id is given and task exists, return it
         if (opts.id) {
           const existing = service.get(opts.id);
@@ -69,13 +123,16 @@ export function createProgram(
           }
         }
 
+        const metadata = opts.meta ? parseMetadata(opts.meta) : undefined;
+
         const task = service.add({
           title,
           id: opts.id,
           status: opts.status,
           priority: opts.priority,
-          labels: opts.label ? [opts.label] : undefined,
+          labels: opts.label ?? undefined,
           notes: opts.note ? [opts.note] : undefined,
+          metadata,
         });
         // Always output JSON for add (agent-friendly)
         write(formatTaskJson(task));
@@ -91,19 +148,29 @@ export function createProgram(
       new Option("-p, --priority <priority>", "Filter by priority").choices(priorityChoices),
     )
     .option("-l, --label <label>", "Filter by label")
+    .option("--search <query>", "Search tasks by title")
     .option("--json", "Output as JSON")
-    .action((opts: { status?: Status; priority?: Priority; label?: string; json?: boolean }) => {
-      const tasks = service.list({
-        status: opts.status,
-        priority: opts.priority,
-        label: opts.label,
-      });
-      if (useJson(opts)) {
-        write(formatTasksJson(tasks));
-      } else {
-        write(formatTasksText(tasks));
-      }
-    });
+    .action(
+      (opts: {
+        status?: Status;
+        priority?: Priority;
+        label?: string;
+        search?: string;
+        json?: boolean;
+      }) => {
+        const tasks = service.list({
+          status: opts.status,
+          priority: opts.priority,
+          label: opts.label,
+          search: opts.search,
+        });
+        if (useJson(opts)) {
+          write(formatTasksJson(tasks));
+        } else {
+          write(formatTasksText(tasks));
+        }
+      },
+    );
 
   // get
   program
@@ -113,7 +180,12 @@ export function createProgram(
     .action((id: string, opts: { json?: boolean }) => {
       const task = service.get(id);
       if (!task) {
-        write(`Task ${id} not found.`);
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "not_found", id }));
+        } else {
+          write(`Task ${id} not found.`);
+        }
+        process.exitCode = 1;
         return;
       }
       if (useJson(opts)) {
@@ -130,8 +202,9 @@ export function createProgram(
     .option("-t, --title <title>", "New title")
     .addOption(new Option("-s, --status <status>", "New status").choices(statusChoices))
     .addOption(new Option("-p, --priority <priority>", "New priority").choices(priorityChoices))
-    .option("-l, --label <label>", "Add a label")
+    .option("-l, --label <labels...>", "Add labels")
     .option("-n, --note <note>", "Append a note")
+    .option("--meta <key=value...>", "Set metadata key=value pairs")
     .option("--json", "Output as JSON")
     .action(
       (
@@ -140,26 +213,93 @@ export function createProgram(
           title?: string;
           status?: Status;
           priority?: Priority;
-          label?: string;
+          label?: string[];
           note?: string;
+          meta?: string[];
           json?: boolean;
         },
       ) => {
+        if (opts.title !== undefined && opts.title.trim().length === 0) {
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
+          } else {
+            write("Title cannot be empty.");
+          }
+          process.exitCode = 1;
+          return;
+        }
+
+        if (opts.title && opts.title.length > MAX_TITLE_LENGTH) {
+          write(
+            JSON.stringify({
+              error: "validation",
+              message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
+            }),
+          );
+          process.exitCode = 1;
+          return;
+        }
+        if (opts.note && opts.note.length > MAX_NOTE_LENGTH) {
+          write(
+            JSON.stringify({
+              error: "validation",
+              message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
+            }),
+          );
+          process.exitCode = 1;
+          return;
+        }
+        if (opts.label) {
+          for (const l of opts.label) {
+            if (l.length > MAX_LABEL_LENGTH) {
+              write(
+                JSON.stringify({
+                  error: "validation",
+                  message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+                }),
+              );
+              process.exitCode = 1;
+              return;
+            }
+          }
+        }
+
         const updateFields: Record<string, unknown> = {};
         if (opts.title) updateFields.title = opts.title;
         if (opts.status) updateFields.status = opts.status;
         if (opts.priority) updateFields.priority = opts.priority;
 
-        // --label appends a label (deduped) to existing labels
         if (opts.label) {
           const existing = service.get(id);
           if (!existing) {
-            write(`Task ${id} not found.`);
+            if (useJson(opts)) {
+              write(JSON.stringify({ error: "not_found", id }));
+            } else {
+              write(`Task ${id} not found.`);
+            }
+            process.exitCode = 1;
             return;
           }
           const labels = [...existing.labels];
-          if (!labels.includes(opts.label)) labels.push(opts.label);
+          for (const l of opts.label) {
+            if (!labels.includes(l)) labels.push(l);
+          }
           updateFields.labels = labels;
+        }
+
+        if (opts.meta) {
+          const existing = service.get(id);
+          if (!existing) {
+            if (useJson(opts)) {
+              write(JSON.stringify({ error: "not_found", id }));
+            } else {
+              write(`Task ${id} not found.`);
+            }
+            process.exitCode = 1;
+            return;
+          }
+          const merged = { ...existing.metadata, ...parseMetadata(opts.meta) };
+          updateFields.metadata = merged;
         }
 
         const hasFields = Object.keys(updateFields).length > 0;
@@ -173,6 +313,7 @@ export function createProgram(
               status?: Status;
               priority?: Priority;
               labels?: string[];
+              metadata?: Record<string, unknown>;
             },
             opts.note,
           );
@@ -186,6 +327,7 @@ export function createProgram(
               status?: Status;
               priority?: Priority;
               labels?: string[];
+              metadata?: Record<string, unknown>;
             },
           );
         } else {
@@ -193,7 +335,12 @@ export function createProgram(
         }
 
         if (!task) {
-          write(`Task ${id} not found.`);
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "not_found", id }));
+          } else {
+            write(`Task ${id} not found.`);
+          }
+          process.exitCode = 1;
           return;
         }
 
@@ -213,11 +360,17 @@ export function createProgram(
     .action((id: string, opts: { json?: boolean }) => {
       const result = service.delete(id);
       if (useJson(opts)) {
-        write(JSON.stringify({ id, deleted: result }));
+        if (!result) {
+          write(JSON.stringify({ error: "not_found", id }));
+          process.exitCode = 1;
+        } else {
+          write(JSON.stringify({ id, deleted: true }));
+        }
       } else if (result) {
         write(`Deleted ${id}`);
       } else {
         write(`Task ${id} not found.`);
+        process.exitCode = 1;
       }
     });
 
@@ -228,15 +381,18 @@ export function createProgram(
     .option("--json", "Output as JSON")
     .action(async (remotePath: string, opts: { json?: boolean }) => {
       const remote = new FsRemote(remotePath);
-      const deviceId = getDeviceId(db);
-      const engine = new SyncEngine(db, remote, deviceId);
-      const result = await engine.sync();
-      remote.close();
+      try {
+        const deviceId = getDeviceId(db);
+        const engine = new SyncEngine(db, remote, deviceId);
+        const result = await engine.sync();
 
-      if (useJson(opts)) {
-        write(JSON.stringify(result, null, 2));
-      } else {
-        write(`Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`);
+        if (useJson(opts)) {
+          write(JSON.stringify(result, null, 2));
+        } else {
+          write(`Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`);
+        }
+      } finally {
+        remote.close();
       }
     });
 
@@ -262,9 +418,8 @@ async function main() {
   }
 }
 
-// Only run main when this is the entry point
-const isEntryPoint =
-  process.argv[1] && (process.argv[1].endsWith("/cli.js") || process.argv[1].endsWith("/cli.ts"));
+const currentFile = fileURLToPath(import.meta.url);
+const isEntryPoint = process.argv[1] && currentFile === process.argv[1];
 
 if (isEntryPoint) {
   main().catch((err) => {

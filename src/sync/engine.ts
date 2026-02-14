@@ -47,34 +47,44 @@ export class SyncEngine {
   }
 
   async pull(): Promise<number> {
-    // Get the pull cursor (stored locally)
-    const cursorRow = this.db
-      .prepare("SELECT value FROM meta WHERE key = ?")
-      .get(`pull_cursor_${this.deviceId}`) as { value: string } | undefined;
-    const cursor = cursorRow?.value ?? null;
+    let totalNew = 0;
 
-    // Pull remote ops since the cursor
-    const result = await this.remote.pull(cursor);
+    // Loop until caught up (remote may return bounded pages)
+    for (;;) {
+      // Get the pull cursor (stored locally)
+      const cursorRow = this.db
+        .prepare("SELECT value FROM meta WHERE key = ?")
+        .get(`pull_cursor_${this.deviceId}`) as { value: string } | undefined;
+      const cursor = cursorRow?.value ?? null;
 
-    if (result.entries.length === 0) return 0;
+      // Pull remote ops since the cursor
+      const result = await this.remote.pull(cursor);
 
-    // Replay ALL ops (including our own) — replayOps is idempotent and
-    // rebuilds tasks from the full oplog, ensuring the tasks table is
-    // consistent even if local writeOp didn't update it directly.
-    replayOps(this.db, result.entries);
+      if (result.entries.length === 0) break;
 
-    // Update pull cursor
-    if (result.cursor) {
-      this.db
-        .prepare(
-          `INSERT INTO meta (key, value) VALUES (?, ?)
-           ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-        )
-        .run(`pull_cursor_${this.deviceId}`, result.cursor);
+      // Replay ALL ops (including our own) — replayOps is idempotent and
+      // rebuilds tasks from the full oplog, ensuring the tasks table is
+      // consistent even if local writeOp didn't update it directly.
+      replayOps(this.db, result.entries);
+
+      // Update pull cursor
+      if (result.cursor) {
+        this.db
+          .prepare(
+            `INSERT INTO meta (key, value) VALUES (?, ?)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+          )
+          .run(`pull_cursor_${this.deviceId}`, result.cursor);
+      }
+
+      const newOps = result.entries.filter((op) => op.device_id !== this.deviceId);
+      totalNew += newOps.length;
+
+      // If cursor didn't advance, we're done
+      if (result.cursor === cursor) break;
     }
 
-    const newOps = result.entries.filter((op) => op.device_id !== this.deviceId);
-    return newOps.length;
+    return totalNew;
   }
 
   async sync(): Promise<{ pushed: number; pulled: number }> {

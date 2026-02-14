@@ -255,11 +255,11 @@ describe("CLI parse", () => {
     expect(parsed).toEqual({ id, deleted: true });
   });
 
-  it("delete --json for non-existent task", async () => {
+  it("delete --json for non-existent task returns error", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "ao", "delete", "no-such-id", "--json"]);
     const parsed = JSON.parse(output.trim());
-    expect(parsed).toEqual({ id: "no-such-id", deleted: false });
+    expect(parsed).toEqual({ error: "not_found", id: "no-such-id" });
   });
 
   // GAP-8: --label filtering via CLI
@@ -311,5 +311,119 @@ describe("CLI parse", () => {
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
+  });
+
+  it("get --json returns error object for non-existent task", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "get", "nonexistent-id", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("not_found");
+    expect(parsed.id).toBe("nonexistent-id");
+  });
+
+  it("update --json returns error object for non-existent task", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "update", "nonexistent-id", "--status", "done", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("not_found");
+    expect(parsed.id).toBe("nonexistent-id");
+  });
+
+  it("list --search filters tasks by title", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Buy milk"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Walk the dog"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--search", "milk"]);
+    expect(output).toContain("Buy milk");
+    expect(output).not.toContain("Walk the dog");
+  });
+
+  it("list --search --json returns filtered JSON", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Buy milk"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Walk the dog"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--search", "milk", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe("Buy milk");
+  });
+
+  it("add --meta sets metadata key=value pairs", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Meta task", "--meta", "sprint=5", "team=backend"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata).toEqual({ sprint: "5", team: "backend" });
+  });
+
+  it("update --meta merges metadata", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Meta update", "--meta", "key1=val1"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--meta", "key2=val2", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata).toEqual({ key1: "val1", key2: "val2" });
+  });
+
+  it("add --label accepts multiple labels", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Multi label", "--label", "work", "urgent"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toEqual(["work", "urgent"]);
+  });
+
+  it("update --label appends multiple labels", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Label update", "--label", "work"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--label", "urgent", "bug", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toEqual(["work", "urgent", "bug"]);
+  });
+
+  it("update rejects empty title", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Some task"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--title", "   "]);
+    expect(output).toContain("cannot be empty");
+  });
+
+  it("add rejects title exceeding max length", async () => {
+    const longTitle = "a".repeat(1001);
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", longTitle]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message).toContain("Title");
+  });
+
+  it("add rejects note exceeding max length", async () => {
+    const longNote = "n".repeat(10001);
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Task", "--note", longNote]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message).toContain("Note");
+  });
+
+  it("add rejects label exceeding max length", async () => {
+    const longLabel = "l".repeat(201);
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Task", "--label", longLabel]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message).toContain("Label");
   });
 });

@@ -150,4 +150,47 @@ describe("task repository", () => {
     };
     expect(JSON.parse(raw.metadata)).toEqual({ key: "value" });
   });
+
+  it("getTask matches by prefix when id < 36 chars and unique", () => {
+    const task = createTask(db, { title: "Prefix match" });
+    const prefix = task.id.slice(0, 8);
+    const found = getTask(db, prefix);
+    expect(found).toBeDefined();
+    expect(found!.id).toBe(task.id);
+  });
+
+  it("getTask returns null for ambiguous prefix", () => {
+    // Create two tasks whose IDs share the same first character
+    createTask(db, { id: "aaaa-1111-test-task-aaaa-aaaaaaaaaaaa", title: "A" });
+    createTask(db, { id: "aaaa-2222-test-task-aaaa-aaaaaaaaaaaa", title: "B" });
+    // Prefix "aaaa" matches both, should return null
+    const found = getTask(db, "aaaa");
+    expect(found).toBeNull();
+  });
+
+  it("filters by search term (case-insensitive)", () => {
+    createTask(db, { title: "Buy milk" });
+    createTask(db, { title: "Buy eggs" });
+    createTask(db, { title: "Walk the dog" });
+
+    const tasks = listTasks(db, { search: "buy" });
+    expect(tasks).toHaveLength(2);
+    expect(tasks.map((t) => t.title).sort()).toEqual(["Buy eggs", "Buy milk"]);
+  });
+
+  it("handles corrupt JSON in labels/notes/metadata gracefully", () => {
+    const task = createTask(db, { title: "Corrupt" });
+    // Directly corrupt the JSON columns
+    db.prepare("UPDATE tasks SET labels = ?, notes = ?, metadata = ? WHERE id = ?").run(
+      "not-json",
+      "{broken",
+      "{{bad",
+      task.id,
+    );
+    const found = getTask(db, task.id);
+    expect(found).toBeDefined();
+    expect(found!.labels).toEqual([]);
+    expect(found!.notes).toEqual([]);
+    expect(found!.metadata).toEqual({});
+  });
 });

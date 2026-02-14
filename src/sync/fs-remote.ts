@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import fs from "fs";
 import type { OplogEntry } from "../oplog/types.js";
 import type { RemoteBackend, PullResult } from "./remote.js";
 
@@ -8,6 +9,7 @@ export class FsRemote implements RemoteBackend {
   constructor(dbPath: string) {
     this.db = new Database(dbPath);
     this.db.pragma("journal_mode = WAL");
+    this.db.pragma("busy_timeout = 5000");
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS oplog (
         seq INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,6 +22,11 @@ export class FsRemote implements RemoteBackend {
         timestamp TEXT NOT NULL
       );
     `);
+    try {
+      fs.chmodSync(dbPath, 0o600);
+    } catch {
+      // Best-effort — may fail on some platforms
+    }
   }
 
   async push(entries: OplogEntry[]): Promise<void> {
@@ -40,7 +47,7 @@ export class FsRemote implements RemoteBackend {
     const seq = Number.isNaN(parsed) ? 0 : parsed;
     const rows = this.db
       .prepare(
-        "SELECT seq, id, task_id, device_id, op_type, field, value, timestamp FROM oplog WHERE seq > ? ORDER BY seq ASC",
+        "SELECT seq, id, task_id, device_id, op_type, field, value, timestamp FROM oplog WHERE seq > ? ORDER BY seq ASC LIMIT 10000",
       )
       .all(seq) as (OplogEntry & { seq: number })[];
 

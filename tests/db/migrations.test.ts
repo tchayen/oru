@@ -9,55 +9,59 @@ function freshDb(): Database.Database {
   return db;
 }
 
+function currentVersion(db: Database.Database): number {
+  const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as {
+    value: string;
+  };
+  return parseInt(row.value, 10);
+}
+
 describe("migrations", () => {
   it("runs pending migrations in order", () => {
     const db = freshDb();
-    // initSchema runs appMigrations up to version 2, so start from 3
+    const base = currentVersion(db);
     const order: number[] = [];
 
     const migrations: Migration[] = [
       {
-        version: 3,
+        version: base + 1,
         up: (d) => {
-          order.push(3);
+          order.push(base + 1);
           d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
         },
       },
       {
-        version: 4,
+        version: base + 2,
         up: (d) => {
-          order.push(4);
+          order.push(base + 2);
           d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT");
         },
       },
     ];
 
     runMigrations(db, migrations);
-    expect(order).toEqual([3, 4]);
-
-    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as {
-      value: string;
-    };
-    expect(row.value).toBe("4");
+    expect(order).toEqual([base + 1, base + 2]);
+    expect(currentVersion(db)).toBe(base + 2);
     db.close();
   });
 
   it("skips already-applied migrations", () => {
     const db = freshDb();
+    const base = currentVersion(db);
     const calls: number[] = [];
 
     const migrations: Migration[] = [
       {
-        version: 3,
+        version: base + 1,
         up: (d) => {
-          calls.push(3);
+          calls.push(base + 1);
           d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
         },
       },
       {
-        version: 4,
+        version: base + 2,
         up: (d) => {
-          calls.push(4);
+          calls.push(base + 2);
           d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT");
         },
       },
@@ -80,17 +84,17 @@ describe("migrations", () => {
 
   it("rolls back on failure and preserves previous version", () => {
     const db = freshDb();
-    // After initSchema, version is 2
+    const base = currentVersion(db);
 
     const migrations: Migration[] = [
       {
-        version: 3,
+        version: base + 1,
         up: (d) => {
           d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
         },
       },
       {
-        version: 4,
+        version: base + 2,
         up: () => {
           throw new Error("migration failed");
         },
@@ -98,11 +102,7 @@ describe("migrations", () => {
     ];
 
     expect(() => runMigrations(db, migrations)).toThrow("migration failed");
-
-    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as {
-      value: string;
-    };
-    expect(row.value).toBe("2");
+    expect(currentVersion(db)).toBe(base);
 
     // foo column should not exist because rollback undid everything
     const cols = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
@@ -113,28 +113,28 @@ describe("migrations", () => {
 
   it("runs only migrations above current version", () => {
     const db = freshDb();
-    // initSchema already set version to 2; set to 3 manually
-    db.prepare("UPDATE meta SET value = '3' WHERE key = 'schema_version'").run();
+    const base = currentVersion(db);
+    db.prepare("UPDATE meta SET value = ? WHERE key = 'schema_version'").run(String(base + 1));
 
     const calls: number[] = [];
     const migrations: Migration[] = [
       {
-        version: 3,
+        version: base + 1,
         up: () => {
-          calls.push(3);
+          calls.push(base + 1);
         },
       },
       {
-        version: 4,
+        version: base + 2,
         up: (d) => {
-          calls.push(4);
+          calls.push(base + 2);
           d.exec("ALTER TABLE tasks ADD COLUMN baz TEXT");
         },
       },
     ];
 
     runMigrations(db, migrations);
-    expect(calls).toEqual([4]);
+    expect(calls).toEqual([base + 2]);
     db.close();
   });
 });

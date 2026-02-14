@@ -4,6 +4,7 @@ import type { OplogEntry } from "./types.js";
 const VALID_STATUSES = new Set(["todo", "in_progress", "done"]);
 const VALID_PRIORITIES = new Set(["low", "medium", "high", "urgent"]);
 const VALID_OP_TYPES = new Set(["create", "update", "delete"]);
+const MAX_NOTES_PER_TASK = 1000;
 
 function isValidJson(s: string): boolean {
   try {
@@ -12,6 +13,10 @@ function isValidJson(s: string): boolean {
   } catch {
     return false;
   }
+}
+
+function filterStringArray(arr: unknown[]): string[] {
+  return arr.filter((item): item is string => typeof item === "string");
 }
 
 /**
@@ -24,24 +29,26 @@ function isValidJson(s: string): boolean {
  * - Idempotent — replaying same ops has no extra effect
  */
 export function replayOps(db: Database.Database, ops: OplogEntry[]): void {
-  // First, insert all ops into the oplog table (idempotent)
-  // Skip entries with invalid op_type
-  const insertStmt = db.prepare(
-    `INSERT OR IGNORE INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
+  db.transaction(() => {
+    // First, insert all ops into the oplog table (idempotent)
+    // Skip entries with invalid op_type
+    const insertStmt = db.prepare(
+      `INSERT OR IGNORE INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  );
-  for (const op of ops) {
-    if (!VALID_OP_TYPES.has(op.op_type)) continue;
-    insertStmt.run(op.id, op.task_id, op.device_id, op.op_type, op.field, op.value, op.timestamp);
-  }
+    );
+    for (const op of ops) {
+      if (!VALID_OP_TYPES.has(op.op_type)) continue;
+      insertStmt.run(op.id, op.task_id, op.device_id, op.op_type, op.field, op.value, op.timestamp);
+    }
 
-  // Collect all affected task IDs
-  const taskIds = [...new Set(ops.map((op) => op.task_id))];
+    // Collect all affected task IDs
+    const taskIds = [...new Set(ops.map((op) => op.task_id))];
 
-  // Rebuild each affected task from its full oplog
-  for (const taskId of taskIds) {
-    rebuildTask(db, taskId);
-  }
+    // Rebuild each affected task from its full oplog
+    for (const taskId of taskIds) {
+      rebuildTask(db, taskId);
+    }
+  })();
 }
 
 function rebuildTask(db: Database.Database, taskId: string): void {
@@ -56,9 +63,11 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   const createOp = ops.find((op) => op.op_type === "create");
   if (!createOp) return;
 
+  if (createOp.value === null || createOp.value === undefined) return;
+
   let data: Record<string, unknown>;
   try {
-    data = JSON.parse(createOp.value!) as Record<string, unknown>;
+    data = JSON.parse(createOp.value) as Record<string, unknown>;
   } catch {
     return; // Malformed create op, skip this task
   }
@@ -69,13 +78,13 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   let priority = VALID_PRIORITIES.has(data.priority as string)
     ? (data.priority as string)
     : "medium";
-  let labels = JSON.stringify(Array.isArray(data.labels) ? data.labels : []);
+  let labels = JSON.stringify(Array.isArray(data.labels) ? filterStringArray(data.labels) : []);
   let metadata = JSON.stringify(
     data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)
       ? data.metadata
       : {},
   );
-  const notes: string[] = [...(Array.isArray(data.notes) ? data.notes : [])];
+  const notes: string[] = [...(Array.isArray(data.notes) ? filterStringArray(data.notes) : [])];
   let deletedAt: string | null = null;
   let updatedAt = createOp.timestamp;
 
@@ -114,8 +123,11 @@ function rebuildTask(db: Database.Database, taskId: string): void {
 
       // Notes: append-only with dedup
       if (field === "notes") {
-        if (op.value && !notes.includes(op.value)) {
-          notes.push(op.value);
+        if (op.value && op.value.trim().length > 0) {
+          const trimmed = op.value.trim();
+          if (notes.length < MAX_NOTES_PER_TASK && !notes.some((n) => n.trim() === trimmed)) {
+            notes.push(op.value);
+          }
         }
         if (op.timestamp > updatedAt) updatedAt = op.timestamp;
         if (deletedAt && op.timestamp >= deletedAt) {
@@ -144,7 +156,12 @@ function rebuildTask(db: Database.Database, taskId: string): void {
           if (op.value && VALID_PRIORITIES.has(op.value)) priority = op.value;
           break;
         case "labels":
-          if (op.value && isValidJson(op.value)) labels = op.value;
+          if (op.value && isValidJson(op.value)) {
+            const parsed = JSON.parse(op.value);
+            if (Array.isArray(parsed)) {
+              labels = JSON.stringify(filterStringArray(parsed));
+            }
+          }
           break;
         case "metadata":
           if (op.value && isValidJson(op.value)) metadata = op.value;

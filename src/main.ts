@@ -56,18 +56,23 @@ export class TaskService {
 
   update(id: string, input: UpdateTaskInput): Task | null {
     return this.db.transaction(() => {
-      const task = updateTask(this.db, id, input);
+      const now = new Date().toISOString();
+      const task = updateTask(this.db, id, input, now);
       if (!task) return null;
 
       for (const [field, value] of Object.entries(input)) {
         if (value !== undefined) {
-          writeOp(this.db, {
-            task_id: id,
-            device_id: this.deviceId,
-            op_type: "update",
-            field,
-            value: typeof value === "string" ? value : JSON.stringify(value),
-          });
+          writeOp(
+            this.db,
+            {
+              task_id: id,
+              device_id: this.deviceId,
+              op_type: "update",
+              field,
+              value: typeof value === "string" ? value : JSON.stringify(value),
+            },
+            now,
+          );
         }
       }
       return task;
@@ -76,48 +81,62 @@ export class TaskService {
 
   addNote(id: string, note: string): Task | null {
     return this.db.transaction(() => {
-      const task = appendNote(this.db, id, note);
+      const now = new Date().toISOString();
+      const task = appendNote(this.db, id, note, now);
       if (!task) return null;
 
-      writeOp(this.db, {
-        task_id: id,
-        device_id: this.deviceId,
-        op_type: "update",
-        field: "notes",
-        value: note,
-      });
+      writeOp(
+        this.db,
+        {
+          task_id: id,
+          device_id: this.deviceId,
+          op_type: "update",
+          field: "notes",
+          value: note,
+        },
+        now,
+      );
       return task;
     })();
   }
 
   updateWithNote(id: string, input: UpdateTaskInput, note: string): Task | null {
     return this.db.transaction(() => {
+      const now = new Date().toISOString();
       // Apply field updates
-      let task = updateTask(this.db, id, input);
+      let task = updateTask(this.db, id, input, now);
       if (!task) return null;
 
       for (const [field, value] of Object.entries(input)) {
         if (value !== undefined) {
-          writeOp(this.db, {
-            task_id: id,
-            device_id: this.deviceId,
-            op_type: "update",
-            field,
-            value: typeof value === "string" ? value : JSON.stringify(value),
-          });
+          writeOp(
+            this.db,
+            {
+              task_id: id,
+              device_id: this.deviceId,
+              op_type: "update",
+              field,
+              value: typeof value === "string" ? value : JSON.stringify(value),
+            },
+            now,
+          );
         }
       }
 
       // Append the note
-      task = appendNote(this.db, id, note);
+      task = appendNote(this.db, id, note, now);
 
-      writeOp(this.db, {
-        task_id: id,
-        device_id: this.deviceId,
-        op_type: "update",
-        field: "notes",
-        value: note,
-      });
+      writeOp(
+        this.db,
+        {
+          task_id: id,
+          device_id: this.deviceId,
+          op_type: "update",
+          field: "notes",
+          value: note,
+        },
+        now,
+      );
 
       return task;
     })();
@@ -125,15 +144,20 @@ export class TaskService {
 
   delete(id: string): boolean {
     return this.db.transaction(() => {
-      const result = deleteTask(this.db, id);
+      const now = new Date().toISOString();
+      const result = deleteTask(this.db, id, now);
       if (result) {
-        writeOp(this.db, {
-          task_id: id,
-          device_id: this.deviceId,
-          op_type: "delete",
-          field: null,
-          value: null,
-        });
+        writeOp(
+          this.db,
+          {
+            task_id: id,
+            device_id: this.deviceId,
+            op_type: "delete",
+            field: null,
+            value: null,
+          },
+          now,
+        );
       }
       return result;
     })();
