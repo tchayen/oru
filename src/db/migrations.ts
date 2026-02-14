@@ -18,7 +18,9 @@ export function runMigrations(db: Database.Database, migrations: Migration[]): n
     .filter((m) => m.version > currentVersion)
     .sort((a, b) => a.version - b.version);
 
-  if (pending.length === 0) return 0;
+  if (pending.length === 0) {
+    return 0;
+  }
 
   const run = db.transaction(() => {
     for (const migration of pending) {

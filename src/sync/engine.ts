@@ -30,7 +30,9 @@ export class SyncEngine {
         .all(this.deviceId) as OplogEntry[];
     }
 
-    if (ops.length === 0) return 0;
+    if (ops.length === 0) {
+      return 0;
+    }
 
     await this.remote.push(ops);
 
@@ -60,7 +62,9 @@ export class SyncEngine {
       // Pull remote ops since the cursor
       const result = await this.remote.pull(cursor);
 
-      if (result.entries.length === 0) break;
+      if (result.entries.length === 0) {
+        break;
+      }
 
       // Replay ALL ops (including our own) — replayOps is idempotent and
       // rebuilds tasks from the full oplog, ensuring the tasks table is
@@ -81,7 +85,9 @@ export class SyncEngine {
       totalNew += newOps.length;
 
       // If cursor didn't advance, we're done
-      if (result.cursor === cursor) break;
+      if (result.cursor === cursor) {
+        break;
+      }
     }
 
     return totalNew;
