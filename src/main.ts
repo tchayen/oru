@@ -1,0 +1,103 @@
+import type Database from "better-sqlite3";
+import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types.js";
+import type { ListFilters } from "./tasks/repository.js";
+import {
+  createTask,
+  listTasks,
+  getTask,
+  updateTask,
+  appendNote,
+  deleteTask,
+} from "./tasks/repository.js";
+import { writeOp } from "./oplog/writer.js";
+import { getDeviceId } from "./device.js";
+
+export class TaskService {
+  private deviceId: string;
+
+  constructor(private db: Database.Database) {
+    this.deviceId = getDeviceId(db);
+  }
+
+  add(input: CreateTaskInput): Task {
+    const task = this.db.transaction(() => {
+      const task = createTask(this.db, input);
+      writeOp(this.db, {
+        task_id: task.id,
+        device_id: this.deviceId,
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: task.title,
+          status: task.status,
+          priority: task.priority,
+          labels: task.labels,
+          notes: task.notes,
+          metadata: task.metadata,
+        }),
+      });
+      return task;
+    })();
+    return task;
+  }
+
+  list(filters?: ListFilters): Task[] {
+    return listTasks(this.db, filters);
+  }
+
+  get(id: string): Task | null {
+    return getTask(this.db, id);
+  }
+
+  update(id: string, input: UpdateTaskInput): Task | null {
+    return this.db.transaction(() => {
+      const task = updateTask(this.db, id, input);
+      if (!task) return null;
+
+      for (const [field, value] of Object.entries(input)) {
+        if (value !== undefined) {
+          writeOp(this.db, {
+            task_id: id,
+            device_id: this.deviceId,
+            op_type: "update",
+            field,
+            value: typeof value === "string" ? value : JSON.stringify(value),
+          });
+        }
+      }
+      return task;
+    })();
+  }
+
+  addNote(id: string, note: string): Task | null {
+    return this.db.transaction(() => {
+      const task = appendNote(this.db, id, note);
+      if (!task) return null;
+
+      writeOp(this.db, {
+        task_id: id,
+        device_id: this.deviceId,
+        op_type: "update",
+        field: "notes",
+        value: note,
+      });
+      return task;
+    })();
+  }
+
+  delete(id: string): boolean {
+    return this.db.transaction(() => {
+      const result = deleteTask(this.db, id);
+      if (result) {
+        writeOp(this.db, {
+          task_id: id,
+          device_id: this.deviceId,
+          op_type: "delete",
+          field: null,
+          value: null,
+        });
+      }
+      return result;
+    })();
+  }
+}
