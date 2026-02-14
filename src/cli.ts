@@ -30,10 +30,15 @@ export function createProgram(
   const statusChoices = ["todo", "in_progress", "done"] as const;
   const priorityChoices = ["low", "medium", "high", "urgent"] as const;
 
+  function useJson(opts: { json?: boolean }): boolean {
+    return !!(opts.json || process.env.AO_FORMAT === "json");
+  }
+
   // add
   program
     .command("add <title>")
     .description("Add a new task")
+    .option("--id <id>", "Task ID (for idempotent creates)")
     .addOption(
       new Option("-s, --status <status>", "Initial status").choices(statusChoices).default("todo"),
     )
@@ -43,16 +48,39 @@ export function createProgram(
         .default("medium"),
     )
     .option("-l, --label <label>", "Add a label")
-    .action((title: string, opts: { status?: Status; priority?: Priority; label?: string }) => {
-      const task = service.add({
-        title,
-        status: opts.status,
-        priority: opts.priority,
-        labels: opts.label ? [opts.label] : undefined,
-      });
-      // Always output JSON for add (agent-friendly)
-      write(formatTaskJson(task));
-    });
+    .option("-n, --note <note>", "Add an initial note")
+    .action(
+      (
+        title: string,
+        opts: {
+          id?: string;
+          status?: Status;
+          priority?: Priority;
+          label?: string;
+          note?: string;
+        },
+      ) => {
+        // Idempotent create: if --id is given and task exists, return it
+        if (opts.id) {
+          const existing = service.get(opts.id);
+          if (existing) {
+            write(formatTaskJson(existing));
+            return;
+          }
+        }
+
+        const task = service.add({
+          title,
+          id: opts.id,
+          status: opts.status,
+          priority: opts.priority,
+          labels: opts.label ? [opts.label] : undefined,
+          notes: opts.note ? [opts.note] : undefined,
+        });
+        // Always output JSON for add (agent-friendly)
+        write(formatTaskJson(task));
+      },
+    );
 
   // list
   program
@@ -70,7 +98,7 @@ export function createProgram(
         priority: opts.priority,
         label: opts.label,
       });
-      if (opts.json) {
+      if (useJson(opts)) {
         write(formatTasksJson(tasks));
       } else {
         write(formatTasksText(tasks));
@@ -88,7 +116,7 @@ export function createProgram(
         write(`Task ${id} not found.`);
         return;
       }
-      if (opts.json) {
+      if (useJson(opts)) {
         write(formatTaskJson(task));
       } else {
         write(formatTaskText(task));
@@ -102,6 +130,7 @@ export function createProgram(
     .option("-t, --title <title>", "New title")
     .addOption(new Option("-s, --status <status>", "New status").choices(statusChoices))
     .addOption(new Option("-p, --priority <priority>", "New priority").choices(priorityChoices))
+    .option("-l, --label <label>", "Add a label")
     .option("-n, --note <note>", "Append a note")
     .option("--json", "Output as JSON")
     .action(
@@ -111,6 +140,7 @@ export function createProgram(
           title?: string;
           status?: Status;
           priority?: Priority;
+          label?: string;
           note?: string;
           json?: boolean;
         },
@@ -120,13 +150,30 @@ export function createProgram(
         if (opts.status) updateFields.status = opts.status;
         if (opts.priority) updateFields.priority = opts.priority;
 
+        // --label appends a label (deduped) to existing labels
+        if (opts.label) {
+          const existing = service.get(id);
+          if (!existing) {
+            write(`Task ${id} not found.`);
+            return;
+          }
+          const labels = [...existing.labels];
+          if (!labels.includes(opts.label)) labels.push(opts.label);
+          updateFields.labels = labels;
+        }
+
         const hasFields = Object.keys(updateFields).length > 0;
         let task;
 
         if (opts.note && hasFields) {
           task = service.updateWithNote(
             id,
-            updateFields as { title?: string; status?: Status; priority?: Priority },
+            updateFields as {
+              title?: string;
+              status?: Status;
+              priority?: Priority;
+              labels?: string[];
+            },
             opts.note,
           );
         } else if (opts.note) {
@@ -134,7 +181,12 @@ export function createProgram(
         } else if (hasFields) {
           task = service.update(
             id,
-            updateFields as { title?: string; status?: Status; priority?: Priority },
+            updateFields as {
+              title?: string;
+              status?: Status;
+              priority?: Priority;
+              labels?: string[];
+            },
           );
         } else {
           task = service.get(id);
@@ -145,7 +197,7 @@ export function createProgram(
           return;
         }
 
-        if (opts.json) {
+        if (useJson(opts)) {
           write(formatTaskJson(task));
         } else {
           write(formatTaskText(task));
@@ -157,9 +209,12 @@ export function createProgram(
   program
     .command("delete <id>")
     .description("Delete a task")
-    .action((id: string) => {
+    .option("--json", "Output as JSON")
+    .action((id: string, opts: { json?: boolean }) => {
       const result = service.delete(id);
-      if (result) {
+      if (useJson(opts)) {
+        write(JSON.stringify({ id, deleted: result }));
+      } else if (result) {
         write(`Deleted ${id}`);
       } else {
         write(`Task ${id} not found.`);
@@ -178,7 +233,7 @@ export function createProgram(
       const result = await engine.sync();
       remote.close();
 
-      if (opts.json) {
+      if (useJson(opts)) {
         write(JSON.stringify(result, null, 2));
       } else {
         write(`Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`);

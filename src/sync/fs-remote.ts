@@ -36,7 +36,8 @@ export class FsRemote implements RemoteBackend {
   }
 
   async pull(cursor: string | null): Promise<PullResult> {
-    const seq = cursor ? parseInt(cursor, 10) : 0;
+    const parsed = cursor ? parseInt(cursor, 10) : 0;
+    const seq = Number.isNaN(parsed) ? 0 : parsed;
     const rows = this.db
       .prepare(
         "SELECT seq, id, task_id, device_id, op_type, field, value, timestamp FROM oplog WHERE seq > ? ORDER BY seq ASC",
