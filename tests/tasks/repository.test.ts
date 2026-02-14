@@ -180,6 +180,47 @@ describe("task repository", () => {
     expect(tasks.map((t) => t.title).sort()).toEqual(["Buy eggs", "Buy milk"]);
   });
 
+  it("updateTask works with prefix ID", () => {
+    const task = createTask(db, { title: "Original" });
+    const prefix = task.id.slice(0, 8);
+    const updated = updateTask(db, prefix, { title: "Updated via prefix" });
+    expect(updated).toBeDefined();
+    expect(updated!.title).toBe("Updated via prefix");
+    // Verify the actual DB row was updated
+    const found = getTask(db, task.id);
+    expect(found!.title).toBe("Updated via prefix");
+  });
+
+  it("appendNote works with prefix ID", () => {
+    const task = createTask(db, { title: "Note task" });
+    const prefix = task.id.slice(0, 8);
+    const updated = appendNote(db, prefix, "Note via prefix");
+    expect(updated).toBeDefined();
+    expect(updated!.notes).toEqual(["Note via prefix"]);
+    // Verify the actual DB row was updated
+    const found = getTask(db, task.id);
+    expect(found!.notes).toEqual(["Note via prefix"]);
+  });
+
+  it("deleteTask works with prefix ID", () => {
+    const task = createTask(db, { title: "Delete via prefix" });
+    const prefix = task.id.slice(0, 8);
+    const result = deleteTask(db, prefix);
+    expect(result).toBe(true);
+    // Verify it's actually deleted
+    const found = getTask(db, task.id);
+    expect(found).toBeNull();
+  });
+
+  it("search escapes LIKE wildcards", () => {
+    createTask(db, { title: "100% done" });
+    createTask(db, { title: "Regular task" });
+
+    const tasks = listTasks(db, { search: "%" });
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("100% done");
+  });
+
   it("handles corrupt JSON in labels/notes/metadata gracefully", () => {
     const task = createTask(db, { title: "Corrupt" });
     // Directly corrupt the JSON columns
