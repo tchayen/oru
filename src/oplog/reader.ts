@@ -11,9 +11,7 @@ export function readOps(db: Database.Database, options?: ReadOpsOptions): OplogE
       .prepare("SELECT * FROM oplog WHERE device_id != ? ORDER BY timestamp ASC, id ASC")
       .all(options.excludeDevice) as OplogEntry[];
   }
-  return db
-    .prepare("SELECT * FROM oplog ORDER BY timestamp ASC, id ASC")
-    .all() as OplogEntry[];
+  return db.prepare("SELECT * FROM oplog ORDER BY timestamp ASC, id ASC").all() as OplogEntry[];
 }
 
 export function readOpsByTask(db: Database.Database, taskId: string): OplogEntry[] {

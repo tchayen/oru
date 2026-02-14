@@ -129,19 +129,25 @@ describe("task repository", () => {
     expect(found).toBeNull();
 
     // But it still exists in the DB
-    const raw = db.prepare("SELECT deleted_at FROM tasks WHERE id = ?").get(task.id) as { deleted_at: string | null };
+    const raw = db.prepare("SELECT deleted_at FROM tasks WHERE id = ?").get(task.id) as {
+      deleted_at: string | null;
+    };
     expect(raw.deleted_at).toBeTruthy();
   });
 
   it("stores labels as JSON", () => {
     const task = createTask(db, { title: "T", labels: ["a", "b"] });
-    const raw = db.prepare("SELECT labels FROM tasks WHERE id = ?").get(task.id) as { labels: string };
+    const raw = db.prepare("SELECT labels FROM tasks WHERE id = ?").get(task.id) as {
+      labels: string;
+    };
     expect(JSON.parse(raw.labels)).toEqual(["a", "b"]);
   });
 
   it("stores metadata as JSON", () => {
     const task = createTask(db, { title: "T", metadata: { key: "value" } });
-    const raw = db.prepare("SELECT metadata FROM tasks WHERE id = ?").get(task.id) as { metadata: string };
+    const raw = db.prepare("SELECT metadata FROM tasks WHERE id = ?").get(task.id) as {
+      metadata: string;
+    };
     expect(JSON.parse(raw.metadata)).toEqual({ key: "value" });
   });
 });

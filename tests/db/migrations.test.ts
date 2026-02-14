@@ -15,14 +15,28 @@ describe("migrations", () => {
     const order: number[] = [];
 
     const migrations: Migration[] = [
-      { version: 2, up: (d) => { order.push(2); d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT"); } },
-      { version: 3, up: (d) => { order.push(3); d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT"); } },
+      {
+        version: 2,
+        up: (d) => {
+          order.push(2);
+          d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
+        },
+      },
+      {
+        version: 3,
+        up: (d) => {
+          order.push(3);
+          d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT");
+        },
+      },
     ];
 
     runMigrations(db, migrations);
     expect(order).toEqual([2, 3]);
 
-    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as { value: string };
+    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as {
+      value: string;
+    };
     expect(row.value).toBe("3");
     db.close();
   });
@@ -32,8 +46,20 @@ describe("migrations", () => {
     const calls: number[] = [];
 
     const migrations: Migration[] = [
-      { version: 2, up: (d) => { calls.push(2); d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT"); } },
-      { version: 3, up: (d) => { calls.push(3); d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT"); } },
+      {
+        version: 2,
+        up: (d) => {
+          calls.push(2);
+          d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
+        },
+      },
+      {
+        version: 3,
+        up: (d) => {
+          calls.push(3);
+          d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT");
+        },
+      },
     ];
 
     runMigrations(db, migrations);
@@ -55,13 +81,25 @@ describe("migrations", () => {
     const db = freshDb();
 
     const migrations: Migration[] = [
-      { version: 2, up: (d) => { d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT"); } },
-      { version: 3, up: () => { throw new Error("migration failed"); } },
+      {
+        version: 2,
+        up: (d) => {
+          d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
+        },
+      },
+      {
+        version: 3,
+        up: () => {
+          throw new Error("migration failed");
+        },
+      },
     ];
 
     expect(() => runMigrations(db, migrations)).toThrow("migration failed");
 
-    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as { value: string };
+    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as {
+      value: string;
+    };
     expect(row.value).toBe("1");
 
     // foo column should not exist because rollback undid everything
@@ -78,8 +116,19 @@ describe("migrations", () => {
 
     const calls: number[] = [];
     const migrations: Migration[] = [
-      { version: 2, up: () => { calls.push(2); } },
-      { version: 3, up: (d) => { calls.push(3); d.exec("ALTER TABLE tasks ADD COLUMN baz TEXT"); } },
+      {
+        version: 2,
+        up: () => {
+          calls.push(2);
+        },
+      },
+      {
+        version: 3,
+        up: (d) => {
+          calls.push(3);
+          d.exec("ALTER TABLE tasks ADD COLUMN baz TEXT");
+        },
+      },
     ];
 
     runMigrations(db, migrations);

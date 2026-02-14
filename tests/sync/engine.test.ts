@@ -28,7 +28,20 @@ describe("SyncEngine", () => {
   });
 
   it("pushes local ops to remote", async () => {
-    writeOp(db, { task_id: "t1", device_id: "device-a", op_type: "create", field: null, value: JSON.stringify({ title: "Task 1", status: "todo", priority: "medium", labels: [], notes: [], metadata: {} }) });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "device-a",
+      op_type: "create",
+      field: null,
+      value: JSON.stringify({
+        title: "Task 1",
+        status: "todo",
+        priority: "medium",
+        labels: [],
+        notes: [],
+        metadata: {},
+      }),
+    });
 
     const engine = new SyncEngine(db, remote, "device-a");
     await engine.push();
@@ -40,15 +53,24 @@ describe("SyncEngine", () => {
 
   it("pulls remote ops to local", async () => {
     // Push from "another device"
-    await remote.push([{
-      id: "op-remote-1",
-      task_id: "t-remote",
-      device_id: "device-b",
-      op_type: "create",
-      field: null,
-      value: JSON.stringify({ title: "Remote Task", status: "todo", priority: "medium", labels: [], notes: [], metadata: {} }),
-      timestamp: "2024-01-01T00:00:00.000Z",
-    }]);
+    await remote.push([
+      {
+        id: "op-remote-1",
+        task_id: "t-remote",
+        device_id: "device-b",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Remote Task",
+          status: "todo",
+          priority: "medium",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      },
+    ]);
 
     const engine = new SyncEngine(db, remote, "device-a");
     await engine.pull();
@@ -62,7 +84,20 @@ describe("SyncEngine", () => {
     const db2 = createTestDb();
 
     // Device A creates a task
-    writeOp(db, { task_id: "t1", device_id: "device-a", op_type: "create", field: null, value: JSON.stringify({ title: "Shared Task", status: "todo", priority: "medium", labels: [], notes: [], metadata: {} }) });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "device-a",
+      op_type: "create",
+      field: null,
+      value: JSON.stringify({
+        title: "Shared Task",
+        status: "todo",
+        priority: "medium",
+        labels: [],
+        notes: [],
+        metadata: {},
+      }),
+    });
     createTask(db, { id: "t1", title: "Shared Task" });
 
     const engineA = new SyncEngine(db, remote, "device-a");
@@ -83,10 +118,36 @@ describe("SyncEngine", () => {
     const db2 = createTestDb();
 
     // Both devices create different tasks locally
-    writeOp(db, { task_id: "t-a", device_id: "device-a", op_type: "create", field: null, value: JSON.stringify({ title: "From A", status: "todo", priority: "medium", labels: [], notes: [], metadata: {} }) });
+    writeOp(db, {
+      task_id: "t-a",
+      device_id: "device-a",
+      op_type: "create",
+      field: null,
+      value: JSON.stringify({
+        title: "From A",
+        status: "todo",
+        priority: "medium",
+        labels: [],
+        notes: [],
+        metadata: {},
+      }),
+    });
     createTask(db, { id: "t-a", title: "From A" });
 
-    writeOp(db2, { task_id: "t-b", device_id: "device-b", op_type: "create", field: null, value: JSON.stringify({ title: "From B", status: "todo", priority: "medium", labels: [], notes: [], metadata: {} }) });
+    writeOp(db2, {
+      task_id: "t-b",
+      device_id: "device-b",
+      op_type: "create",
+      field: null,
+      value: JSON.stringify({
+        title: "From B",
+        status: "todo",
+        priority: "medium",
+        labels: [],
+        notes: [],
+        metadata: {},
+      }),
+    });
     createTask(db2, { id: "t-b", title: "From B" });
 
     // Both push and pull
@@ -111,9 +172,22 @@ describe("SyncEngine", () => {
     const db2 = createTestDb();
 
     // Both devices start with the same task
-    const createValue = JSON.stringify({ title: "Task", status: "todo", priority: "medium", labels: [], notes: [], metadata: {} });
+    const createValue = JSON.stringify({
+      title: "Task",
+      status: "todo",
+      priority: "medium",
+      labels: [],
+      notes: [],
+      metadata: {},
+    });
 
-    writeOp(db, { task_id: "t1", device_id: "device-a", op_type: "create", field: null, value: createValue });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "device-a",
+      op_type: "create",
+      field: null,
+      value: createValue,
+    });
     createTask(db, { id: "t1", title: "Task" });
 
     const engineA = new SyncEngine(db, remote, "device-a");
@@ -123,10 +197,22 @@ describe("SyncEngine", () => {
     await engineB.pull();
 
     // Device A updates status
-    writeOp(db, { task_id: "t1", device_id: "device-a", op_type: "update", field: "status", value: "done" });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "device-a",
+      op_type: "update",
+      field: "status",
+      value: "done",
+    });
 
     // Device B updates priority
-    writeOp(db2, { task_id: "t1", device_id: "device-b", op_type: "update", field: "priority", value: "urgent" });
+    writeOp(db2, {
+      task_id: "t1",
+      device_id: "device-b",
+      op_type: "update",
+      field: "priority",
+      value: "urgent",
+    });
 
     // Sync both
     await engineA.push();

@@ -10,7 +10,9 @@ describe("schema", () => {
   it("creates tasks table", () => {
     const db = freshDb();
     initSchema(db);
-    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks'").all();
+    const tables = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks'")
+      .all();
     expect(tables).toHaveLength(1);
     db.close();
   });
@@ -18,7 +20,9 @@ describe("schema", () => {
   it("creates oplog table", () => {
     const db = freshDb();
     initSchema(db);
-    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='oplog'").all();
+    const tables = db
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='oplog'")
+      .all();
     expect(tables).toHaveLength(1);
     db.close();
   });
@@ -26,7 +30,9 @@ describe("schema", () => {
   it("creates meta table with schema_version = 1", () => {
     const db = freshDb();
     initSchema(db);
-    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as { value: string } | undefined;
+    const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as
+      | { value: string }
+      | undefined;
     expect(row).toBeDefined();
     expect(row!.value).toBe("1");
     db.close();

@@ -26,7 +26,10 @@ describe("text formatter", () => {
   });
 
   it("formats a list of tasks", () => {
-    const output = formatTasksText([sampleTask, { ...sampleTask, id: "def-456", title: "Buy eggs" }]);
+    const output = formatTasksText([
+      sampleTask,
+      { ...sampleTask, id: "def-456", title: "Buy eggs" },
+    ]);
     expect(output).toContain("Buy milk");
     expect(output).toContain("Buy eggs");
   });

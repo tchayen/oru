@@ -9,7 +9,9 @@ describe("CLI parse", () => {
 
   function capture(): (text: string) => void {
     output = "";
-    return (text: string) => { output += text + "\n"; };
+    return (text: string) => {
+      output += text + "\n";
+    };
   }
 
   beforeEach(() => {

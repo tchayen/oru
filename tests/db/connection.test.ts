@@ -8,16 +8,25 @@ describe("connection", () => {
   const tmpFiles: string[] = [];
 
   function tmpDbPath(): string {
-    const p = path.join(os.tmpdir(), `ao-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
+    const p = path.join(
+      os.tmpdir(),
+      `ao-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`,
+    );
     tmpFiles.push(p);
     return p;
   }
 
   afterEach(() => {
     for (const f of tmpFiles) {
-      try { fs.unlinkSync(f); } catch {}
-      try { fs.unlinkSync(f + "-wal"); } catch {}
-      try { fs.unlinkSync(f + "-shm"); } catch {}
+      try {
+        fs.unlinkSync(f);
+      } catch {}
+      try {
+        fs.unlinkSync(f + "-wal");
+      } catch {}
+      try {
+        fs.unlinkSync(f + "-shm");
+      } catch {}
     }
     tmpFiles.length = 0;
     delete process.env.AO_DB_PATH;
@@ -37,7 +46,9 @@ describe("connection", () => {
     db1.close();
 
     const db2 = openDb(dbPath);
-    const tables = db2.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='test'").all();
+    const tables = db2
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='test'")
+      .all();
     expect(tables).toHaveLength(1);
     db2.close();
   });

@@ -25,7 +25,7 @@ export class FsRemote implements RemoteBackend {
   async push(entries: OplogEntry[]): Promise<void> {
     const stmt = this.db.prepare(
       `INSERT OR IGNORE INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
     );
     const insertAll = this.db.transaction((entries: OplogEntry[]) => {
       for (const e of entries) {
@@ -39,7 +39,7 @@ export class FsRemote implements RemoteBackend {
     const seq = cursor ? parseInt(cursor, 10) : 0;
     const rows = this.db
       .prepare(
-        "SELECT seq, id, task_id, device_id, op_type, field, value, timestamp FROM oplog WHERE seq > ? ORDER BY seq ASC"
+        "SELECT seq, id, task_id, device_id, op_type, field, value, timestamp FROM oplog WHERE seq > ? ORDER BY seq ASC",
       )
       .all(seq) as (OplogEntry & { seq: number })[];
 

@@ -2,15 +2,19 @@
   "name": "ao",
   "version": "0.1.0",
   "description": "agentodo — agent-friendly todo CLI with offline sync",
-  "type": "module",
   "bin": {
     "ao": "./dist/cli.js"
   },
+  "type": "module",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsup",
-    "dev": "tsx src/cli.ts"
+    "dev": "tsx src/cli.ts",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",
@@ -21,6 +25,8 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.13.0",
     "@types/uuid": "^10.0.0",
+    "oxfmt": "^0.32.0",
+    "oxlint": "^1.47.0",
     "tsup": "^8.4.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",

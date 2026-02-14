@@ -24,7 +24,7 @@ export function runMigrations(db: Database.Database, migrations: Migration[]): n
     for (const migration of pending) {
       migration.up(db);
       db.prepare("UPDATE meta SET value = ? WHERE key = 'schema_version'").run(
-        String(migration.version)
+        String(migration.version),
       );
     }
     return pending.length;

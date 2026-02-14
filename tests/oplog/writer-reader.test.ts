@@ -54,14 +54,34 @@ describe("oplog writer", () => {
   });
 
   it("generates unique UUIDv7 ids", () => {
-    const e1 = writeOp(db, { task_id: "t1", device_id: "d1", op_type: "create", field: null, value: "{}" });
-    const e2 = writeOp(db, { task_id: "t2", device_id: "d1", op_type: "create", field: null, value: "{}" });
+    const e1 = writeOp(db, {
+      task_id: "t1",
+      device_id: "d1",
+      op_type: "create",
+      field: null,
+      value: "{}",
+    });
+    const e2 = writeOp(db, {
+      task_id: "t2",
+      device_id: "d1",
+      op_type: "create",
+      field: null,
+      value: "{}",
+    });
     expect(e1.id).not.toBe(e2.id);
   });
 
   it("stores device_id correctly", () => {
-    writeOp(db, { task_id: "t1", device_id: "my-device", op_type: "create", field: null, value: "{}" });
-    const raw = db.prepare("SELECT device_id FROM oplog WHERE task_id = 't1'").get() as { device_id: string };
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "my-device",
+      op_type: "create",
+      field: null,
+      value: "{}",
+    });
+    const raw = db.prepare("SELECT device_id FROM oplog WHERE task_id = 't1'").get() as {
+      device_id: string;
+    };
     expect(raw.device_id).toBe("my-device");
   });
 });
@@ -75,7 +95,13 @@ describe("oplog reader", () => {
 
   it("reads ops by task", () => {
     writeOp(db, { task_id: "t1", device_id: "d1", op_type: "create", field: null, value: "{}" });
-    writeOp(db, { task_id: "t1", device_id: "d1", op_type: "update", field: "status", value: "done" });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "d1",
+      op_type: "update",
+      field: "status",
+      value: "done",
+    });
     writeOp(db, { task_id: "t2", device_id: "d1", op_type: "create", field: null, value: "{}" });
 
     const ops = readOpsByTask(db, "t1");
@@ -87,7 +113,13 @@ describe("oplog reader", () => {
     writeOp(db, { task_id: "t1", device_id: "d1", op_type: "create", field: null, value: "{}" });
     const before = new Date().toISOString();
     await new Promise((r) => setTimeout(r, 5));
-    writeOp(db, { task_id: "t1", device_id: "d1", op_type: "update", field: "status", value: "done" });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "d1",
+      op_type: "update",
+      field: "status",
+      value: "done",
+    });
 
     const ops = readOpsAfter(db, before);
     expect(ops).toHaveLength(1);
@@ -96,7 +128,13 @@ describe("oplog reader", () => {
 
   it("reads ops by device", () => {
     writeOp(db, { task_id: "t1", device_id: "d1", op_type: "create", field: null, value: "{}" });
-    writeOp(db, { task_id: "t1", device_id: "d2", op_type: "update", field: "status", value: "done" });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "d2",
+      op_type: "update",
+      field: "status",
+      value: "done",
+    });
 
     const ops = readOpsByDevice(db, "d2");
     expect(ops).toHaveLength(1);
@@ -115,7 +153,13 @@ describe("oplog reader", () => {
 
   it("reads ops from other devices (excludes given device)", () => {
     writeOp(db, { task_id: "t1", device_id: "d1", op_type: "create", field: null, value: "{}" });
-    writeOp(db, { task_id: "t1", device_id: "d2", op_type: "update", field: "status", value: "done" });
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "d2",
+      op_type: "update",
+      field: "status",
+      value: "done",
+    });
 
     const ops = readOps(db, { excludeDevice: "d1" });
     expect(ops).toHaveLength(1);

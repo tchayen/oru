@@ -7,7 +7,7 @@ export class SyncEngine {
   constructor(
     private db: Database.Database,
     private remote: RemoteBackend,
-    private deviceId: string
+    private deviceId: string,
   ) {}
 
   async push(): Promise<number> {
@@ -19,9 +19,7 @@ export class SyncEngine {
 
     // Get local ops from this device since the last pushed rowid
     const ops = this.db
-      .prepare(
-        "SELECT rowid, * FROM oplog WHERE device_id = ? AND rowid > ? ORDER BY rowid ASC"
-      )
+      .prepare("SELECT rowid, * FROM oplog WHERE device_id = ? AND rowid > ? ORDER BY rowid ASC")
       .all(this.deviceId, lastRowid) as (OplogEntry & { rowid: number })[];
 
     if (ops.length === 0) return 0;
@@ -35,7 +33,7 @@ export class SyncEngine {
     this.db
       .prepare(
         `INSERT INTO meta (key, value) VALUES (?, ?)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
       )
       .run(`push_rowid_${this.deviceId}`, String(maxRowid));
 
@@ -64,7 +62,7 @@ export class SyncEngine {
       this.db
         .prepare(
           `INSERT INTO meta (key, value) VALUES (?, ?)
-           ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+           ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
         )
         .run(`pull_cursor_${this.deviceId}`, result.cursor);
     }

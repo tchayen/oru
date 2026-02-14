@@ -2,12 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import type Database from "better-sqlite3";
 import { createTestDb } from "../helpers/test-db.js";
 import { FsRemote } from "../../src/sync/fs-remote.js";
 import { SyncEngine } from "../../src/sync/engine.js";
 import { writeOp } from "../../src/oplog/writer.js";
-import { createTask, listTasks, getTask } from "../../src/tasks/repository.js";
+import { createTask, getTask } from "../../src/tasks/repository.js";
 
 describe("e2e sync scenarios", () => {
   let tmpDir: string;
@@ -32,11 +31,30 @@ describe("e2e sync scenarios", () => {
 
     // PC creates tasks
     const createVal = (title: string) =>
-      JSON.stringify({ title, status: "todo", priority: "medium", labels: [], notes: [], metadata: {} });
+      JSON.stringify({
+        title,
+        status: "todo",
+        priority: "medium",
+        labels: [],
+        notes: [],
+        metadata: {},
+      });
 
-    writeOp(pc, { task_id: "t1", device_id: "pc", op_type: "create", field: null, value: createVal("Buy milk") });
+    writeOp(pc, {
+      task_id: "t1",
+      device_id: "pc",
+      op_type: "create",
+      field: null,
+      value: createVal("Buy milk"),
+    });
     createTask(pc, { id: "t1", title: "Buy milk" });
-    writeOp(pc, { task_id: "t2", device_id: "pc", op_type: "create", field: null, value: createVal("Buy eggs") });
+    writeOp(pc, {
+      task_id: "t2",
+      device_id: "pc",
+      op_type: "create",
+      field: null,
+      value: createVal("Buy eggs"),
+    });
     createTask(pc, { id: "t2", title: "Buy eggs" });
 
     // PC syncs
@@ -46,11 +64,29 @@ describe("e2e sync scenarios", () => {
     await enginePhone.pull();
 
     // Phone goes offline and makes edits
-    writeOp(phone, { task_id: "t1", device_id: "phone", op_type: "update", field: "status", value: "done" });
-    writeOp(phone, { task_id: "t2", device_id: "phone", op_type: "update", field: "notes", value: "Get organic" });
+    writeOp(phone, {
+      task_id: "t1",
+      device_id: "phone",
+      op_type: "update",
+      field: "status",
+      value: "done",
+    });
+    writeOp(phone, {
+      task_id: "t2",
+      device_id: "phone",
+      op_type: "update",
+      field: "notes",
+      value: "Get organic",
+    });
 
     // PC also makes edits offline
-    writeOp(pc, { task_id: "t1", device_id: "pc", op_type: "update", field: "priority", value: "high" });
+    writeOp(pc, {
+      task_id: "t1",
+      device_id: "pc",
+      op_type: "update",
+      field: "priority",
+      value: "high",
+    });
 
     // Both sync
     await enginePC.push();
@@ -85,20 +121,45 @@ describe("e2e sync scenarios", () => {
     const e3 = new SyncEngine(d3, remote, "d3");
 
     // d1 creates a task
-    const createVal = JSON.stringify({ title: "Shared", status: "todo", priority: "low", labels: [], notes: [], metadata: {} });
-    writeOp(d1, { task_id: "t1", device_id: "d1", op_type: "create", field: null, value: createVal });
+    const createVal = JSON.stringify({
+      title: "Shared",
+      status: "todo",
+      priority: "low",
+      labels: [],
+      notes: [],
+      metadata: {},
+    });
+    writeOp(d1, {
+      task_id: "t1",
+      device_id: "d1",
+      op_type: "create",
+      field: null,
+      value: createVal,
+    });
     createTask(d1, { id: "t1", title: "Shared", priority: "low" });
 
     await e1.push();
 
     // d2 syncs and updates
     await e2.pull();
-    writeOp(d2, { task_id: "t1", device_id: "d2", op_type: "update", field: "status", value: "in_progress" });
+    writeOp(d2, {
+      task_id: "t1",
+      device_id: "d2",
+      op_type: "update",
+      field: "status",
+      value: "in_progress",
+    });
     await e2.push();
 
     // d3 syncs (gets create + d2's update)
     await e3.pull();
-    writeOp(d3, { task_id: "t1", device_id: "d3", op_type: "update", field: "priority", value: "urgent" });
+    writeOp(d3, {
+      task_id: "t1",
+      device_id: "d3",
+      op_type: "update",
+      field: "priority",
+      value: "urgent",
+    });
     await e3.push();
 
     // Everyone syncs
@@ -131,18 +192,43 @@ describe("e2e sync scenarios", () => {
     const eUpdater = new SyncEngine(updater, remote, "updater");
 
     // Both start with same task
-    const createVal = JSON.stringify({ title: "Task", status: "todo", priority: "medium", labels: [], notes: [], metadata: {} });
-    writeOp(deleter, { task_id: "t1", device_id: "deleter", op_type: "create", field: null, value: createVal });
+    const createVal = JSON.stringify({
+      title: "Task",
+      status: "todo",
+      priority: "medium",
+      labels: [],
+      notes: [],
+      metadata: {},
+    });
+    writeOp(deleter, {
+      task_id: "t1",
+      device_id: "deleter",
+      op_type: "create",
+      field: null,
+      value: createVal,
+    });
     createTask(deleter, { id: "t1", title: "Task" });
     await eDeleter.push();
     await eUpdater.pull();
 
     // Deleter deletes
-    writeOp(deleter, { task_id: "t1", device_id: "deleter", op_type: "delete", field: null, value: null, });
+    writeOp(deleter, {
+      task_id: "t1",
+      device_id: "deleter",
+      op_type: "delete",
+      field: null,
+      value: null,
+    });
 
     // Updater updates (later timestamp)
     await new Promise((r) => setTimeout(r, 5));
-    writeOp(updater, { task_id: "t1", device_id: "updater", op_type: "update", field: "status", value: "done" });
+    writeOp(updater, {
+      task_id: "t1",
+      device_id: "updater",
+      op_type: "update",
+      field: "status",
+      value: "done",
+    });
 
     // Both sync
     await eDeleter.push();

@@ -16,7 +16,7 @@ export function writeOp(db: Database.Database, input: WriteOpInput): OplogEntry 
 
   db.prepare(
     `INSERT INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   ).run(id, input.task_id, input.device_id, input.op_type, input.field, input.value, timestamp);
 
   return {

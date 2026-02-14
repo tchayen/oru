@@ -19,7 +19,9 @@ describe("FsRemote", () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  const makeEntry = (overrides: Partial<OplogEntry> & { id: string; task_id: string }): OplogEntry => ({
+  const makeEntry = (
+    overrides: Partial<OplogEntry> & { id: string; task_id: string },
+  ): OplogEntry => ({
     device_id: "device-a",
     op_type: "create",
     field: null,
@@ -60,9 +62,7 @@ describe("FsRemote", () => {
   });
 
   it("returns cursor for pagination", async () => {
-    await remote.push([
-      makeEntry({ id: "op-1", task_id: "t1" }),
-    ]);
+    await remote.push([makeEntry({ id: "op-1", task_id: "t1" })]);
     const result = await remote.pull(null);
     expect(result.cursor).toBeTruthy();
   });

@@ -48,7 +48,7 @@ export function createTask(db: Database.Database, input: CreateTaskInput): Task 
 
   db.prepare(
     `INSERT INTO tasks (id, title, status, priority, labels, notes, metadata, created_at, updated_at, deleted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     task.id,
     task.title,
@@ -59,7 +59,7 @@ export function createTask(db: Database.Database, input: CreateTaskInput): Task 
     JSON.stringify(task.metadata),
     task.created_at,
     task.updated_at,
-    task.deleted_at
+    task.deleted_at,
   );
 
   return task;
@@ -94,17 +94,13 @@ export function listTasks(db: Database.Database, filters?: ListFilters): Task[] 
 }
 
 export function getTask(db: Database.Database, id: string): Task | null {
-  const row = db
-    .prepare("SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL")
-    .get(id) as TaskRow | undefined;
+  const row = db.prepare("SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL").get(id) as
+    | TaskRow
+    | undefined;
   return row ? rowToTask(row) : null;
 }
 
-export function updateTask(
-  db: Database.Database,
-  id: string,
-  input: UpdateTaskInput
-): Task | null {
+export function updateTask(db: Database.Database, id: string, input: UpdateTaskInput): Task | null {
   const existing = getTask(db, id);
   if (!existing) return null;
 
@@ -148,7 +144,7 @@ export function appendNote(db: Database.Database, id: string, note: string): Tas
   db.prepare("UPDATE tasks SET notes = ?, updated_at = ? WHERE id = ?").run(
     JSON.stringify(notes),
     now,
-    id
+    id,
   );
 
   return getTask(db, id);

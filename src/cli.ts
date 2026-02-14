@@ -12,7 +12,7 @@ import type { Status, Priority } from "./tasks/types.js";
 
 export function createProgram(
   db: Database.Database,
-  write: (text: string) => void = (t) => process.stdout.write(t + "\n")
+  write: (text: string) => void = (t) => process.stdout.write(t + "\n"),
 ): Command {
   const service = new TaskService(db);
   const program = new Command("ao")
@@ -34,8 +34,14 @@ export function createProgram(
   program
     .command("add <title>")
     .description("Add a new task")
-    .addOption(new Option("-s, --status <status>", "Initial status").choices(statusChoices).default("todo"))
-    .addOption(new Option("-p, --priority <priority>", "Priority level").choices(priorityChoices).default("medium"))
+    .addOption(
+      new Option("-s, --status <status>", "Initial status").choices(statusChoices).default("todo"),
+    )
+    .addOption(
+      new Option("-p, --priority <priority>", "Priority level")
+        .choices(priorityChoices)
+        .default("medium"),
+    )
     .option("-l, --label <label>", "Add a label")
     .action((title: string, opts: { status?: Status; priority?: Priority; label?: string }) => {
       const task = service.add({
@@ -53,7 +59,9 @@ export function createProgram(
     .command("list")
     .description("List tasks")
     .addOption(new Option("-s, --status <status>", "Filter by status").choices(statusChoices))
-    .addOption(new Option("-p, --priority <priority>", "Filter by priority").choices(priorityChoices))
+    .addOption(
+      new Option("-p, --priority <priority>", "Filter by priority").choices(priorityChoices),
+    )
     .option("-l, --label <label>", "Filter by label")
     .option("--json", "Output as JSON")
     .action((opts: { status?: Status; priority?: Priority; label?: string; json?: boolean }) => {
@@ -99,7 +107,13 @@ export function createProgram(
     .action(
       (
         id: string,
-        opts: { title?: string; status?: Status; priority?: Priority; note?: string; json?: boolean }
+        opts: {
+          title?: string;
+          status?: Status;
+          priority?: Priority;
+          note?: string;
+          json?: boolean;
+        },
       ) => {
         let task;
         if (opts.note) {
@@ -112,7 +126,10 @@ export function createProgram(
         if (opts.priority) updateFields.priority = opts.priority;
 
         if (Object.keys(updateFields).length > 0) {
-          task = service.update(id, updateFields as { title?: string; status?: Status; priority?: Priority });
+          task = service.update(
+            id,
+            updateFields as { title?: string; status?: Status; priority?: Priority },
+          );
         }
 
         if (!task) {
@@ -129,7 +146,7 @@ export function createProgram(
         } else {
           write(formatTaskText(task));
         }
-      }
+      },
     );
 
   // delete
@@ -187,10 +204,8 @@ async function main() {
 }
 
 // Only run main when this is the entry point
-const isEntryPoint = process.argv[1] && (
-  process.argv[1].endsWith("/cli.js") ||
-  process.argv[1].endsWith("/cli.ts")
-);
+const isEntryPoint =
+  process.argv[1] && (process.argv[1].endsWith("/cli.js") || process.argv[1].endsWith("/cli.ts"));
 
 if (isEntryPoint) {
   main().catch((err) => {

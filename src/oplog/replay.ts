@@ -14,7 +14,7 @@ export function replayOps(db: Database.Database, ops: OplogEntry[]): void {
   // First, insert all ops into the oplog table (idempotent)
   const insertStmt = db.prepare(
     `INSERT OR IGNORE INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
   for (const op of ops) {
     insertStmt.run(op.id, op.task_id, op.device_id, op.op_type, op.field, op.value, op.timestamp);
@@ -62,9 +62,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
 
     if (op.op_type === "delete") {
       // Only apply if no later update exists
-      const hasLaterUpdate = ops.some(
-        (o) => o.op_type === "update" && o.timestamp > op.timestamp
-      );
+      const hasLaterUpdate = ops.some((o) => o.op_type === "update" && o.timestamp > op.timestamp);
       if (!hasLaterUpdate) {
         deletedAt = op.timestamp;
         if (op.timestamp > updatedAt) updatedAt = op.timestamp;
@@ -133,7 +131,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
        notes = excluded.notes,
        metadata = excluded.metadata,
        updated_at = excluded.updated_at,
-       deleted_at = excluded.deleted_at`
+       deleted_at = excluded.deleted_at`,
   ).run(
     taskId,
     title,
@@ -144,6 +142,6 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     metadata,
     createOp.timestamp,
     updatedAt,
-    deletedAt
+    deletedAt,
   );
 }
