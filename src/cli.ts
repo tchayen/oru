@@ -19,10 +19,14 @@ function parseMetadata(pairs: string[]): Record<string, string> {
   const meta: Record<string, string> = {};
   for (const pair of pairs) {
     const eqIdx = pair.indexOf("=");
-    if (eqIdx === -1) continue;
+    if (eqIdx === -1) {
+      continue;
+    }
     const key = pair.slice(0, eqIdx);
     const value = pair.slice(eqIdx + 1);
-    if (key) meta[key] = value;
+    if (key) {
+      meta[key] = value;
+    }
   }
   return meta;
 }
@@ -265,9 +269,15 @@ export function createProgram(
         }
 
         const updateFields: Record<string, unknown> = {};
-        if (opts.title) updateFields.title = opts.title;
-        if (opts.status) updateFields.status = opts.status;
-        if (opts.priority) updateFields.priority = opts.priority;
+        if (opts.title) {
+          updateFields.title = opts.title;
+        }
+        if (opts.status) {
+          updateFields.status = opts.status;
+        }
+        if (opts.priority) {
+          updateFields.priority = opts.priority;
+        }
 
         if (opts.label) {
           const existing = service.get(id);
@@ -282,7 +292,9 @@ export function createProgram(
           }
           const labels = [...existing.labels];
           for (const l of opts.label) {
-            if (!labels.includes(l)) labels.push(l);
+            if (!labels.includes(l)) {
+              labels.push(l);
+            }
           }
           updateFields.labels = labels;
         }

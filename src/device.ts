@@ -6,7 +6,9 @@ export function getDeviceId(db: Database.Database): string {
     | { value: string }
     | undefined;
 
-  if (row) return row.value;
+  if (row) {
+    return row.value;
+  }
 
   const deviceId = generateId();
   // INSERT OR IGNORE avoids UNIQUE constraint violation if two processes race
