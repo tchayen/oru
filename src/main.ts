@@ -153,7 +153,9 @@ export class TaskService {
     return this.db.transaction(() => {
       const now = new Date().toISOString();
       const task = getTask(this.db, id);
-      if (!task) return false;
+      if (!task) {
+        return false;
+      }
 
       const result = deleteTask(this.db, task.id, now);
       if (result) {

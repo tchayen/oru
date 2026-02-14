@@ -194,7 +194,9 @@ export function appendNote(
 
 export function deleteTask(db: Database.Database, id: string, timestamp?: string): boolean {
   const existing = getTask(db, id);
-  if (!existing) return false;
+  if (!existing) {
+    return false;
+  }
 
   const now = timestamp ?? new Date().toISOString();
   const result = db
