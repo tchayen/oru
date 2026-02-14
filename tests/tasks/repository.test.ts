@@ -107,7 +107,9 @@ describe("task repository", () => {
   it("updates task fields", async () => {
     const task = createTask(db, { title: "Old title", priority: "low" });
     // Ensure distinct timestamp
-    await new Promise((r) => setTimeout(r, 5));
+    await new Promise((r) => {
+      setTimeout(r, 5);
+    });
     const updated = updateTask(db, task.id, { title: "New title", priority: "high" });
     expect(updated!.title).toBe("New title");
     expect(updated!.priority).toBe("high");

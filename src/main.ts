@@ -58,7 +58,9 @@ export class TaskService {
     return this.db.transaction(() => {
       const now = new Date().toISOString();
       const task = updateTask(this.db, id, input, now);
-      if (!task) return null;
+      if (!task) {
+        return null;
+      }
 
       for (const [field, value] of Object.entries(input)) {
         if (value !== undefined) {
@@ -83,7 +85,9 @@ export class TaskService {
     return this.db.transaction(() => {
       const now = new Date().toISOString();
       const task = appendNote(this.db, id, note, now);
-      if (!task) return null;
+      if (!task) {
+        return null;
+      }
 
       writeOp(
         this.db,
@@ -105,7 +109,9 @@ export class TaskService {
       const now = new Date().toISOString();
       // Apply field updates
       let task = updateTask(this.db, id, input, now);
-      if (!task) return null;
+      if (!task) {
+        return null;
+      }
 
       const resolvedId = task.id;
       for (const [field, value] of Object.entries(input)) {

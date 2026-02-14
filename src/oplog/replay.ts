@@ -37,7 +37,9 @@ export function replayOps(db: Database.Database, ops: OplogEntry[]): void {
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     );
     for (const op of ops) {
-      if (!VALID_OP_TYPES.has(op.op_type)) continue;
+      if (!VALID_OP_TYPES.has(op.op_type)) {
+        continue;
+      }
       insertStmt.run(op.id, op.task_id, op.device_id, op.op_type, op.field, op.value, op.timestamp);
     }
 
@@ -57,13 +59,19 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     .prepare("SELECT * FROM oplog WHERE task_id = ? ORDER BY timestamp ASC, id ASC")
     .all(taskId) as OplogEntry[];
 
-  if (ops.length === 0) return;
+  if (ops.length === 0) {
+    return;
+  }
 
   // Find the create op
   const createOp = ops.find((op) => op.op_type === "create");
-  if (!createOp) return;
+  if (!createOp) {
+    return;
+  }
 
-  if (createOp.value === null || createOp.value === undefined) return;
+  if (createOp.value === null || createOp.value === undefined) {
+    return;
+  }
 
   let data: Record<string, unknown>;
   try {
@@ -104,7 +112,9 @@ function rebuildTask(db: Database.Database, taskId: string): void {
 
   // Apply all ops in order
   for (const op of ops) {
-    if (op.op_type === "create") continue; // Already handled
+    if (op.op_type === "create") {
+      continue;
+    } // Already handled
 
     if (op.op_type === "delete") {
       // Updates beat deletes: only apply if no update exists at or after this delete
@@ -112,14 +122,18 @@ function rebuildTask(db: Database.Database, taskId: string): void {
         latestUpdateTimestamp !== null && latestUpdateTimestamp >= op.timestamp;
       if (!hasLaterOrEqualUpdate) {
         deletedAt = op.timestamp;
-        if (op.timestamp > updatedAt) updatedAt = op.timestamp;
+        if (op.timestamp > updatedAt) {
+          updatedAt = op.timestamp;
+        }
       }
       continue;
     }
 
     if (op.op_type === "update") {
       const field = op.field;
-      if (!field) continue;
+      if (!field) {
+        continue;
+      }
 
       // Notes: append-only with dedup
       if (field === "notes") {
@@ -129,7 +143,9 @@ function rebuildTask(db: Database.Database, taskId: string): void {
             notes.push(op.value);
           }
         }
-        if (op.timestamp > updatedAt) updatedAt = op.timestamp;
+        if (op.timestamp > updatedAt) {
+          updatedAt = op.timestamp;
+        }
         if (deletedAt && op.timestamp >= deletedAt) {
           deletedAt = null;
         }
@@ -139,21 +155,31 @@ function rebuildTask(db: Database.Database, taskId: string): void {
       // LWW per field with explicit id tiebreaker
       const current = fieldWinners[field];
       if (current) {
-        if (op.timestamp < current.timestamp) continue;
-        if (op.timestamp === current.timestamp && op.id < current.id) continue;
+        if (op.timestamp < current.timestamp) {
+          continue;
+        }
+        if (op.timestamp === current.timestamp && op.id < current.id) {
+          continue;
+        }
       }
       fieldWinners[field] = { timestamp: op.timestamp, id: op.id };
 
       // Validate and apply
       switch (field) {
         case "title":
-          if (typeof op.value === "string") title = op.value;
+          if (typeof op.value === "string") {
+            title = op.value;
+          }
           break;
         case "status":
-          if (op.value && VALID_STATUSES.has(op.value)) status = op.value;
+          if (op.value && VALID_STATUSES.has(op.value)) {
+            status = op.value;
+          }
           break;
         case "priority":
-          if (op.value && VALID_PRIORITIES.has(op.value)) priority = op.value;
+          if (op.value && VALID_PRIORITIES.has(op.value)) {
+            priority = op.value;
+          }
           break;
         case "labels":
           if (op.value && isValidJson(op.value)) {
@@ -164,11 +190,15 @@ function rebuildTask(db: Database.Database, taskId: string): void {
           }
           break;
         case "metadata":
-          if (op.value && isValidJson(op.value)) metadata = op.value;
+          if (op.value && isValidJson(op.value)) {
+            metadata = op.value;
+          }
           break;
       }
 
-      if (op.timestamp > updatedAt) updatedAt = op.timestamp;
+      if (op.timestamp > updatedAt) {
+        updatedAt = op.timestamp;
+      }
 
       // An update at or after a delete restores the task
       if (deletedAt && op.timestamp >= deletedAt) {

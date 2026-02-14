@@ -221,7 +221,9 @@ describe("e2e sync scenarios", () => {
     });
 
     // Updater updates (later timestamp)
-    await new Promise((r) => setTimeout(r, 5));
+    await new Promise((r) => {
+      setTimeout(r, 5);
+    });
     writeOp(updater, {
       task_id: "t1",
       device_id: "updater",

@@ -110,7 +110,9 @@ export function getTask(db: Database.Database, id: string): Task | null {
   const row = db.prepare("SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL").get(id) as
     | TaskRow
     | undefined;
-  if (row) return rowToTask(row);
+  if (row) {
+    return rowToTask(row);
+  }
 
   // Prefix matching fallback for short IDs
   if (id.length < 36) {
@@ -118,7 +120,9 @@ export function getTask(db: Database.Database, id: string): Task | null {
     const rows = db
       .prepare("SELECT * FROM tasks WHERE id LIKE ? || '%' ESCAPE '\\' AND deleted_at IS NULL")
       .all(escaped) as TaskRow[];
-    if (rows.length === 1) return rowToTask(rows[0]);
+    if (rows.length === 1) {
+      return rowToTask(rows[0]);
+    }
   }
 
   return null;
@@ -131,7 +135,9 @@ export function updateTask(
   timestamp?: string,
 ): Task | null {
   const existing = getTask(db, id);
-  if (!existing) return null;
+  if (!existing) {
+    return null;
+  }
 
   const now = timestamp ?? new Date().toISOString();
   const updates: string[] = ["updated_at = ?"];
@@ -171,7 +177,9 @@ export function appendNote(
   timestamp?: string,
 ): Task | null {
   const existing = getTask(db, id);
-  if (!existing) return null;
+  if (!existing) {
+    return null;
+  }
 
   const notes = [...existing.notes, note];
   const now = timestamp ?? new Date().toISOString();
