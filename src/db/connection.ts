@@ -14,10 +14,18 @@ export function openDb(dbPath?: string): Database.Database {
   const resolvedPath = dbPath ?? getDbPath();
   const dir = path.dirname(resolvedPath);
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   }
   const db = new Database(resolvedPath);
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
+
+  // Restrict DB file permissions to owner-only
+  try {
+    fs.chmodSync(resolvedPath, 0o600);
+  } catch {
+    // May fail on some platforms; best-effort
+  }
+
   return db;
 }

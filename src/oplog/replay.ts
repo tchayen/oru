@@ -1,22 +1,37 @@
 import type Database from "better-sqlite3";
 import type { OplogEntry } from "./types.js";
 
+const VALID_STATUSES = new Set(["todo", "in_progress", "done"]);
+const VALID_PRIORITIES = new Set(["low", "medium", "high", "urgent"]);
+const VALID_OP_TYPES = new Set(["create", "update", "delete"]);
+
+function isValidJson(s: string): boolean {
+  try {
+    JSON.parse(s);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Replay oplog entries onto the tasks table.
  *
  * Conflict resolution rules:
- * - Last-write-wins per field (based on timestamp)
- * - Updates beat deletes (an update after a delete restores the task)
+ * - Last-write-wins per field (based on timestamp, then id as tiebreaker)
+ * - Updates beat deletes (an update at or after a delete restores the task)
  * - Notes are append-only and deduped
  * - Idempotent — replaying same ops has no extra effect
  */
 export function replayOps(db: Database.Database, ops: OplogEntry[]): void {
   // First, insert all ops into the oplog table (idempotent)
+  // Skip entries with invalid op_type
   const insertStmt = db.prepare(
     `INSERT OR IGNORE INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
   for (const op of ops) {
+    if (!VALID_OP_TYPES.has(op.op_type)) continue;
     insertStmt.run(op.id, op.task_id, op.device_id, op.op_type, op.field, op.value, op.timestamp);
   }
 
@@ -41,29 +56,52 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   const createOp = ops.find((op) => op.op_type === "create");
   if (!createOp) return;
 
-  const data = JSON.parse(createOp.value!);
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(createOp.value!) as Record<string, unknown>;
+  } catch {
+    return; // Malformed create op, skip this task
+  }
 
   // Start with created state
-  let title = data.title;
-  let status = data.status ?? "todo";
-  let priority = data.priority ?? "medium";
-  let labels = JSON.stringify(data.labels ?? []);
-  let metadata = JSON.stringify(data.metadata ?? {});
-  const notes: string[] = [...(data.notes ?? [])];
+  let title = typeof data.title === "string" ? data.title : "Untitled";
+  let status = VALID_STATUSES.has(data.status as string) ? (data.status as string) : "todo";
+  let priority = VALID_PRIORITIES.has(data.priority as string)
+    ? (data.priority as string)
+    : "medium";
+  let labels = JSON.stringify(Array.isArray(data.labels) ? data.labels : []);
+  let metadata = JSON.stringify(
+    data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)
+      ? data.metadata
+      : {},
+  );
+  const notes: string[] = [...(Array.isArray(data.notes) ? data.notes : [])];
   let deletedAt: string | null = null;
   let updatedAt = createOp.timestamp;
 
-  // Track latest timestamp per field for LWW
-  const fieldTimestamps: Record<string, string> = {};
+  // Precompute: does any update exist at or after each timestamp?
+  // This avoids O(n^2) scanning in the delete handler.
+  let latestUpdateTimestamp: string | null = null;
+  for (const op of ops) {
+    if (op.op_type === "update") {
+      if (!latestUpdateTimestamp || op.timestamp > latestUpdateTimestamp) {
+        latestUpdateTimestamp = op.timestamp;
+      }
+    }
+  }
+
+  // Track latest timestamp+id per field for LWW tiebreaking
+  const fieldWinners: Record<string, { timestamp: string; id: string }> = {};
 
   // Apply all ops in order
   for (const op of ops) {
     if (op.op_type === "create") continue; // Already handled
 
     if (op.op_type === "delete") {
-      // Only apply if no later update exists
-      const hasLaterUpdate = ops.some((o) => o.op_type === "update" && o.timestamp > op.timestamp);
-      if (!hasLaterUpdate) {
+      // Updates beat deletes: only apply if no update exists at or after this delete
+      const hasLaterOrEqualUpdate =
+        latestUpdateTimestamp !== null && latestUpdateTimestamp >= op.timestamp;
+      if (!hasLaterOrEqualUpdate) {
         deletedAt = op.timestamp;
         if (op.timestamp > updatedAt) updatedAt = op.timestamp;
       }
@@ -71,49 +109,52 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     }
 
     if (op.op_type === "update") {
-      const field = op.field!;
+      const field = op.field;
+      if (!field) continue;
 
       // Notes: append-only with dedup
       if (field === "notes") {
-        if (!notes.includes(op.value!)) {
-          notes.push(op.value!);
+        if (op.value && !notes.includes(op.value)) {
+          notes.push(op.value);
         }
         if (op.timestamp > updatedAt) updatedAt = op.timestamp;
-        // An update always clears deleted status if it comes after
-        if (deletedAt && op.timestamp > deletedAt) {
+        if (deletedAt && op.timestamp >= deletedAt) {
           deletedAt = null;
         }
         continue;
       }
 
-      // LWW per field: only apply if this is the latest for this field
-      const currentTs = fieldTimestamps[field];
-      if (currentTs && op.timestamp < currentTs) continue;
-      // If same timestamp, use id as tiebreaker (already sorted)
-      fieldTimestamps[field] = op.timestamp;
+      // LWW per field with explicit id tiebreaker
+      const current = fieldWinners[field];
+      if (current) {
+        if (op.timestamp < current.timestamp) continue;
+        if (op.timestamp === current.timestamp && op.id < current.id) continue;
+      }
+      fieldWinners[field] = { timestamp: op.timestamp, id: op.id };
 
+      // Validate and apply
       switch (field) {
         case "title":
-          title = op.value!;
+          if (typeof op.value === "string") title = op.value;
           break;
         case "status":
-          status = op.value!;
+          if (op.value && VALID_STATUSES.has(op.value)) status = op.value;
           break;
         case "priority":
-          priority = op.value!;
+          if (op.value && VALID_PRIORITIES.has(op.value)) priority = op.value;
           break;
         case "labels":
-          labels = op.value!;
+          if (op.value && isValidJson(op.value)) labels = op.value;
           break;
         case "metadata":
-          metadata = op.value!;
+          if (op.value && isValidJson(op.value)) metadata = op.value;
           break;
       }
 
       if (op.timestamp > updatedAt) updatedAt = op.timestamp;
 
-      // An update after a delete restores the task
-      if (deletedAt && op.timestamp > deletedAt) {
+      // An update at or after a delete restores the task
+      if (deletedAt && op.timestamp >= deletedAt) {
         deletedAt = null;
       }
     }

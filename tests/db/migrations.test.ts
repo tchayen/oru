@@ -12,32 +12,33 @@ function freshDb(): Database.Database {
 describe("migrations", () => {
   it("runs pending migrations in order", () => {
     const db = freshDb();
+    // initSchema runs appMigrations up to version 2, so start from 3
     const order: number[] = [];
 
     const migrations: Migration[] = [
       {
-        version: 2,
+        version: 3,
         up: (d) => {
-          order.push(2);
+          order.push(3);
           d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
         },
       },
       {
-        version: 3,
+        version: 4,
         up: (d) => {
-          order.push(3);
+          order.push(4);
           d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT");
         },
       },
     ];
 
     runMigrations(db, migrations);
-    expect(order).toEqual([2, 3]);
+    expect(order).toEqual([3, 4]);
 
     const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as {
       value: string;
     };
-    expect(row.value).toBe("3");
+    expect(row.value).toBe("4");
     db.close();
   });
 
@@ -47,16 +48,16 @@ describe("migrations", () => {
 
     const migrations: Migration[] = [
       {
-        version: 2,
+        version: 3,
         up: (d) => {
-          calls.push(2);
+          calls.push(3);
           d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
         },
       },
       {
-        version: 3,
+        version: 4,
         up: (d) => {
-          calls.push(3);
+          calls.push(4);
           d.exec("ALTER TABLE tasks ADD COLUMN bar TEXT");
         },
       },
@@ -79,16 +80,17 @@ describe("migrations", () => {
 
   it("rolls back on failure and preserves previous version", () => {
     const db = freshDb();
+    // After initSchema, version is 2
 
     const migrations: Migration[] = [
       {
-        version: 2,
+        version: 3,
         up: (d) => {
           d.exec("ALTER TABLE tasks ADD COLUMN foo TEXT");
         },
       },
       {
-        version: 3,
+        version: 4,
         up: () => {
           throw new Error("migration failed");
         },
@@ -100,7 +102,7 @@ describe("migrations", () => {
     const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as {
       value: string;
     };
-    expect(row.value).toBe("1");
+    expect(row.value).toBe("2");
 
     // foo column should not exist because rollback undid everything
     const cols = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
@@ -111,28 +113,28 @@ describe("migrations", () => {
 
   it("runs only migrations above current version", () => {
     const db = freshDb();
-    // Manually set version to 2
-    db.prepare("UPDATE meta SET value = '2' WHERE key = 'schema_version'").run();
+    // initSchema already set version to 2; set to 3 manually
+    db.prepare("UPDATE meta SET value = '3' WHERE key = 'schema_version'").run();
 
     const calls: number[] = [];
     const migrations: Migration[] = [
       {
-        version: 2,
+        version: 3,
         up: () => {
-          calls.push(2);
+          calls.push(3);
         },
       },
       {
-        version: 3,
+        version: 4,
         up: (d) => {
-          calls.push(3);
+          calls.push(4);
           d.exec("ALTER TABLE tasks ADD COLUMN baz TEXT");
         },
       },
     ];
 
     runMigrations(db, migrations);
-    expect(calls).toEqual([3]);
+    expect(calls).toEqual([4]);
     db.close();
   });
 });

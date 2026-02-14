@@ -1,4 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import fs from "fs";
+import path from "path";
+import os from "os";
 import type Database from "better-sqlite3";
 import { createTestDb } from "../helpers/test-db.js";
 import { createProgram } from "../../src/cli.js";
@@ -163,5 +166,48 @@ describe("CLI parse", () => {
     const parsed = JSON.parse(output.trim());
     expect(parsed.id).toBeTruthy();
     expect(parsed.title).toBe("Agent task");
+  });
+
+  // GAP-1: Combined --note + --status in a single atomic update
+  it("update --note + --status applies both atomically", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Atomic task"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "update",
+      id,
+      "--note",
+      "finished it",
+      "--status",
+      "done",
+      "--json",
+    ]);
+    const result = JSON.parse(output.trim());
+    expect(result.status).toBe("done");
+    expect(result.notes).toContain("finished it");
+  });
+
+  // GAP-5: CLI sync command
+  it("sync command pushes and pulls", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ao-cli-sync-test-"));
+    const remotePath = path.join(tmpDir, "remote.db");
+
+    try {
+      // Create a task first
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "ao", "add", "Sync task"]);
+
+      // Run sync
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "ao", "sync", remotePath]);
+      expect(output).toContain("Pushed");
+      expect(output).toContain("ops");
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 });

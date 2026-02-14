@@ -115,24 +115,28 @@ export function createProgram(
           json?: boolean;
         },
       ) => {
-        let task;
-        if (opts.note) {
-          task = service.addNote(id, opts.note);
-        }
-
         const updateFields: Record<string, unknown> = {};
         if (opts.title) updateFields.title = opts.title;
         if (opts.status) updateFields.status = opts.status;
         if (opts.priority) updateFields.priority = opts.priority;
 
-        if (Object.keys(updateFields).length > 0) {
+        const hasFields = Object.keys(updateFields).length > 0;
+        let task;
+
+        if (opts.note && hasFields) {
+          task = service.updateWithNote(
+            id,
+            updateFields as { title?: string; status?: Status; priority?: Priority },
+            opts.note,
+          );
+        } else if (opts.note) {
+          task = service.addNote(id, opts.note);
+        } else if (hasFields) {
           task = service.update(
             id,
             updateFields as { title?: string; status?: Status; priority?: Priority },
           );
-        }
-
-        if (!task) {
+        } else {
           task = service.get(id);
         }
 

@@ -168,6 +168,37 @@ describe("SyncEngine", () => {
     db2.close();
   });
 
+  // GAP-6: Push idempotency — pushing same ops twice doesn't duplicate
+  it("push is idempotent — double push does not duplicate", async () => {
+    writeOp(db, {
+      task_id: "t1",
+      device_id: "device-a",
+      op_type: "create",
+      field: null,
+      value: JSON.stringify({
+        title: "Task 1",
+        status: "todo",
+        priority: "medium",
+        labels: [],
+        notes: [],
+        metadata: {},
+      }),
+    });
+
+    const engine = new SyncEngine(db, remote, "device-a");
+
+    const pushed1 = await engine.push();
+    expect(pushed1).toBe(1);
+
+    // Second push should push 0 (already tracked)
+    const pushed2 = await engine.push();
+    expect(pushed2).toBe(0);
+
+    // Remote should have exactly 1 entry
+    const { entries } = await remote.pull(null);
+    expect(entries).toHaveLength(1);
+  });
+
   it("conflict resolution through sync", async () => {
     const db2 = createTestDb();
 

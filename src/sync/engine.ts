@@ -11,33 +11,39 @@ export class SyncEngine {
   ) {}
 
   async push(): Promise<number> {
-    // Get the last pushed rowid for this device
+    // Get the last pushed oplog UUID for this device
     const hwmRow = this.db
       .prepare("SELECT value FROM meta WHERE key = ?")
-      .get(`push_rowid_${this.deviceId}`) as { value: string } | undefined;
-    const lastRowid = hwmRow ? parseInt(hwmRow.value, 10) : 0;
+      .get(`push_hwm_${this.deviceId}`) as { value: string } | undefined;
+    const lastPushedId = hwmRow?.value ?? null;
 
-    // Get local ops from this device since the last pushed rowid
-    const ops = this.db
-      .prepare("SELECT rowid, * FROM oplog WHERE device_id = ? AND rowid > ? ORDER BY rowid ASC")
-      .all(this.deviceId, lastRowid) as (OplogEntry & { rowid: number })[];
+    // Get local ops from this device since the last pushed UUID.
+    // UUIDv7 IDs are lexicographically sortable by creation time.
+    let ops: OplogEntry[];
+    if (lastPushedId) {
+      ops = this.db
+        .prepare("SELECT * FROM oplog WHERE device_id = ? AND id > ? ORDER BY id ASC")
+        .all(this.deviceId, lastPushedId) as OplogEntry[];
+    } else {
+      ops = this.db
+        .prepare("SELECT * FROM oplog WHERE device_id = ? ORDER BY id ASC")
+        .all(this.deviceId) as OplogEntry[];
+    }
 
     if (ops.length === 0) return 0;
 
-    const maxRowid = ops[ops.length - 1].rowid;
-    const entries: OplogEntry[] = ops.map(({ rowid: _r, ...rest }) => rest);
+    await this.remote.push(ops);
 
-    await this.remote.push(entries);
-
-    // Update push high-water mark
+    // Update push high-water mark with the last pushed UUID
+    const lastId = ops[ops.length - 1].id;
     this.db
       .prepare(
         `INSERT INTO meta (key, value) VALUES (?, ?)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
       )
-      .run(`push_rowid_${this.deviceId}`, String(maxRowid));
+      .run(`push_hwm_${this.deviceId}`, lastId);
 
-    return entries.length;
+    return ops.length;
   }
 
   async pull(): Promise<number> {

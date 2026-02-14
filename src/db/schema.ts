@@ -1,4 +1,5 @@
 import type Database from "better-sqlite3";
+import { runMigrations, type Migration } from "./migrations.js";
 
 export function initSchema(db: Database.Database): void {
   db.exec(`
@@ -32,4 +33,16 @@ export function initSchema(db: Database.Database): void {
 
     INSERT OR IGNORE INTO meta (key, value) VALUES ('schema_version', '1');
   `);
+
+  runMigrations(db, appMigrations);
 }
+
+export const appMigrations: Migration[] = [
+  {
+    version: 2,
+    up: (d) => {
+      d.exec("CREATE INDEX IF NOT EXISTS idx_oplog_task_id ON oplog(task_id)");
+      d.exec("CREATE INDEX IF NOT EXISTS idx_oplog_device_id ON oplog(device_id)");
+    },
+  },
+];

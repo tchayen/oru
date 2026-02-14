@@ -10,14 +10,18 @@ export interface WriteOpInput {
   value: string | null;
 }
 
-export function writeOp(db: Database.Database, input: WriteOpInput): OplogEntry {
+export function writeOp(
+  db: Database.Database,
+  input: WriteOpInput,
+  timestamp?: string,
+): OplogEntry {
   const id = generateId();
-  const timestamp = new Date().toISOString();
+  const ts = timestamp ?? new Date().toISOString();
 
   db.prepare(
     `INSERT INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, input.task_id, input.device_id, input.op_type, input.field, input.value, timestamp);
+  ).run(id, input.task_id, input.device_id, input.op_type, input.field, input.value, ts);
 
   return {
     id,
@@ -26,6 +30,6 @@ export function writeOp(db: Database.Database, input: WriteOpInput): OplogEntry 
     op_type: input.op_type,
     field: input.field,
     value: input.value,
-    timestamp,
+    timestamp: ts,
   };
 }

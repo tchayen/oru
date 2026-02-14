@@ -27,14 +27,15 @@ describe("schema", () => {
     db.close();
   });
 
-  it("creates meta table with schema_version = 1", () => {
+  it("creates meta table with schema_version after migrations", () => {
     const db = freshDb();
     initSchema(db);
     const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as
       | { value: string }
       | undefined;
     expect(row).toBeDefined();
-    expect(row!.value).toBe("1");
+    // Version 2 after index migration runs
+    expect(row!.value).toBe("2");
     db.close();
   });
 

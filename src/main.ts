@@ -21,21 +21,26 @@ export class TaskService {
 
   add(input: CreateTaskInput): Task {
     const task = this.db.transaction(() => {
-      const task = createTask(this.db, input);
-      writeOp(this.db, {
-        task_id: task.id,
-        device_id: this.deviceId,
-        op_type: "create",
-        field: null,
-        value: JSON.stringify({
-          title: task.title,
-          status: task.status,
-          priority: task.priority,
-          labels: task.labels,
-          notes: task.notes,
-          metadata: task.metadata,
-        }),
-      });
+      const now = new Date().toISOString();
+      const task = createTask(this.db, input, now);
+      writeOp(
+        this.db,
+        {
+          task_id: task.id,
+          device_id: this.deviceId,
+          op_type: "create",
+          field: null,
+          value: JSON.stringify({
+            title: task.title,
+            status: task.status,
+            priority: task.priority,
+            labels: task.labels,
+            notes: task.notes,
+            metadata: task.metadata,
+          }),
+        },
+        now,
+      );
       return task;
     })();
     return task;
@@ -81,6 +86,39 @@ export class TaskService {
         field: "notes",
         value: note,
       });
+      return task;
+    })();
+  }
+
+  updateWithNote(id: string, input: UpdateTaskInput, note: string): Task | null {
+    return this.db.transaction(() => {
+      // Apply field updates
+      let task = updateTask(this.db, id, input);
+      if (!task) return null;
+
+      for (const [field, value] of Object.entries(input)) {
+        if (value !== undefined) {
+          writeOp(this.db, {
+            task_id: id,
+            device_id: this.deviceId,
+            op_type: "update",
+            field,
+            value: typeof value === "string" ? value : JSON.stringify(value),
+          });
+        }
+      }
+
+      // Append the note
+      task = appendNote(this.db, id, note);
+
+      writeOp(this.db, {
+        task_id: id,
+        device_id: this.deviceId,
+        op_type: "update",
+        field: "notes",
+        value: note,
+      });
+
       return task;
     })();
   }

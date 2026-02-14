@@ -30,9 +30,9 @@ function rowToTask(row: TaskRow): Task {
   };
 }
 
-export function createTask(db: Database.Database, input: CreateTaskInput): Task {
+export function createTask(db: Database.Database, input: CreateTaskInput, now?: string): Task {
   const id = input.id ?? generateId();
-  const now = new Date().toISOString();
+  const timestamp = now ?? new Date().toISOString();
   const task: Task = {
     id,
     title: input.title,
@@ -41,8 +41,8 @@ export function createTask(db: Database.Database, input: CreateTaskInput): Task 
     labels: input.labels ?? [],
     notes: input.notes ?? [],
     metadata: input.metadata ?? {},
-    created_at: now,
-    updated_at: now,
+    created_at: timestamp,
+    updated_at: timestamp,
     deleted_at: null,
   };
 
