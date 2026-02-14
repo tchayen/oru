@@ -97,8 +97,8 @@ export function listTasks(db: Database.Database, filters?: ListFilters): Task[] 
     params.push(filters.label);
   }
   if (filters?.search) {
-    sql += " AND title LIKE '%' || ? || '%' COLLATE NOCASE";
-    params.push(filters.search);
+    sql += " AND title LIKE '%' || ? || '%' ESCAPE '\\' COLLATE NOCASE";
+    params.push(filters.search.replace(/[\\%_]/g, "\\$&"));
   }
 
   sql += " ORDER BY created_at ASC";
@@ -114,9 +114,10 @@ export function getTask(db: Database.Database, id: string): Task | null {
 
   // Prefix matching fallback for short IDs
   if (id.length < 36) {
+    const escaped = id.replace(/[\\%_]/g, "\\$&");
     const rows = db
-      .prepare("SELECT * FROM tasks WHERE id LIKE ? || '%' AND deleted_at IS NULL")
-      .all(id) as TaskRow[];
+      .prepare("SELECT * FROM tasks WHERE id LIKE ? || '%' ESCAPE '\\' AND deleted_at IS NULL")
+      .all(escaped) as TaskRow[];
     if (rows.length === 1) return rowToTask(rows[0]);
   }
 
@@ -157,10 +158,10 @@ export function updateTask(
     params.push(JSON.stringify(input.metadata));
   }
 
-  params.push(id);
+  params.push(existing.id);
   db.prepare(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`).run(...params);
 
-  return getTask(db, id);
+  return getTask(db, existing.id);
 }
 
 export function appendNote(
@@ -177,16 +178,19 @@ export function appendNote(
   db.prepare("UPDATE tasks SET notes = ?, updated_at = ? WHERE id = ?").run(
     JSON.stringify(notes),
     now,
-    id,
+    existing.id,
   );
 
-  return getTask(db, id);
+  return getTask(db, existing.id);
 }
 
 export function deleteTask(db: Database.Database, id: string, timestamp?: string): boolean {
+  const existing = getTask(db, id);
+  if (!existing) return false;
+
   const now = timestamp ?? new Date().toISOString();
   const result = db
     .prepare("UPDATE tasks SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL")
-    .run(now, now, id);
+    .run(now, now, existing.id);
   return result.changes > 0;
 }

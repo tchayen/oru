@@ -65,7 +65,7 @@ export class TaskService {
           writeOp(
             this.db,
             {
-              task_id: id,
+              task_id: task.id,
               device_id: this.deviceId,
               op_type: "update",
               field,
@@ -88,7 +88,7 @@ export class TaskService {
       writeOp(
         this.db,
         {
-          task_id: id,
+          task_id: task.id,
           device_id: this.deviceId,
           op_type: "update",
           field: "notes",
@@ -107,12 +107,13 @@ export class TaskService {
       let task = updateTask(this.db, id, input, now);
       if (!task) return null;
 
+      const resolvedId = task.id;
       for (const [field, value] of Object.entries(input)) {
         if (value !== undefined) {
           writeOp(
             this.db,
             {
-              task_id: id,
+              task_id: resolvedId,
               device_id: this.deviceId,
               op_type: "update",
               field,
@@ -124,12 +125,12 @@ export class TaskService {
       }
 
       // Append the note
-      task = appendNote(this.db, id, note, now);
+      task = appendNote(this.db, resolvedId, note, now);
 
       writeOp(
         this.db,
         {
-          task_id: id,
+          task_id: resolvedId,
           device_id: this.deviceId,
           op_type: "update",
           field: "notes",
@@ -145,12 +146,15 @@ export class TaskService {
   delete(id: string): boolean {
     return this.db.transaction(() => {
       const now = new Date().toISOString();
-      const result = deleteTask(this.db, id, now);
+      const task = getTask(this.db, id);
+      if (!task) return false;
+
+      const result = deleteTask(this.db, task.id, now);
       if (result) {
         writeOp(
           this.db,
           {
-            task_id: id,
+            task_id: task.id,
             device_id: this.deviceId,
             op_type: "delete",
             field: null,

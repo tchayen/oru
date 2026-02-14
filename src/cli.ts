@@ -79,6 +79,16 @@ export function createProgram(
           meta?: string[];
         },
       ) => {
+        if (title.trim().length === 0) {
+          write(
+            JSON.stringify({
+              error: "validation",
+              message: "Title cannot be empty",
+            }),
+          );
+          process.exitCode = 1;
+          return;
+        }
         if (title.length > MAX_TITLE_LENGTH) {
           write(
             JSON.stringify({
