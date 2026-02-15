@@ -1289,6 +1289,78 @@ describe("CLI parse", () => {
     expect(output).toContain("ambiguous");
   });
 
+  // log command tests
+  it("log shows oplog entries in text format", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Log task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--status", "done"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "log", id]);
+    expect(output).toContain("CREATE");
+    expect(output).toContain("UPDATE");
+  });
+
+  it("log --json returns array of oplog entries", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Log json task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--status", "done"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "log", id, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed.length).toBeGreaterThanOrEqual(2);
+    expect(parsed[0].op_type).toBe("create");
+    expect(parsed[1].op_type).toBe("update");
+  });
+
+  it("log for nonexistent task shows not found error", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "log", "nonexistent"]);
+    expect(output).toContain("not found");
+  });
+
+  it("log --json for nonexistent task returns error object", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "log", "nonexistent-id", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("not_found");
+    expect(parsed.id).toBe("nonexistent-id");
+  });
+
+  it("log handles ambiguous prefix error", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task A",
+      "--id",
+      "ffff-1111-0000-0000-000000000000",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task B",
+      "--id",
+      "ffff-2222-0000-0000-000000000000",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "log", "ffff", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("ambiguous_prefix");
+  });
+
   it("delete shows ambiguous prefix error", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync([
