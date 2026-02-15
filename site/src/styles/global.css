@@ -171,6 +171,7 @@
     line-height: 1.1;
     letter-spacing: -0.03em;
     color: var(--color-text-primary);
+    text-wrap: balance;
   }
 
   h2 {
@@ -179,6 +180,7 @@
     line-height: 1.15;
     letter-spacing: -0.025em;
     color: var(--color-text-primary);
+    text-wrap: balance;
   }
 
   h3 {
@@ -187,6 +189,7 @@
     line-height: 1.25;
     letter-spacing: -0.02em;
     color: var(--color-text-primary);
+    text-wrap: balance;
   }
 
   h4 {
@@ -194,6 +197,7 @@
     font-weight: 600;
     line-height: 1.4;
     color: var(--color-text-primary);
+    text-wrap: balance;
   }
 
   *:focus-visible {
@@ -221,12 +225,14 @@
   line-height: 1.05;
   letter-spacing: -0.035em;
   color: var(--color-text-primary);
+  text-wrap: balance;
 }
 
 .body-lg {
   font-size: 18px;
   font-weight: 400;
   line-height: 1.65;
+  text-wrap: balance;
 }
 
 .body {
