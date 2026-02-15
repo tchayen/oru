@@ -89,7 +89,7 @@ export function createApp(service: TaskService): Hono {
     const id = c.req.param("id");
     const body = await c.req.json();
     let { title } = body;
-    const { status, priority, due_at, blocked_by, labels, note, metadata } = body;
+    const { status, priority, due_at, blocked_by, labels, note, clear_notes, metadata } = body;
 
     if (title !== undefined) {
       if (typeof title !== "string") {
@@ -140,7 +140,18 @@ export function createApp(service: TaskService): Hono {
       const hasFields = Object.keys(updateFields).length > 0;
       let task;
 
-      if (note && hasFields) {
+      if (clear_notes) {
+        task = await service.clearNotes(id);
+        if (!task) {
+          return c.json({ error: "not_found", id }, 404);
+        }
+        if (note) {
+          task = await service.addNote(id, note);
+        }
+        if (hasFields) {
+          task = await service.update(id, updateFields);
+        }
+      } else if (note && hasFields) {
         task = await service.updateWithNote(id, updateFields, note);
       } else if (note) {
         task = await service.addNote(id, note);

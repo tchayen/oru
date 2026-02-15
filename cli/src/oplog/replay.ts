@@ -140,7 +140,19 @@ function rebuildTask(db: Database.Database, taskId: string): void {
         continue;
       }
 
-      // Notes: append-only with dedup
+      // Notes clear: wipe accumulated notes
+      if (field === "notes_clear") {
+        notes.length = 0;
+        if (op.timestamp > updatedAt) {
+          updatedAt = op.timestamp;
+        }
+        if (deletedAt && op.timestamp >= deletedAt) {
+          deletedAt = null;
+        }
+        continue;
+      }
+
+      // Notes: append with dedup
       if (field === "notes") {
         if (op.value && op.value.trim().length > 0) {
           const trimmed = op.value.trim();

@@ -105,6 +105,7 @@ complete -c ao -n '__ao_using_command update' -l plaintext -d 'Output as plain t
 complete -c ao -n '__ao_using_command update' -s t -l title -d 'New title' -r
 complete -c ao -n '__ao_using_command update' -s d -l due -d 'Due date' -r
 complete -c ao -n '__ao_using_command update' -s n -l note -d 'Append a note' -r
+complete -c ao -n '__ao_using_command update' -l clear-notes -d 'Remove all notes'
 complete -c ao -n '__ao_using_command update' -l meta -d 'Metadata key=value' -r
 complete -c ao -n '__ao_using_command delete' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command delete' -l plaintext -d 'Output as plain text'

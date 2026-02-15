@@ -220,6 +220,25 @@ describe("PATCH /tasks/:id", () => {
     expect(body.notes).toContain("Completed it");
   });
 
+  it("clears notes with clear_notes", async () => {
+    const task = await service.add({ title: "Test", notes: ["Note A", "Note B"] });
+    const res = await req("PATCH", `/tasks/${task.id}`, { clear_notes: true });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.notes).toEqual([]);
+  });
+
+  it("clear_notes then adds new note", async () => {
+    const task = await service.add({ title: "Test", notes: ["Old note"] });
+    const res = await req("PATCH", `/tasks/${task.id}`, {
+      clear_notes: true,
+      note: "New note",
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.notes).toEqual(["New note"]);
+  });
+
   it("returns 404 for missing task", async () => {
     const res = await req("PATCH", "/tasks/nonexistent", { title: "Nope" });
     expect(res.status).toBe(404);

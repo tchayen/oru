@@ -64,6 +64,10 @@ describe("zsh completions script", () => {
     expect(script).toContain("--unlabel");
   });
 
+  it("contains --clear-notes completion", () => {
+    expect(script).toContain("--clear-notes");
+  });
+
   it("contains status and priority values", () => {
     expect(script).toContain("todo");
     expect(script).toContain("in_progress");
@@ -107,6 +111,10 @@ describe("fish completions script", () => {
 
   it("contains --unlabel completion", () => {
     expect(script).toContain("unlabel");
+  });
+
+  it("contains --clear-notes completion", () => {
+    expect(script).toContain("clear-notes");
   });
 
   it("contains status and priority values", () => {

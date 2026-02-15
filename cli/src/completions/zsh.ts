@@ -84,6 +84,7 @@ _ao() {
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '*--unlabel[Remove labels]:label:->labels' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\
+            '--clear-notes[Remove all notes]' \\
             '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\

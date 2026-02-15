@@ -226,6 +226,37 @@ describe("CLI parse", () => {
     expect(result.notes).toContain("finished it");
   });
 
+  it("update --clear-notes removes all notes", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Noted task", "--note", "Keep this", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--clear-notes", "--json"]);
+    const result = JSON.parse(output.trim());
+    expect(result.notes).toEqual([]);
+  });
+
+  it("update --clear-notes + --note clears then adds new note", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Noted task", "--note", "Old note", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "update",
+      id,
+      "--clear-notes",
+      "--note",
+      "Fresh note",
+      "--json",
+    ]);
+    const result = JSON.parse(output.trim());
+    expect(result.notes).toEqual(["Fresh note"]);
+  });
+
   // AGENT-3: Idempotent create with --id
   it("add --id creates task with given ID", async () => {
     const p = createProgram(db, capture());
@@ -435,7 +466,6 @@ describe("CLI parse", () => {
     const parsed = JSON.parse(output.trim());
     expect(parsed.metadata).toEqual({ keep: "yes" });
   });
-
 
   it("add --label accepts multiple labels", async () => {
     const p = createProgram(db, capture());
