@@ -70,7 +70,7 @@ _ao_completions() {
       ;;
     list)
       if [[ "$cur" == -* ]]; then
-        COMPREPLY=($(compgen -W "-s --status -p --priority -l --label --due --overdue --search -a --all --limit --offset --json --plaintext" -- "$cur"))
+        COMPREPLY=($(compgen -W "-s --status -p --priority -l --label --owner --due --overdue --search -a --all --limit --offset --json --plaintext" -- "$cur"))
       fi
       ;;
     labels)
@@ -78,7 +78,21 @@ _ao_completions() {
         COMPREPLY=($(compgen -W "--json --plaintext" -- "$cur"))
       fi
       ;;
-    get|update|delete|done|start)
+    add)
+      if [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "--id -s --status -p --priority -d --due --assign -l --label -b --blocked-by -n --note --meta --json --plaintext" -- "$cur"))
+      fi
+      ;;
+    update)
+      if [[ "$cur" != -* ]]; then
+        local tasks
+        tasks=$(ao _complete tasks "$cur" 2>/dev/null | cut -f1)
+        COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
+      else
+        COMPREPLY=($(compgen -W "-t --title -s --status -p --priority -d --due --assign -l --label --unlabel -b --blocked-by -n --note --clear-notes --meta --json --plaintext" -- "$cur"))
+      fi
+      ;;
+    get|delete|done|start)
       if [[ "$cur" != -* ]]; then
         local tasks
         tasks=$(ao _complete tasks "$cur" 2>/dev/null | cut -f1)

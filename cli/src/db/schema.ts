@@ -65,4 +65,10 @@ export const appMigrations: Migration[] = [
       d.exec("ALTER TABLE tasks ADD COLUMN blocked_by TEXT NOT NULL DEFAULT '[]'");
     },
   },
+  {
+    version: 6,
+    up: (d) => {
+      d.exec("ALTER TABLE tasks ADD COLUMN owner TEXT");
+    },
+  },
 ];

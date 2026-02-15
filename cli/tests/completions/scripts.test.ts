@@ -46,6 +46,14 @@ describe("bash completions script", () => {
     expect(script).toContain("ao _complete labels");
   });
 
+  it("contains --assign completion for add and update", () => {
+    expect(script).toContain("--assign");
+  });
+
+  it("contains --owner completion for list", () => {
+    expect(script).toContain("--owner");
+  });
+
   it("contains --sort completion with values", () => {
     expect(script).toContain("--sort");
     expect(script).toContain("sort_values");
@@ -103,6 +111,14 @@ describe("zsh completions script", () => {
     expect(script).toContain("_files");
   });
 
+  it("contains --assign completion", () => {
+    expect(script).toContain("--assign");
+  });
+
+  it("contains --owner completion for list", () => {
+    expect(script).toContain("--owner");
+  });
+
   it("contains --sort completion with values", () => {
     expect(script).toContain("--sort");
     expect(script).toContain("sort_values");
@@ -156,6 +172,14 @@ describe("fish completions script", () => {
 
   it("uses -F for sync file completion", () => {
     expect(script).toContain("-F");
+  });
+
+  it("contains --assign completion", () => {
+    expect(script).toContain("assign");
+  });
+
+  it("contains --owner completion for list", () => {
+    expect(script).toContain("owner");
   });
 
   it("contains --sort completion with values", () => {

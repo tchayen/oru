@@ -86,6 +86,13 @@ describe("POST /tasks", () => {
     expect(task.notes).toEqual(["a note"]);
     expect(task.metadata).toEqual({ key: "val" });
   });
+
+  it("creates a task with owner", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", owner: "agent" });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.owner).toBe("agent");
+  });
 });
 
 describe("GET /tasks", () => {
@@ -145,6 +152,15 @@ describe("GET /tasks", () => {
     const tasks = await res.json();
     expect(tasks).toHaveLength(1);
     expect(tasks[0].title).toBe("Work");
+  });
+
+  it("filters by owner", async () => {
+    await service.add({ title: "Agent task", owner: "agent" });
+    await service.add({ title: "Human task", owner: "human" });
+    const res = await req("GET", "/tasks?owner=agent");
+    const tasks = await res.json();
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("Agent task");
   });
 
   it("searches by title", async () => {
@@ -238,6 +254,22 @@ describe("PATCH /tasks/:id", () => {
     expect(body.title).toBe("Updated");
     expect(body.status).toBe("in_progress");
     expect(body.priority).toBe("high");
+  });
+
+  it("updates owner", async () => {
+    const task = await service.add({ title: "Test" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { owner: "agent" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.owner).toBe("agent");
+  });
+
+  it("clears owner with null", async () => {
+    const task = await service.add({ title: "Test", owner: "agent" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { owner: null });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.owner).toBeNull();
   });
 
   it("appends a note", async () => {

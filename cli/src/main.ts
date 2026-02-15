@@ -34,6 +34,7 @@ export class TaskService {
             title: task.title,
             status: task.status,
             priority: task.priority,
+            owner: task.owner,
             due_at: task.due_at,
             blocked_by: task.blocked_by,
             labels: task.labels,

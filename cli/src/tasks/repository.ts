@@ -32,6 +32,7 @@ interface TaskRow {
   status: string;
   priority: string;
   due_at: string | null;
+  owner: string | null;
   blocked_by: string;
   labels: string;
   notes: string;
@@ -47,6 +48,7 @@ function rowToTask(row: TaskRow): Task {
     title: row.title,
     status: row.status as Status,
     priority: row.priority as Priority,
+    owner: row.owner,
     due_at: row.due_at,
     blocked_by: safeParseJson<string[]>(row.blocked_by, []),
     labels: safeParseJson<string[]>(row.labels, []),
@@ -70,6 +72,7 @@ export async function createTask(
     title: input.title,
     status: input.status ?? "todo",
     priority: input.priority ?? "medium",
+    owner: input.owner ?? null,
     due_at: input.due_at ?? null,
     blocked_by: input.blocked_by ?? [],
     labels: input.labels ?? [],
@@ -87,6 +90,7 @@ export async function createTask(
       title: task.title,
       status: task.status,
       priority: task.priority,
+      owner: task.owner,
       due_at: task.due_at,
       blocked_by: JSON.stringify(task.blocked_by),
       labels: JSON.stringify(task.labels),
@@ -104,6 +108,7 @@ export async function createTask(
 export interface ListFilters {
   status?: Status;
   priority?: Priority;
+  owner?: string;
   label?: string;
   search?: string;
   sort?: SortField;
@@ -120,6 +125,9 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
   }
   if (filters?.priority) {
     query = query.where("priority", "=", filters.priority);
+  }
+  if (filters?.owner) {
+    query = query.where("owner", "=", filters.owner);
   }
   if (filters?.label) {
     const label = filters.label;
@@ -234,6 +242,9 @@ export async function updateTask(
   }
   if (input.priority !== undefined) {
     updates.priority = input.priority;
+  }
+  if (input.owner !== undefined) {
+    updates.owner = input.owner;
   }
   if (input.due_at !== undefined) {
     updates.due_at = input.due_at;

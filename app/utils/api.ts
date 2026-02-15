@@ -6,6 +6,7 @@ export interface Task {
   title: string;
   status: Status;
   priority: Priority;
+  owner: string | null;
   labels: string[];
   notes: string[];
   due_at: string | null;
@@ -19,6 +20,7 @@ export interface CreateTaskInput {
   title: string;
   status?: Status;
   priority?: Priority;
+  owner?: string | null;
   due_at?: string | null;
 }
 
@@ -26,6 +28,7 @@ export interface UpdateTaskInput {
   title?: string;
   status?: Status;
   priority?: Priority;
+  owner?: string | null;
   labels?: string[];
   note?: string;
   due_at?: string | null;
@@ -50,6 +53,7 @@ let mockTasks: Task[] = [
     title: "Design mobile app screens",
     status: "in_progress",
     priority: "urgent",
+    owner: null,
     labels: ["mobile", "design"],
     notes: ["Started with Figma mockups"],
     due_at: "2026-02-18T00:00:00",
@@ -63,6 +67,7 @@ let mockTasks: Task[] = [
     title: "Set up CI/CD pipeline",
     status: "todo",
     priority: "high",
+    owner: null,
     labels: ["infra"],
     notes: [],
     due_at: "2026-02-10T00:00:00",
@@ -76,6 +81,7 @@ let mockTasks: Task[] = [
     title: "Fix oplog replay edge case",
     status: "in_progress",
     priority: "high",
+    owner: null,
     labels: ["bug"],
     notes: ["Happens when two clients sync simultaneously"],
     due_at: "2026-02-20T00:00:00",
@@ -89,6 +95,7 @@ let mockTasks: Task[] = [
     title: "Write unit tests for sync engine",
     status: "todo",
     priority: "medium",
+    owner: null,
     labels: ["testing"],
     notes: [],
     due_at: null,
@@ -102,6 +109,7 @@ let mockTasks: Task[] = [
     title: "Update README with API docs",
     status: "todo",
     priority: "low",
+    owner: null,
     labels: ["docs"],
     notes: [],
     due_at: null,
@@ -115,6 +123,7 @@ let mockTasks: Task[] = [
     title: "Implement offline queue",
     status: "done",
     priority: "high",
+    owner: null,
     labels: ["sync"],
     notes: ["Completed and tested"],
     due_at: "2026-02-13T00:00:00",
@@ -163,6 +172,7 @@ export async function createTask(serverUrl: string | null, input: CreateTaskInpu
       title: input.title,
       status: input.status ?? "todo",
       priority: input.priority ?? "medium",
+      owner: input.owner ?? null,
       labels: [],
       notes: [],
       due_at: input.due_at ?? null,

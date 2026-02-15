@@ -71,6 +71,9 @@ export function formatTaskText(task: Task, now?: Date): string {
     statusLine += `  Due: ${formatDue(task.due_at, now)}`;
   }
   lines.push(statusLine);
+  if (task.owner) {
+    lines.push(`  Owner: ${task.owner}`);
+  }
   if (task.blocked_by.length > 0) {
     lines.push(`  Blocked by: ${task.blocked_by.join(", ")}`);
   }
@@ -105,6 +108,7 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
 
   const idW = Math.max(2, ...tasks.map((t) => t.id.length));
   const priW = Math.max(3, ...tasks.map((t) => t.priority.length));
+  const ownerW = Math.max(5, ...tasks.map((t) => (t.owner ?? "").length));
   const dueW = Math.max(3, ...tasks.map((t) => (t.due_at ? formatDue(t.due_at, now) : "").length));
   const labelsW = Math.max(
     6,
@@ -119,15 +123,16 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
   );
 
   const header = dim(
-    `     ${"ID".padEnd(idW)}  ${"PRI".padEnd(priW)}  ${"DUE".padEnd(dueW)}  ${"LABELS".padEnd(labelsW)}  ${"META".padEnd(metaW)}  TITLE`,
+    `     ${"ID".padEnd(idW)}  ${"PRI".padEnd(priW)}  ${"OWNER".padEnd(ownerW)}  ${"DUE".padEnd(dueW)}  ${"LABELS".padEnd(labelsW)}  ${"META".padEnd(metaW)}  TITLE`,
   );
   const rows = tasks.map((t) => {
     const check = colorCheck(t.status);
+    const ownerStr = t.owner ?? "";
     const due = t.due_at ? formatDue(t.due_at, now) : "";
     const labels = t.labels.length > 0 ? t.labels.join(", ") : "";
     const metaKeys = Object.keys(t.metadata);
     const meta = metaKeys.length > 0 ? metaKeys.map((k) => `${k}=${t.metadata[k]}`).join(", ") : "";
-    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${due.padEnd(dueW)}  ${cyan(labels.padEnd(labelsW))}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
+    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${ownerStr.padEnd(ownerW)}  ${due.padEnd(dueW)}  ${cyan(labels.padEnd(labelsW))}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
   });
   return [header, ...rows].join("\n");
 }

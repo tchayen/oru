@@ -9,6 +9,7 @@ export interface Task {
   title: string;
   status: Status;
   priority: Priority;
+  owner: string | null;
   due_at: string | null;
   blocked_by: string[];
   labels: string[];
@@ -24,6 +25,7 @@ export interface CreateTaskInput {
   title: string;
   status?: Status;
   priority?: Priority;
+  owner?: string | null;
   due_at?: string | null;
   blocked_by?: string[];
   labels?: string[];
@@ -35,6 +37,7 @@ export interface UpdateTaskInput {
   title?: string;
   status?: Status;
   priority?: Priority;
+  owner?: string | null;
   due_at?: string | null;
   blocked_by?: string[];
   labels?: string[];

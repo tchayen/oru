@@ -22,6 +22,10 @@ export function serializeTask(task: Task): string {
     priority: task.priority,
   };
 
+  if (task.owner) {
+    frontmatter.owner = task.owner;
+  }
+
   if (task.due_at) {
     frontmatter.due = task.due_at;
   }
@@ -82,6 +86,16 @@ export function parseDocument(
       throw new Error(`Invalid priority: ${parsed.priority}`);
     }
     fields.priority = parsed.priority as Priority;
+  }
+
+  // Owner
+  const parsedOwner = parsed.owner;
+  if (parsedOwner === undefined || parsedOwner === "") {
+    if (existing.owner !== null) {
+      fields.owner = null;
+    }
+  } else if (typeof parsedOwner === "string" && parsedOwner !== existing.owner) {
+    fields.owner = parsedOwner;
   }
 
   // Due date
