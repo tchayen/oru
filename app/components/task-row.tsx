@@ -17,6 +17,26 @@ const STATUS_ICONS: Record<Status, string> = {
   done: "checkmark.circle.fill;weight=thin",
 };
 
+function formatDueDate(dueAt: string): { label: string; overdue: boolean } {
+  const due = new Date(dueAt);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+  const diffDays = Math.round((dueDay.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { label: "Overdue", overdue: true };
+  }
+  if (diffDays === 0) {
+    return { label: "Today", overdue: false };
+  }
+  if (diffDays === 1) {
+    return { label: "Tomorrow", overdue: false };
+  }
+  const formatted = due.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return { label: formatted, overdue: false };
+}
+
 interface TaskRowProps {
   task: Task;
   onToggleStatus: (task: Task) => void;
@@ -25,6 +45,7 @@ interface TaskRowProps {
 export function TaskRow({ task, onToggleStatus }: TaskRowProps) {
   const statusIcon = STATUS_ICONS[task.status];
   const priorityIcon = PRIORITY_ICONS[task.priority];
+  const dueInfo = task.due_at ? formatDueDate(task.due_at) : null;
 
   return (
     <Link href={`/${task.id}`} asChild>
@@ -68,6 +89,17 @@ export function TaskRow({ task, onToggleStatus }: TaskRowProps) {
         >
           {task.title}
         </Text>
+
+        {dueInfo && task.status !== "done" && (
+          <Text
+            style={{
+              fontSize: 13,
+              color: dueInfo.overdue ? PlatformColor("systemRed") : PlatformColor("secondaryLabel"),
+            }}
+          >
+            {dueInfo.label}
+          </Text>
+        )}
 
         <Image
           source={`sf:${priorityIcon}`}

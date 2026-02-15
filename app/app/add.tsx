@@ -1,6 +1,6 @@
 import { use, useState } from "react";
 import { ScrollView, Text, View, TextInput, Pressable, Alert, PlatformColor } from "react-native";
-import { Host, ContextMenu, Button } from "@expo/ui/swift-ui";
+import { Host, ContextMenu, Button, DateTimePicker } from "@expo/ui/swift-ui";
 import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -19,6 +19,7 @@ export default function AddTaskScreen() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
+  const [dueAt, setDueAt] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
@@ -30,7 +31,7 @@ export default function AddTaskScreen() {
 
     setIsSaving(true);
     try {
-      await createTask(serverUrl, { title: trimmed, priority, status: "todo" });
+      await createTask(serverUrl, { title: trimmed, priority, status: "todo", due_at: dueAt });
       if (process.env.EXPO_OS === "ios") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -135,6 +136,33 @@ export default function AddTaskScreen() {
               </ContextMenu.Items>
             </ContextMenu>
           </Host>
+        </View>
+
+        <View style={{ gap: 8 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            DUE DATE
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Host matchContents>
+              <DateTimePicker
+                initialDate={dueAt}
+                onDateSelected={(date: Date) => {
+                  setDueAt(date.toISOString().split("T")[0] + "T00:00:00");
+                }}
+                variant="compact"
+                displayedComponents="date"
+              />
+            </Host>
+            {dueAt && (
+              <Pressable onPress={() => setDueAt(null)} hitSlop={8}>
+                <Image
+                  source="sf:xmark.circle.fill"
+                  style={{ width: 20, height: 20 }}
+                  tintColor={PlatformColor("secondaryLabel") as unknown as string}
+                />
+              </Pressable>
+            )}
+          </View>
         </View>
       </ScrollView>
     </>
