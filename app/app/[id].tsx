@@ -22,11 +22,12 @@ import {
   deleteTask,
 } from "@/utils/api";
 
-const STATUSES: Status[] = ["todo", "in_progress", "done"];
+const STATUSES: Status[] = ["todo", "in_progress", "in_review", "done"];
 
 const STATUS_LABELS: Record<Status, string> = {
   todo: "To Do",
   in_progress: "In Progress",
+  in_review: "In Review",
   done: "Done",
 };
 

@@ -17,7 +17,8 @@ import type { Task, Status } from "@/utils/api";
 
 const NEXT_STATUS: Record<Status, Status> = {
   todo: "in_progress",
-  in_progress: "done",
+  in_progress: "in_review",
+  in_review: "done",
   done: "todo",
 };
 

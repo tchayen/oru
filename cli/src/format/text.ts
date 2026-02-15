@@ -1,5 +1,5 @@
 import type { Task } from "../tasks/types.js";
-import { bold, dim, italic, red, green, yellow, cyan } from "./colors.js";
+import { bold, dim, italic, red, green, yellow, magenta, cyan } from "./colors.js";
 
 function isOverdue(dueAt: string, now?: Date): boolean {
   const ref = now ?? new Date();
@@ -47,6 +47,8 @@ function colorStatus(s: string): string {
       return green(s);
     case "in_progress":
       return yellow(s);
+    case "in_review":
+      return magenta(s);
     default:
       return s;
   }
@@ -58,6 +60,8 @@ function colorCheck(status: string): string {
       return green("[x]");
     case "in_progress":
       return yellow("[~]");
+    case "in_review":
+      return magenta("[r]");
     default:
       return dim("[ ]");
   }
