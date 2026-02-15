@@ -1,8 +1,9 @@
 import type Database from "better-sqlite3";
 import type { OplogEntry } from "./types.js";
+import { STATUSES, PRIORITIES } from "../tasks/types.js";
 
-const VALID_STATUSES = new Set(["todo", "in_progress", "done"]);
-const VALID_PRIORITIES = new Set(["low", "medium", "high", "urgent"]);
+const VALID_STATUSES = new Set<string>(STATUSES);
+const VALID_PRIORITIES = new Set<string>(PRIORITIES);
 const VALID_OP_TYPES = new Set(["create", "update", "delete"]);
 const MAX_NOTES_PER_TASK = 1000;
 

@@ -1,3 +1,5 @@
+import { STATUSES, PRIORITIES } from "../tasks/types.js";
+
 export function generateBashCompletions(): string {
   return `# ao shell completions for bash
 # Install: ao completions bash >> ~/.bashrc
@@ -10,8 +12,8 @@ _ao_completions() {
   local config_subcommands="init path"
   local server_subcommands="start"
   local completion_shells="bash zsh fish"
-  local status_values="todo in_progress done"
-  local priority_values="low medium high urgent"
+  local status_values="${STATUSES.join(" ")}"
+  local priority_values="${PRIORITIES.join(" ")}"
 
   # Determine the subcommand
   local subcmd=""

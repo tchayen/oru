@@ -1,3 +1,5 @@
+import { STATUSES, PRIORITIES } from "../tasks/types.js";
+
 export function generateFishCompletions(): string {
   return `# ao shell completions for fish
 # Install: ao completions fish > ~/.config/fish/completions/ao.fish
@@ -68,14 +70,14 @@ complete -c ao -n '__ao_using_command start' -a '(__ao_task_ids)'
 complete -c ao -n '__ao_using_command sync' -F
 
 # Status flag for add, list, update
-complete -c ao -n '__ao_using_command add' -s s -l status -a 'todo in_progress done' -d 'Status' -r
-complete -c ao -n '__ao_using_command list' -s s -l status -a 'todo in_progress done' -d 'Status' -r
-complete -c ao -n '__ao_using_command update' -s s -l status -a 'todo in_progress done' -d 'Status' -r
+complete -c ao -n '__ao_using_command add' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
+complete -c ao -n '__ao_using_command list' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
+complete -c ao -n '__ao_using_command update' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
 
 # Priority flag for add, list, update
-complete -c ao -n '__ao_using_command add' -s p -l priority -a 'low medium high urgent' -d 'Priority' -r
-complete -c ao -n '__ao_using_command list' -s p -l priority -a 'low medium high urgent' -d 'Priority' -r
-complete -c ao -n '__ao_using_command update' -s p -l priority -a 'low medium high urgent' -d 'Priority' -r
+complete -c ao -n '__ao_using_command add' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
+complete -c ao -n '__ao_using_command list' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
+complete -c ao -n '__ao_using_command update' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
 
 # Label flag
 complete -c ao -n '__ao_using_command add' -s l -l label -a '(__ao_labels)' -d 'Label' -r

@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import type { TaskService } from "../main.js";
-import type { Status, Priority } from "../tasks/types.js";
+import { STATUSES, PRIORITIES, type Status, type Priority } from "../tasks/types.js";
 
-const validStatuses = new Set(["todo", "in_progress", "done"]);
-const validPriorities = new Set(["low", "medium", "high", "urgent"]);
+const validStatuses = new Set<string>(STATUSES);
+const validPriorities = new Set<string>(PRIORITIES);
 
 export function createApp(service: TaskService): Hono {
   const app = new Hono();

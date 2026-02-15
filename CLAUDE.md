@@ -95,17 +95,9 @@ Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 
 ### Adding a new status or priority value
 
-These sets must stay in sync:
-
-- `cli/src/tasks/types.ts` — `Status` / `Priority` type union
-- `cli/src/cli.ts` — `statusChoices` / `priorityChoices` arrays
-- `cli/src/oplog/replay.ts` — `VALID_STATUSES` / `VALID_PRIORITIES` sets
-- `cli/src/server/routes.ts` — `validStatuses` / `validPriorities` sets
-- `cli/src/completions/bash.ts` — `status_values` / `priority_values` strings
-- `cli/src/completions/zsh.ts` — `status_values` / `priority_values` arrays
-- `cli/src/completions/fish.ts` — `-a` values in status/priority complete lines
-- `cli/src/format/text.ts` — `colorPriority()` / `colorStatus()` / `colorCheck()` switches
-- `app/utils/api.ts` — `Status` / `Priority` types
+1. `cli/src/tasks/types.ts` — add to `STATUSES` / `PRIORITIES` array (all CLI consumers import from here)
+2. `cli/src/format/text.ts` — add case in `colorPriority()` / `colorStatus()` / `colorCheck()` switches
+3. `app/utils/api.ts` — `Status` / `Priority` types (mobile app has its own copy)
 
 ### Adding a new config option
 
