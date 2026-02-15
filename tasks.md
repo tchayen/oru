@@ -2,7 +2,7 @@
 
 ## Up next
 
-- [ ] Sort list output by priority (urgent > high > medium > low)
+- [x] Sort list output by priority (urgent > high > medium > low)
 - [ ] End-to-end sync test across two separate DBs (simulate two devices)
 
 ## Ideas
