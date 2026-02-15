@@ -42,6 +42,11 @@ describe("text formatter", () => {
     expect(output).toContain("[ ]");
   });
 
+  it("shows checkbox [~] for in_progress tasks", () => {
+    const output = formatTasksText([{ ...sampleTask, status: "in_progress" }]);
+    expect(output).toContain("[~]");
+  });
+
   it("shows checkbox [x] for done tasks", () => {
     const output = formatTasksText([{ ...sampleTask, status: "done" }]);
     expect(output).toContain("[x]");
