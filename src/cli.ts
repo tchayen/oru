@@ -183,13 +183,14 @@ export function createProgram(
   // list
   program
     .command("list")
-    .description("List tasks")
+    .description("List tasks (hides done tasks by default)")
     .addOption(new Option("-s, --status <status>", "Filter by status").choices(statusChoices))
     .addOption(
       new Option("-p, --priority <priority>", "Filter by priority").choices(priorityChoices),
     )
     .option("-l, --label <label>", "Filter by label")
     .option("--search <query>", "Search tasks by title")
+    .option("-a, --all", "Include done tasks")
     .option("--json", "Output as JSON")
     .action(
       async (opts: {
@@ -197,14 +198,19 @@ export function createProgram(
         priority?: Priority;
         label?: string;
         search?: string;
+        all?: boolean;
         json?: boolean;
       }) => {
-        const tasks = await service.list({
+        let tasks = await service.list({
           status: opts.status,
           priority: opts.priority,
           label: opts.label,
           search: opts.search,
         });
+        // Hide done tasks unless --all or --status is specified
+        if (!opts.all && !opts.status) {
+          tasks = tasks.filter((t) => t.status !== "done");
+        }
         if (useJson(opts)) {
           write(formatTasksJson(tasks));
         } else {
