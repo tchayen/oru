@@ -96,6 +96,7 @@ Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 ### Adding a new status or priority value
 
 These sets must stay in sync:
+
 - `cli/src/tasks/types.ts` — `Status` / `Priority` type union
 - `cli/src/cli.ts` — `statusChoices` / `priorityChoices` arrays
 - `cli/src/oplog/replay.ts` — `VALID_STATUSES` / `VALID_PRIORITIES` sets

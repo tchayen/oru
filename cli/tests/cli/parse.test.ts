@@ -679,6 +679,75 @@ describe("CLI parse", () => {
     expect(output).toContain("Text start");
   });
 
+  // Due date filtering
+  it("list --due today filters to tasks due today", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Due today", "--due", "today", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Due later", "--due", "2099-12-31", "--json"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--due", "today", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe("Due today");
+  });
+
+  it("list --due this-week filters to tasks due this week", async () => {
+    // Compute a date that is definitely in the current Mon-Sun week
+    const now = new Date();
+    const day = now.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+    const wed = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 2);
+    const wedStr = `${wed.getFullYear()}-${String(wed.getMonth() + 1).padStart(2, "0")}-${String(wed.getDate()).padStart(2, "0")}`;
+
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Due this week", "--due", wedStr, "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Due far away", "--due", "2099-12-31", "--json"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--due", "this-week", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.length).toBeGreaterThanOrEqual(1);
+    expect(parsed.every((t: { title: string }) => t.title !== "Due far away")).toBe(true);
+  });
+
+  it("list --overdue filters to overdue tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Overdue task", "--due", "2020-01-01", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Future task", "--due", "2099-12-31", "--json"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--overdue", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe("Overdue task");
+  });
+
+  it("list --overdue with no overdue tasks returns empty", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Future task", "--due", "2099-12-31"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "list", "--overdue", "--json"]);
+    expect(JSON.parse(output.trim())).toEqual([]);
+  });
+
+  it("list --due today with no tasks due today returns empty", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Not today", "--due", "2099-12-31"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "list", "--due", "today", "--json"]);
+    expect(JSON.parse(output.trim())).toEqual([]);
+  });
+
   // Bulk operations
   it("done accepts multiple IDs", async () => {
     const p1 = createProgram(db, capture());
@@ -744,7 +813,6 @@ describe("CLI parse", () => {
     expect(JSON.parse(objects[0]).error).toBe("not_found");
     expect(JSON.parse(objects[1]).status).toBe("done");
   });
-
   it("list outputs JSON when config sets output_format = json", async () => {
     const config = {
       date_format: "mdy" as const,
