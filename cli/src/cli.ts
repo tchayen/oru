@@ -41,7 +41,7 @@ function parseMetadata(pairs: string[]): Record<string, string> {
   for (const pair of pairs) {
     const eqIdx = pair.indexOf("=");
     if (eqIdx === -1) {
-      continue;
+      throw new Error(`Invalid --meta value "${pair}": expected key=value format`);
     }
     const key = pair.slice(0, eqIdx);
     const value = pair.slice(eqIdx + 1);

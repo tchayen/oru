@@ -416,6 +416,13 @@ describe("CLI parse", () => {
     expect(parsed.metadata).toEqual({ key1: "val1", key2: "val2" });
   });
 
+  it("add --meta without = throws an error", async () => {
+    const p = createProgram(db, capture());
+    await expect(
+      p.parseAsync(["node", "ao", "add", "Bad meta", "--meta", "noequals", "--json"]),
+    ).rejects.toThrow('Invalid --meta value "noequals": expected key=value format');
+  });
+
   it("add --label accepts multiple labels", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "ao", "add", "Multi label", "--label", "work", "urgent", "--json"]);
