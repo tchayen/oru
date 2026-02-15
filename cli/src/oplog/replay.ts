@@ -86,6 +86,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   let priority = VALID_PRIORITIES.has(data.priority as string)
     ? (data.priority as string)
     : "medium";
+  let dueAt: string | null = typeof data.due_at === "string" ? data.due_at : null;
   let labels = JSON.stringify(Array.isArray(data.labels) ? filterStringArray(data.labels) : []);
   let metadata = JSON.stringify(
     data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)
@@ -181,6 +182,10 @@ function rebuildTask(db: Database.Database, taskId: string): void {
             priority = op.value;
           }
           break;
+        case "due_at":
+          // null or empty string clears the due date
+          dueAt = op.value && op.value.trim().length > 0 ? op.value : null;
+          break;
         case "labels":
           if (op.value && isValidJson(op.value)) {
             const parsed = JSON.parse(op.value);
@@ -209,12 +214,13 @@ function rebuildTask(db: Database.Database, taskId: string): void {
 
   // Upsert the task
   db.prepare(
-    `INSERT INTO tasks (id, title, status, priority, labels, notes, metadata, created_at, updated_at, deleted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO tasks (id, title, status, priority, due_at, labels, notes, metadata, created_at, updated_at, deleted_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        status = excluded.status,
        priority = excluded.priority,
+       due_at = excluded.due_at,
        labels = excluded.labels,
        notes = excluded.notes,
        metadata = excluded.metadata,
@@ -225,6 +231,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     title,
     status,
     priority,
+    dueAt,
     labels,
     JSON.stringify(notes),
     metadata,

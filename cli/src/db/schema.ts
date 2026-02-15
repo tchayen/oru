@@ -53,4 +53,10 @@ export const appMigrations: Migration[] = [
       );
     },
   },
+  {
+    version: 4,
+    up: (d) => {
+      d.exec("ALTER TABLE tasks ADD COLUMN due_at TEXT");
+    },
+  },
 ];

@@ -39,7 +39,7 @@ export function createApp(service: TaskService): Hono {
 
   app.post("/tasks", async (c) => {
     const body = await c.req.json();
-    const { title, status, priority, labels, notes, metadata, id } = body;
+    const { title, status, priority, due_at, labels, notes, metadata, id } = body;
 
     if (!title || typeof title !== "string" || title.trim().length === 0) {
       return c.json({ error: "validation", message: "Title is required" }, 400);
@@ -62,6 +62,7 @@ export function createApp(service: TaskService): Hono {
       title,
       status,
       priority,
+      due_at,
       labels,
       notes,
       metadata,
@@ -72,7 +73,7 @@ export function createApp(service: TaskService): Hono {
   app.patch("/tasks/:id", async (c) => {
     const id = c.req.param("id");
     const body = await c.req.json();
-    const { title, status, priority, labels, note, metadata } = body;
+    const { title, status, priority, due_at, labels, note, metadata } = body;
 
     if (title !== undefined && (typeof title !== "string" || title.trim().length === 0)) {
       return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
@@ -102,6 +103,9 @@ export function createApp(service: TaskService): Hono {
     }
     if (labels) {
       updateFields.labels = labels;
+    }
+    if (due_at !== undefined) {
+      updateFields.due_at = due_at;
     }
     if (metadata) {
       updateFields.metadata = metadata;

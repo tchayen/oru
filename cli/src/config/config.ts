@@ -13,17 +13,20 @@ export type Weekday =
   | "saturday"
   | "sunday";
 export type OutputFormat = "text" | "json";
+export type NextMonthBehavior = "same_day" | "first";
 
 export interface Config {
   date_format: DateFormat;
   first_day_of_week: Weekday;
   output_format: OutputFormat;
+  next_month: NextMonthBehavior;
 }
 
 const DEFAULTS: Config = {
   date_format: "mdy",
   first_day_of_week: "monday",
   output_format: "text",
+  next_month: "same_day",
 };
 
 const VALID_DATE_FORMATS = new Set<string>(["dmy", "mdy"]);
@@ -37,6 +40,7 @@ const VALID_WEEKDAYS = new Set<string>([
   "sunday",
 ]);
 const VALID_OUTPUT_FORMATS = new Set<string>(["text", "json"]);
+const VALID_NEXT_MONTH = new Set<string>(["same_day", "first"]);
 
 export function getConfigPath(): string {
   if (process.env.AO_CONFIG_PATH) {
@@ -44,6 +48,29 @@ export function getConfigPath(): string {
   }
   return path.join(os.homedir(), ".ao", "config.toml");
 }
+
+export const DEFAULT_CONFIG_TOML = `# ao configuration
+# Docs: https://github.com/tchayen/ao
+
+# Date input format for slash dates (e.g. 03/04/2026)
+# "mdy" = MM/DD/YYYY (US)
+# "dmy" = DD/MM/YYYY (EU/international)
+date_format = "mdy"
+
+# First day of the week, used by "next week" and "end of week"
+# Options: "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+first_day_of_week = "monday"
+
+# Default output format for CLI commands
+# "text" = human-readable (default)
+# "json" = machine-readable (overridable per-command with --json / --plaintext)
+output_format = "text"
+
+# What "next month" means for due dates
+# "same_day" = same day number next month (Feb 15 -> Mar 15, Jan 31 -> Feb 28)
+# "first"    = first day of next month (Feb 15 -> Mar 1)
+next_month = "same_day"
+`;
 
 export function loadConfig(configPath?: string): Config {
   const resolved = configPath ?? getConfigPath();
@@ -69,6 +96,10 @@ export function loadConfig(configPath?: string): Config {
 
   if (typeof parsed.output_format === "string" && VALID_OUTPUT_FORMATS.has(parsed.output_format)) {
     config.output_format = parsed.output_format as OutputFormat;
+  }
+
+  if (typeof parsed.next_month === "string" && VALID_NEXT_MONTH.has(parsed.next_month)) {
+    config.next_month = parsed.next_month as NextMonthBehavior;
   }
 
   return config;

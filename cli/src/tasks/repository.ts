@@ -16,6 +16,7 @@ interface TaskRow {
   title: string;
   status: string;
   priority: string;
+  due_at: string | null;
   labels: string;
   notes: string;
   metadata: string;
@@ -30,6 +31,7 @@ function rowToTask(row: TaskRow): Task {
     title: row.title,
     status: row.status as Status,
     priority: row.priority as Priority,
+    due_at: row.due_at,
     labels: safeParseJson<string[]>(row.labels, []),
     notes: safeParseJson<string[]>(row.notes, []),
     metadata: safeParseJson<Record<string, unknown>>(row.metadata, {}),
@@ -51,6 +53,7 @@ export async function createTask(
     title: input.title,
     status: input.status ?? "todo",
     priority: input.priority ?? "medium",
+    due_at: input.due_at ?? null,
     labels: input.labels ?? [],
     notes: input.notes ?? [],
     metadata: input.metadata ?? {},
@@ -66,6 +69,7 @@ export async function createTask(
       title: task.title,
       status: task.status,
       priority: task.priority,
+      due_at: task.due_at,
       labels: JSON.stringify(task.labels),
       notes: JSON.stringify(task.notes),
       metadata: JSON.stringify(task.metadata),
@@ -155,7 +159,7 @@ export async function updateTask(
   }
 
   const now = timestamp ?? new Date().toISOString();
-  const updates: Record<string, string> = { updated_at: now };
+  const updates: Record<string, string | null> = { updated_at: now };
 
   if (input.title !== undefined) {
     updates.title = input.title;
@@ -165,6 +169,9 @@ export async function updateTask(
   }
   if (input.priority !== undefined) {
     updates.priority = input.priority;
+  }
+  if (input.due_at !== undefined) {
+    updates.due_at = input.due_at;
   }
   if (input.labels !== undefined) {
     updates.labels = JSON.stringify(input.labels);

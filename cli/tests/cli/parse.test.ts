@@ -480,6 +480,7 @@ describe("CLI parse", () => {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p = createProgram(db, capture(), config);
     await p.parseAsync(["node", "ao", "add", "Config json task"]);
@@ -492,6 +493,7 @@ describe("CLI parse", () => {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p = createProgram(db, capture(), config);
     await p.parseAsync(["node", "ao", "add", "Plaintext task", "--plaintext"]);
@@ -505,6 +507,7 @@ describe("CLI parse", () => {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p1 = createProgram(db, capture(), config);
     await p1.parseAsync(["node", "ao", "add", "Task for list"]);
@@ -515,11 +518,114 @@ describe("CLI parse", () => {
     expect(output).toContain("Task for list");
   });
 
+  // Due date tests
+  it("add --due sets due date", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Task with due", "--due", "2026-03-20", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_at).toBe("2026-03-20T00:00:00");
+  });
+
+  it("add --due with relative date", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Due tomorrow", "--due", "tomorrow", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_at).toBeTruthy();
+    // Should be a valid date string
+    expect(parsed.due_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+  });
+
+  it("add --due with time", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Due with time",
+      "--due",
+      "2026-03-20 10am",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_at).toBe("2026-03-20T10:00:00");
+  });
+
+  it("add --due rejects invalid date", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Bad date", "--due", "not-a-date"]);
+    expect(output).toContain("Could not parse due date");
+  });
+
+  it("add --due invalid date outputs JSON with --json", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Bad date", "--due", "not-a-date", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message).toContain("Could not parse due date");
+  });
+
+  it("update --due sets due date", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Update due", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--due", "2026-04-01", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_at).toBe("2026-04-01T00:00:00");
+  });
+
+  it("update --due none clears due date", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Clear due", "--due", "2026-03-20", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--due", "none", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_at).toBeNull();
+  });
+
+  it("add --due respects config date_format = dmy", async () => {
+    const config = {
+      date_format: "dmy" as const,
+      first_day_of_week: "monday" as const,
+      output_format: "text" as const,
+      next_month: "same_day" as const,
+    };
+    const p = createProgram(db, capture(), config);
+    await p.parseAsync(["node", "ao", "add", "DMY date", "--due", "20/03/2026", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_at).toBe("2026-03-20T00:00:00");
+  });
+
+  it("due date shows in text output", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Due task", "--due", "2026-03-20"]);
+    expect(output).toContain("Due: 2026-03-20");
+  });
+
+  it("due date with time shows in text output", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "add", "Due time", "--due", "2026-03-20 14:30"]);
+    expect(output).toContain("Due: 2026-03-20 14:30");
+  });
+
+  it("due date shows in list output", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "List due", "--due", "2026-03-20"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "list"]);
+    expect(output).toContain("2026-03-20");
+  });
+
   it("list outputs JSON when config sets output_format = json", async () => {
     const config = {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p1 = createProgram(db, capture(), config);
     await p1.parseAsync(["node", "ao", "add", "Json list task"]);

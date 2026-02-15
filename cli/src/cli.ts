@@ -1,4 +1,5 @@
 import { fileURLToPath } from "url";
+import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import { Command, Option } from "commander";
@@ -12,7 +13,8 @@ import { formatTaskJson, formatTasksJson } from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
-import { loadConfig, type Config } from "./config/config.js";
+import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./config/config.js";
+import { parseDate } from "./dates/parse.js";
 import type { Status, Priority } from "./tasks/types.js";
 
 declare const __GIT_COMMIT__: string;
@@ -87,6 +89,7 @@ export function createProgram(
         .choices(priorityChoices)
         .default("medium"),
     )
+    .option("-d, --due <date>", "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20')")
     .option("-l, --label <labels...>", "Add labels")
     .option("-n, --note <note>", "Add an initial note")
     .option("--meta <key=value...>", "Add metadata key=value pairs")
@@ -99,6 +102,7 @@ export function createProgram(
           id?: string;
           status?: Status;
           priority?: Priority;
+          due?: string;
           label?: string[];
           note?: string;
           meta?: string[];
@@ -175,6 +179,31 @@ export function createProgram(
           }
         }
 
+        let dueAt: string | undefined;
+        if (opts.due) {
+          const parsed = parseDate(
+            opts.due,
+            resolvedConfig.date_format,
+            resolvedConfig.first_day_of_week,
+            resolvedConfig.next_month,
+          );
+          if (!parsed) {
+            if (useJson(opts)) {
+              write(
+                JSON.stringify({
+                  error: "validation",
+                  message: `Could not parse due date: ${opts.due}`,
+                }),
+              );
+            } else {
+              write(`Could not parse due date: ${opts.due}`);
+            }
+            process.exitCode = 1;
+            return;
+          }
+          dueAt = parsed;
+        }
+
         const metadata = opts.meta ? parseMetadata(opts.meta) : undefined;
 
         const task = await service.add({
@@ -182,6 +211,7 @@ export function createProgram(
           id: opts.id,
           status: opts.status,
           priority: opts.priority,
+          due_at: dueAt,
           labels: opts.label ?? undefined,
           notes: opts.note ? [opts.note] : undefined,
           metadata,
@@ -266,6 +296,10 @@ export function createProgram(
     .option("-t, --title <title>", "New title")
     .addOption(new Option("-s, --status <status>", "New status").choices(statusChoices))
     .addOption(new Option("-p, --priority <priority>", "New priority").choices(priorityChoices))
+    .option(
+      "-d, --due <date>",
+      "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20', 'none' to clear)",
+    )
     .option("-l, --label <labels...>", "Add labels")
     .option("-n, --note <note>", "Append a note")
     .option("--meta <key=value...>", "Set metadata key=value pairs")
@@ -278,6 +312,7 @@ export function createProgram(
           title?: string;
           status?: Status;
           priority?: Priority;
+          due?: string;
           label?: string[];
           note?: string;
           meta?: string[];
@@ -351,6 +386,32 @@ export function createProgram(
         }
         if (opts.priority) {
           updateFields.priority = opts.priority;
+        }
+        if (opts.due !== undefined) {
+          if (opts.due.toLowerCase() === "none") {
+            updateFields.due_at = null;
+          } else {
+            const parsed = parseDate(
+              opts.due,
+              resolvedConfig.date_format,
+              resolvedConfig.first_day_of_week,
+            );
+            if (!parsed) {
+              if (useJson(opts)) {
+                write(
+                  JSON.stringify({
+                    error: "validation",
+                    message: `Could not parse due date: ${opts.due}`,
+                  }),
+                );
+              } else {
+                write(`Could not parse due date: ${opts.due}`);
+              }
+              process.exitCode = 1;
+              return;
+            }
+            updateFields.due_at = parsed;
+          }
         }
 
         if (opts.label) {
@@ -481,6 +542,30 @@ export function createProgram(
       } finally {
         remote.close();
       }
+    });
+
+  // config
+  const configCmd = program.command("config").description("Manage configuration");
+
+  configCmd
+    .command("init")
+    .description("Create a default config file with documented options")
+    .action(() => {
+      const configPath = getConfigPath();
+      if (fs.existsSync(configPath)) {
+        write(`Config file already exists at ${configPath}`);
+        return;
+      }
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(configPath, DEFAULT_CONFIG_TOML);
+      write(`Created ${configPath}`);
+    });
+
+  configCmd
+    .command("path")
+    .description("Print the config file path")
+    .action(() => {
+      write(getConfigPath());
     });
 
   // server
