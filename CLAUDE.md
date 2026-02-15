@@ -67,6 +67,51 @@ cd app && pnpm tsgo  # type check the app
 
 Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 
+## Checklists
+
+### Adding a new CLI command
+
+1. `cli/src/cli.ts` — add `.command()` block (before `return program`)
+2. `cli/src/completions/bash.ts` — add to `commands` string, add case in switch
+3. `cli/src/completions/zsh.ts` — add to `commands` array, add case with `_arguments`
+4. `cli/src/completions/fish.ts` — add `complete -c ao` lines for command + flags
+5. `cli/tests/cli/parse.test.ts` — add tests for the new command
+6. `cli/tests/completions/scripts.test.ts` — add assertions that scripts contain the command
+
+### Adding a new task field
+
+1. `cli/src/tasks/types.ts` — add to `Task`, `CreateTaskInput`, `UpdateTaskInput`
+2. `cli/src/db/schema.ts` — add migration to `appMigrations` (increment version)
+3. `cli/src/tasks/repository.ts` — update `rowToTask()`, INSERT/UPDATE SQL, `ListFilters` if filterable
+4. `cli/src/main.ts` — update `add()` oplog value serialization, `update()` handles it via field loop automatically
+5. `cli/src/oplog/replay.ts` — add case in `rebuildTask()` switch, set initial state from create op
+6. `cli/src/server/routes.ts` — add to POST/PATCH validation and field extraction
+7. `cli/src/cli.ts` — add flag to relevant commands (`add`, `update`, `edit`)
+8. `cli/src/format/text.ts` — update `formatTaskText()` and `formatTasksText()` if visible
+9. `cli/src/edit.ts` — update `serializeTask()` and `parseDocument()` for `ao edit`
+10. `cli/src/completions/bash.ts`, `zsh.ts`, `fish.ts` — add flag completions if enum-like
+11. `app/utils/api.ts` — sync `Task`, `CreateTaskInput`, `UpdateTaskInput` types
+12. Add tests in `cli/tests/` mirroring each layer changed
+
+### Adding a new status or priority value
+
+These sets must stay in sync:
+- `cli/src/tasks/types.ts` — `Status` / `Priority` type union
+- `cli/src/cli.ts` — `statusChoices` / `priorityChoices` arrays
+- `cli/src/oplog/replay.ts` — `VALID_STATUSES` / `VALID_PRIORITIES` sets
+- `cli/src/server/routes.ts` — `validStatuses` / `validPriorities` sets
+- `cli/src/completions/bash.ts` — `status_values` / `priority_values` strings
+- `cli/src/completions/zsh.ts` — `status_values` / `priority_values` arrays
+- `cli/src/completions/fish.ts` — `-a` values in status/priority complete lines
+- `cli/src/format/text.ts` — `colorPriority()` / `colorStatus()` / `colorCheck()` switches
+- `app/utils/api.ts` — `Status` / `Priority` types
+
+### Adding a new config option
+
+1. `cli/src/config/config.ts` — add type, add to `Config` interface, add to `DEFAULTS`, add `VALID_*` set if enum, add parsing in `loadConfig()`, add to `DEFAULT_CONFIG_TOML`
+2. `cli/src/cli.ts` — use the new config value where needed
+3. `cli/tests/config/` — add tests for parsing and validation
+
 ## Git & PR conventions
 
 - Create PRs with `gh pr create`
