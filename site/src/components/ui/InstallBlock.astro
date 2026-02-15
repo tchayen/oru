@@ -7,13 +7,18 @@ interface Props {
 const { command = "npm install -g ao", class: className = "" } = Astro.props;
 ---
 
-<div class:list={["install-block", className]}>
-  <code>
-    <span class="dollar">$</span>
-    <span class="command">{command}</span>
+<div
+  class:list={[
+    "install-block inline-flex items-center gap-4 bg-bg-inset border border-border-default rounded-xl py-3.5 pl-5 pr-4 font-mono text-sm leading-none",
+    className,
+  ]}
+>
+  <code class="flex items-center gap-2.5">
+    <span class="text-text-tertiary select-none">$</span>
+    <span class="text-text-primary">{command}</span>
   </code>
   <button
-    class="copy-btn"
+    class="copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-tertiary transition-all duration-150 ease-out-expo shrink-0 cursor-pointer hover:text-text-secondary hover:bg-white/5"
     data-copy={command}
     aria-label="Copy install command"
     type="button"
@@ -29,59 +34,14 @@ const { command = "npm install -g ao", class: className = "" } = Astro.props;
       stroke-linejoin="round"
     >
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+      ></path>
     </svg>
   </button>
 </div>
 
 <style>
-  .install-block {
-    display: inline-flex;
-    align-items: center;
-    gap: 16px;
-    background: var(--bg-inset);
-    border: 1px solid var(--border-default);
-    border-radius: 12px;
-    padding: 14px 16px 14px 20px;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 14px;
-    line-height: 1;
-  }
-
-  code {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .dollar {
-    color: var(--text-tertiary);
-    user-select: none;
-  }
-
-  .command {
-    color: var(--text-primary);
-  }
-
-  .copy-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    color: var(--text-tertiary);
-    transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-
-  .copy-btn:hover {
-    color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.05);
-  }
-
   .copy-btn:global(.copied) {
-    color: var(--accent);
+    color: var(--color-accent);
   }
 </style>

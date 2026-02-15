@@ -3,25 +3,28 @@ import Terminal from "./ui/Terminal.astro";
 import Badge from "./ui/Badge.astro";
 ---
 
-<section class="agent-native">
+<section class="py-24 bg-bg-base">
   <div class="container">
-    <div class="agent-header reveal">
+    <div class="text-center mb-16 reveal">
       <p class="section-label">Agent-native</p>
-      <h2>Built for agents. Not retrofitted.</h2>
-      <p class="body-lg agent-body">
+      <h2 class="mb-4">Built for agents. Not retrofitted.</h2>
+      <p class="body-lg max-w-[640px] mx-auto mb-4 text-text-secondary">
         Your AI agents generate tasks, track progress, and need structured
         output to reason about what to do next. ao treats them as first-class
         participants — not afterthoughts bolted onto a human-only interface.
       </p>
-      <p class="body agent-body-secondary">
+      <p class="body max-w-[640px] mx-auto text-text-tertiary">
         Every command returns JSON. Creates are idempotent. Metadata is
         arbitrary. There is no interaction model to work around.
       </p>
     </div>
 
-    <div class="agent-comparison reveal" data-delay="80">
-      <div class="comparison-col">
-        <div class="comparison-label">
+    <div
+      class="grid grid-cols-2 gap-6 mb-16 max-md:grid-cols-1 reveal"
+      data-delay="80"
+    >
+      <div class="flex flex-col gap-4 min-w-0">
+        <div class="text-center">
           <Badge>Human-friendly</Badge>
         </div>
         <Terminal title="ao list">
@@ -49,8 +52,8 @@ import Badge from "./ui/Badge.astro";
           >
         </Terminal>
       </div>
-      <div class="comparison-col">
-        <div class="comparison-label">
+      <div class="flex flex-col gap-4 min-w-0">
+        <div class="text-center">
           <Badge>Agent-friendly</Badge>
         </div>
         <Terminal title="ao list --json">
@@ -78,15 +81,16 @@ import Badge from "./ui/Badge.astro";
             ></span
           >
           <span class="line"
-            ><span class="output"> </span><span class="key">"status"</span><span
-              class="output"
+            ><span class="output"> </span><span class="key">"status"</span
+            ><span class="output"
               >:
             </span><span class="str">"todo"</span><span class="output">,</span
             ></span
           >
           <span class="line"
             ><span class="output"> </span><span class="key">"priority"</span
-            ><span class="output">: </span><span class="str">"high"</span></span
+            ><span class="output">: </span><span class="str">"high"</span
+            ></span
           >
           <span class="line"><span class="output"> {"}"}</span></span>
           <span class="line"><span class="output">]</span></span>
@@ -94,13 +98,15 @@ import Badge from "./ui/Badge.astro";
       </div>
     </div>
 
-    <div class="agent-features">
-      <div class="agent-feature reveal" data-delay="80">
-        <h3>Idempotent creates. Safe retries.</h3>
-        <p class="body agent-feature-body">
-          Agents retry. Network calls fail. ao's <code>--id</code> flag lets agents
-          supply their own UUIDv7, making creates idempotent. Run it twice, get one
-          task.
+    <div class="grid grid-cols-2 gap-6 max-md:grid-cols-1">
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
+        <h3 class="text-[22px]">Idempotent creates. Safe retries.</h3>
+        <p class="body text-text-secondary">
+          Agents retry. Network calls fail. ao's <code
+            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
+            >--id</code
+          > flag lets agents supply their own UUIDv7, making creates idempotent. Run
+          it twice, get one task.
         </p>
         <Terminal title="idempotent creates">
           <span class="line"
@@ -127,12 +133,14 @@ import Badge from "./ui/Badge.astro";
         </Terminal>
       </div>
 
-      <div class="agent-feature reveal" data-delay="160">
-        <h3>Arbitrary metadata.</h3>
-        <p class="body agent-feature-body">
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="160">
+        <h3 class="text-[22px]">Arbitrary metadata.</h3>
+        <p class="body text-text-secondary">
           Agents need to stash context — which PR spawned a task, which model
-          created it, which run it belongs to. The <code>--meta</code> flag takes
-          arbitrary key-value pairs.
+          created it, which run it belongs to. The <code
+            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
+            >--meta</code
+          > flag takes arbitrary key-value pairs.
         </p>
         <Terminal title="metadata">
           <span class="line"
@@ -160,89 +168,3 @@ import Badge from "./ui/Badge.astro";
     </div>
   </div>
 </section>
-
-<style>
-  .agent-native {
-    padding: 96px 0;
-    background: var(--bg-base);
-  }
-
-  .agent-header {
-    text-align: center;
-    margin-bottom: 64px;
-  }
-
-  .agent-header h2 {
-    margin-bottom: 16px;
-  }
-
-  .agent-body {
-    max-width: 640px;
-    margin: 0 auto 16px;
-    color: var(--text-secondary);
-  }
-
-  .agent-body-secondary {
-    max-width: 640px;
-    margin: 0 auto;
-    color: var(--text-tertiary);
-  }
-
-  .agent-comparison {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 64px;
-  }
-
-  .comparison-col {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .comparison-label {
-    text-align: center;
-  }
-
-  .agent-features {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-
-  .agent-feature {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .agent-feature h3 {
-    font-size: 22px;
-  }
-
-  .agent-feature-body {
-    color: var(--text-secondary);
-  }
-
-  .agent-feature-body code {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 13px;
-    background: var(--bg-surface);
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: var(--accent);
-  }
-
-  @media (max-width: 767px) {
-    .agent-comparison {
-      grid-template-columns: 1fr;
-    }
-
-    .agent-features {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

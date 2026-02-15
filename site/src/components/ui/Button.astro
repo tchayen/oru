@@ -13,54 +13,22 @@ const {
   ...rest
 } = Astro.props;
 const Tag = href ? "a" : "button";
+
+const base =
+  "inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium leading-none transition-all duration-200 ease-out-expo whitespace-nowrap cursor-pointer";
+const variants = {
+  primary:
+    "bg-accent text-bg-base hover:bg-accent-hover hover:shadow-[0_0_24px_rgba(245,158,11,0.25)] active:bg-accent-active",
+  secondary:
+    "bg-transparent border border-border-default text-text-secondary hover:text-text-primary hover:border-border-hover",
+};
 ---
 
 <Tag
   href={href}
-  class:list={["btn", `btn-${variant}`, className]}
+  class:list={[base, variants[variant], className]}
   {...href ? { target: "_blank", rel: "noopener noreferrer" } : {}}
   {...rest}
 >
   <slot />
 </Tag>
-
-<style>
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1;
-    transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--bg-base);
-  }
-
-  .btn-primary:hover {
-    background: var(--accent-hover);
-    box-shadow: 0 0 24px rgba(245, 158, 11, 0.25);
-  }
-
-  .btn-primary:active {
-    background: var(--accent-active);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--border-default);
-    color: var(--text-secondary);
-  }
-
-  .btn-secondary:hover {
-    color: var(--text-primary);
-    border-color: var(--border-hover);
-  }
-</style>
