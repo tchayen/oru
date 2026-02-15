@@ -86,6 +86,28 @@ describe("text formatter", () => {
     const output = formatTaskText(sampleTask);
     expect(output).toContain("Get organic");
   });
+
+  it("shows metadata when present", () => {
+    const output = formatTaskText({ ...sampleTask, metadata: { sprint: "5", team: "backend" } });
+    expect(output).toContain("Metadata: sprint=5, team=backend");
+  });
+
+  it("omits metadata line when empty", () => {
+    const output = formatTaskText(sampleTask);
+    expect(output).not.toContain("Metadata");
+  });
+
+  it("shows metadata column in list view", () => {
+    const output = formatTasksText([{ ...sampleTask, metadata: { sprint: "5" } }]);
+    expect(output).toContain("META");
+    expect(output).toContain("sprint=5");
+  });
+
+  it("shows empty metadata column when no metadata", () => {
+    const output = formatTasksText([sampleTask]);
+    expect(output).toContain("META");
+    expect(output).not.toContain("=");
+  });
 });
 
 const sampleTaskNoDue: Task = { ...sampleTask, due_at: null };
