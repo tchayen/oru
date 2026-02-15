@@ -1125,6 +1125,63 @@ describe("CLI parse", () => {
     expect(parsed[0].title).toBe("Json list task");
   });
 
+  // Sort tests
+  it("list --sort priority sorts by priority (default)", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Low task", "--priority", "low"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Urgent task", "--priority", "urgent"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--sort", "priority", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed[0].title).toBe("Urgent task");
+    expect(parsed[1].title).toBe("Low task");
+  });
+
+  it("list --sort due sorts by due date with nulls last", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "No due task"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Due later", "--due", "2026-06-01"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Due sooner", "--due", "2026-03-01"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--sort", "due", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed[0].title).toBe("Due sooner");
+    expect(parsed[1].title).toBe("Due later");
+    expect(parsed[2].title).toBe("No due task");
+  });
+
+  it("list --sort title sorts alphabetically case-insensitive", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "banana"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Apple"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "cherry"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--sort", "title", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.map((t: { title: string }) => t.title)).toEqual(["Apple", "banana", "cherry"]);
+  });
+
+  it("list --sort created sorts by creation time", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "First", "--priority", "low"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Second", "--priority", "urgent"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--sort", "created", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed[0].title).toBe("First");
+    expect(parsed[1].title).toBe("Second");
+  });
+
   // Ambiguous prefix tests
   it("get shows ambiguous prefix error in text mode", async () => {
     const p1 = createProgram(db, capture());

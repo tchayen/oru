@@ -23,7 +23,7 @@ import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./c
 import { parseDate } from "./dates/parse.js";
 import { serializeTask, parseDocument, openInEditor } from "./edit.js";
 import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
-import { AmbiguousPrefixError } from "./tasks/repository.js";
+import { AmbiguousPrefixError, SORT_FIELDS, type SortField } from "./tasks/repository.js";
 import {
   resolveDynamic,
   generateBashCompletions,
@@ -270,6 +270,11 @@ export function createProgram(
     .option("-l, --label <label>", "Filter by label")
     .addOption(new Option("--due <range>", "Filter by due date").choices(["today", "this-week"]))
     .option("--overdue", "Show only overdue tasks")
+    .addOption(
+      new Option("--sort <field>", "Sort order")
+        .choices(SORT_FIELDS as readonly string[])
+        .default("priority"),
+    )
     .option("--search <query>", "Search tasks by title")
     .option("-a, --all", "Include done tasks")
     .option("--actionable", "Show only tasks with no incomplete blockers")
@@ -282,6 +287,7 @@ export function createProgram(
         status?: Status;
         priority?: Priority;
         label?: string;
+        sort?: SortField;
         due?: "today" | "this-week";
         overdue?: boolean;
         search?: string;
@@ -297,6 +303,7 @@ export function createProgram(
           priority: opts.priority,
           label: opts.label,
           search: opts.search,
+          sort: opts.sort,
           actionable: opts.actionable,
           limit: opts.limit,
           offset: opts.offset,

@@ -1,4 +1,5 @@
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
+import { SORT_FIELDS } from "../tasks/repository.js";
 
 export function generateFishCompletions(): string {
   return `# ao shell completions for fish
@@ -97,6 +98,7 @@ complete -c ao -n '__ao_using_command add' -l meta -d 'Metadata key=value' -r
 complete -c ao -n '__ao_using_command list' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command list' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command list' -l search -d 'Search by title' -r
+complete -c ao -n '__ao_using_command list' -l sort -a '${SORT_FIELDS.join(" ")}' -d 'Sort order' -r
 complete -c ao -n '__ao_using_command list' -s a -l all -d 'Include done tasks'
 complete -c ao -n '__ao_using_command list' -l limit -d 'Maximum number of tasks' -r
 complete -c ao -n '__ao_using_command list' -l offset -d 'Number of tasks to skip' -r

@@ -1,4 +1,5 @@
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
+import { SORT_FIELDS } from "../tasks/repository.js";
 
 export function generateBashCompletions(): string {
   return `# ao shell completions for bash
@@ -14,6 +15,7 @@ _ao_completions() {
   local completion_shells="bash zsh fish"
   local status_values="${STATUSES.join(" ")}"
   local priority_values="${PRIORITIES.join(" ")}"
+  local sort_values="${SORT_FIELDS.join(" ")}"
 
   # Determine the subcommand
   local subcmd=""
@@ -41,6 +43,10 @@ _ao_completions() {
       local labels
       labels=$(ao _complete labels "$cur" 2>/dev/null)
       COMPREPLY=($(compgen -W "$labels" -- "$cur"))
+      return
+      ;;
+    --sort)
+      COMPREPLY=($(compgen -W "$sort_values" -- "$cur"))
       return
       ;;
   esac
