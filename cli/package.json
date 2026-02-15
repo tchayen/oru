@@ -1,7 +1,7 @@
 {
   "name": "ao",
   "version": "0.1.0",
-  "description": "agentodo — agent-friendly todo CLI with offline sync",
+  "description": "ao — agent-friendly todo CLI with offline sync",
   "bin": {
     "ao": "./dist/cli.js"
   },
