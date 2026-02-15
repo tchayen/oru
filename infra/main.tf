@@ -71,9 +71,9 @@ resource "cloudflare_pages_project" "site" {
   }
 
   build_config {
-    build_command   = "pnpm install && pnpm --filter oru-site build"
-    destination_dir = "site/dist"
-    root_dir        = "/"
+    build_command   = "pnpm run build"
+    destination_dir = "dist"
+    root_dir        = "site"
   }
 
   deployment_configs {
