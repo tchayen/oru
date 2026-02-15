@@ -10,6 +10,7 @@ import {
   updateTask,
   appendNote,
   deleteTask,
+  AmbiguousPrefixError,
 } from "../../src/tasks/repository.js";
 
 describe("task repository", () => {
@@ -128,6 +129,30 @@ describe("task repository", () => {
     expect(found!.notes).toEqual(["First note", "Second note"]);
   });
 
+  it("deduplicates notes with same text", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Same note");
+    await appendNote(ky, task.id, "Same note");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Same note"]);
+  });
+
+  it("deduplicates notes after trimming whitespace", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Hello");
+    await appendNote(ky, task.id, "  Hello  ");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Hello"]);
+  });
+
+  it("skips empty and whitespace-only notes", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "");
+    await appendNote(ky, task.id, "   ");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual([]);
+  });
+
   it("soft deletes a task", async () => {
     const task = await createTask(ky, { title: "Delete me" });
     await deleteTask(ky, task.id);
@@ -165,13 +190,22 @@ describe("task repository", () => {
     expect(found!.id).toBe(task.id);
   });
 
-  it("getTask returns null for ambiguous prefix", async () => {
+  it("getTask throws AmbiguousPrefixError for ambiguous prefix", async () => {
     // Create two tasks whose IDs share the same first character
     await createTask(ky, { id: "aaaa-1111-test-task-aaaa-aaaaaaaaaaaa", title: "A" });
     await createTask(ky, { id: "aaaa-2222-test-task-aaaa-aaaaaaaaaaaa", title: "B" });
-    // Prefix "aaaa" matches both, should return null
-    const found = await getTask(ky, "aaaa");
-    expect(found).toBeNull();
+    // Prefix "aaaa" matches both, should throw
+    await expect(getTask(ky, "aaaa")).rejects.toThrow(AmbiguousPrefixError);
+    try {
+      await getTask(ky, "aaaa");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AmbiguousPrefixError);
+      const ambErr = err as AmbiguousPrefixError;
+      expect(ambErr.prefix).toBe("aaaa");
+      expect(ambErr.matches).toHaveLength(2);
+      expect(ambErr.matches).toContain("aaaa-1111-test-task-aaaa-aaaaaaaaaaaa");
+      expect(ambErr.matches).toContain("aaaa-2222-test-task-aaaa-aaaaaaaaaaaa");
+    }
   });
 
   it("lists tasks sorted by priority (urgent first)", async () => {
@@ -244,6 +278,41 @@ describe("task repository", () => {
     expect(tasks[0].title).toBe("100% done");
   });
 
+  it("sorts by due date with nulls last", async () => {
+    await createTask(ky, { title: "No due", priority: "medium" });
+    await createTask(ky, {
+      title: "Due later",
+      priority: "medium",
+      due_at: "2026-06-01T00:00:00",
+    });
+    await createTask(ky, {
+      title: "Due sooner",
+      priority: "medium",
+      due_at: "2026-03-01T00:00:00",
+    });
+
+    const tasks = await listTasks(ky, { sort: "due" });
+    expect(tasks.map((t) => t.title)).toEqual(["Due sooner", "Due later", "No due"]);
+  });
+
+  it("sorts by title case-insensitively", async () => {
+    await createTask(ky, { title: "banana" });
+    await createTask(ky, { title: "Apple" });
+    await createTask(ky, { title: "cherry" });
+
+    const tasks = await listTasks(ky, { sort: "title" });
+    expect(tasks.map((t) => t.title)).toEqual(["Apple", "banana", "cherry"]);
+  });
+
+  it("sorts by created_at", async () => {
+    await createTask(ky, { title: "Second", priority: "urgent" }, "2024-01-02T00:00:00.000Z");
+    await createTask(ky, { title: "First", priority: "low" }, "2024-01-01T00:00:00.000Z");
+    await createTask(ky, { title: "Third", priority: "high" }, "2024-01-03T00:00:00.000Z");
+
+    const tasks = await listTasks(ky, { sort: "created" });
+    expect(tasks.map((t) => t.title)).toEqual(["First", "Second", "Third"]);
+  });
+
   it("handles corrupt JSON in labels/notes/metadata gracefully", async () => {
     const task = await createTask(ky, { title: "Corrupt" });
     // Directly corrupt the JSON columns
@@ -258,5 +327,59 @@ describe("task repository", () => {
     expect(found!.labels).toEqual([]);
     expect(found!.notes).toEqual([]);
     expect(found!.metadata).toEqual({});
+  });
+
+  it("creates a task with blocked_by", async () => {
+    const blocker = await createTask(ky, { title: "Blocker" });
+    const task = await createTask(ky, { title: "Blocked", blocked_by: [blocker.id] });
+    expect(task.blocked_by).toEqual([blocker.id]);
+  });
+
+  it("updates blocked_by", async () => {
+    const a = await createTask(ky, { title: "A" });
+    const b = await createTask(ky, { title: "B" });
+    const task = await createTask(ky, { title: "T", blocked_by: [a.id] });
+    const updated = await updateTask(ky, task.id, { blocked_by: [a.id, b.id] });
+    expect(updated!.blocked_by).toEqual([a.id, b.id]);
+  });
+
+  it("blocked_by defaults to empty array", async () => {
+    const task = await createTask(ky, { title: "No blockers" });
+    expect(task.blocked_by).toEqual([]);
+  });
+
+  it("actionable filter excludes tasks with incomplete blockers", async () => {
+    const blocker = await createTask(ky, { title: "Blocker", status: "todo" });
+    await createTask(ky, { title: "Blocked task", blocked_by: [blocker.id] });
+    await createTask(ky, { title: "Free task" });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Free task");
+    expect(actionable.map((t) => t.title)).toContain("Blocker");
+    expect(actionable.map((t) => t.title)).not.toContain("Blocked task");
+  });
+
+  it("actionable filter includes tasks whose blockers are done", async () => {
+    const blocker = await createTask(ky, { title: "Done blocker", status: "done" });
+    await createTask(ky, { title: "Unblocked", blocked_by: [blocker.id] });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Unblocked");
+  });
+
+  it("actionable filter includes tasks whose blockers are deleted", async () => {
+    const blocker = await createTask(ky, { title: "Deleted blocker" });
+    await deleteTask(ky, blocker.id);
+    await createTask(ky, { title: "Unblocked by delete", blocked_by: [blocker.id] });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Unblocked by delete");
+  });
+
+  it("actionable filter includes tasks with empty blocked_by", async () => {
+    await createTask(ky, { title: "Always actionable", blocked_by: [] });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Always actionable");
   });
 });

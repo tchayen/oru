@@ -23,6 +23,11 @@ describe("bash completions script", () => {
     expect(script).toContain("--unlabel");
   });
 
+  it("contains --limit and --offset for list", () => {
+    expect(script).toContain("--limit");
+    expect(script).toContain("--offset");
+  });
+
   it("contains status values", () => {
     expect(script).toContain("todo");
     expect(script).toContain("in_progress");
@@ -39,6 +44,11 @@ describe("bash completions script", () => {
   it("calls ao _complete for dynamic values", () => {
     expect(script).toContain("ao _complete tasks");
     expect(script).toContain("ao _complete labels");
+  });
+
+  it("contains --sort completion with values", () => {
+    expect(script).toContain("--sort");
+    expect(script).toContain("sort_values");
   });
 
   it("registers the completion function", () => {
@@ -64,6 +74,15 @@ describe("zsh completions script", () => {
     expect(script).toContain("--unlabel");
   });
 
+  it("contains --clear-notes completion", () => {
+    expect(script).toContain("--clear-notes");
+  });
+
+  it("contains --limit and --offset for list", () => {
+    expect(script).toContain("--limit");
+    expect(script).toContain("--offset");
+  });
+
   it("contains status and priority values", () => {
     expect(script).toContain("todo");
     expect(script).toContain("in_progress");
@@ -82,6 +101,11 @@ describe("zsh completions script", () => {
 
   it("uses _files for sync path completion", () => {
     expect(script).toContain("_files");
+  });
+
+  it("contains --sort completion with values", () => {
+    expect(script).toContain("--sort");
+    expect(script).toContain("sort_values");
   });
 });
 
@@ -109,6 +133,15 @@ describe("fish completions script", () => {
     expect(script).toContain("unlabel");
   });
 
+  it("contains --clear-notes completion", () => {
+    expect(script).toContain("clear-notes");
+  });
+
+  it("contains --limit and --offset for list", () => {
+    expect(script).toContain("limit");
+    expect(script).toContain("offset");
+  });
+
   it("contains status and priority values", () => {
     expect(script).toContain("todo in_progress done");
     expect(script).toContain("low medium high urgent");
@@ -123,5 +156,10 @@ describe("fish completions script", () => {
 
   it("uses -F for sync file completion", () => {
     expect(script).toContain("-F");
+  });
+
+  it("contains --sort completion with values", () => {
+    expect(script).toContain("-l sort");
+    expect(script).toContain("priority due title created");
   });
 });

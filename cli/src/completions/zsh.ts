@@ -1,4 +1,5 @@
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
+import { SORT_FIELDS } from "../tasks/repository.js";
 
 export function generateZshCompletions(): string {
   return `#compdef ao
@@ -31,6 +32,9 @@ _ao() {
   local -a priority_values
   priority_values=(${PRIORITIES.join(" ")})
 
+  local -a sort_values
+  sort_values=(${SORT_FIELDS.join(" ")})
+
   _arguments -C \\
     '1:command:->command' \\
     '*::arg:->args'
@@ -59,8 +63,11 @@ _ao() {
             '(-s --status)'{-s,--status}'[Filter by status]:status:('"$status_values"')' \\
             '(-p --priority)'{-p,--priority}'[Filter by priority]:priority:('"$priority_values"')' \\
             '(-l --label)'{-l,--label}'[Filter by label]:label:->labels' \\
+            '--sort[Sort order]:sort:('"$sort_values"')' \\
             '--search[Search by title]:query:' \\
             '(-a --all)'{-a,--all}'[Include done tasks]' \\
+            '--limit[Maximum number of tasks to return]:number:' \\
+            '--offset[Number of tasks to skip]:number:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]'
           ;;
@@ -84,6 +91,7 @@ _ao() {
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '*--unlabel[Remove labels]:label:->labels' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\
+            '--clear-notes[Remove all notes]' \\
             '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\

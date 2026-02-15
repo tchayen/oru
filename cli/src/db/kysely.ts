@@ -6,6 +6,7 @@ export interface TaskTable {
   title: string;
   status: string;
   priority: string;
+  blocked_by: string;
   labels: string;
   notes: string;
   metadata: string;

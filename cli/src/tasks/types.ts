@@ -10,6 +10,7 @@ export interface Task {
   status: Status;
   priority: Priority;
   due_at: string | null;
+  blocked_by: string[];
   labels: string[];
   notes: string[];
   metadata: Record<string, unknown>;
@@ -24,6 +25,7 @@ export interface CreateTaskInput {
   status?: Status;
   priority?: Priority;
   due_at?: string | null;
+  blocked_by?: string[];
   labels?: string[];
   notes?: string[];
   metadata?: Record<string, unknown>;
@@ -34,6 +36,7 @@ export interface UpdateTaskInput {
   status?: Status;
   priority?: Priority;
   due_at?: string | null;
+  blocked_by?: string[];
   labels?: string[];
   metadata?: Record<string, unknown>;
 }

@@ -8,6 +8,7 @@ const sampleTask: Task = {
   title: "Buy milk",
   status: "todo",
   priority: "medium",
+  blocked_by: [],
   labels: ["groceries"],
   notes: ["Get organic"],
   metadata: {},
@@ -57,6 +58,20 @@ describe("text formatter", () => {
     expect(output).toContain("groceries");
   });
 
+  it("dynamically sizes ID column for long IDs", () => {
+    const longId = "custom-id-123";
+    const tasks = [
+      { ...sampleTask, id: longId, title: "First" },
+      { ...sampleTask, id: "short", title: "Second" },
+    ];
+    const output = formatTasksText(tasks);
+    const lines = output.split("\n");
+    // Header ID column should be as wide as the longest ID
+    expect(lines[0]).toContain("ID".padEnd(longId.length));
+    // The short ID row should be padded to match
+    expect(lines[2]).toContain("short".padEnd(longId.length));
+  });
+
   it("shows empty state message for no tasks", () => {
     const output = formatTasksText([]);
     expect(output).toContain("No tasks");
@@ -87,19 +102,16 @@ describe("text formatter", () => {
     expect(output).not.toContain("Metadata:");
   });
 
-  it("shows metadata in list view", () => {
-    const task: Task = { ...sampleTask, metadata: { env: "prod" } };
-    const output = formatTasksText([task]);
-    expect(output).toContain("env=prod");
+  it("shows metadata column in list view", () => {
+    const output = formatTasksText([{ ...sampleTask, metadata: { sprint: "5" } }]);
+    expect(output).toContain("META");
+    expect(output).toContain("sprint=5");
   });
 
-  it("hides metadata in list view when empty", () => {
+  it("shows empty metadata column when no metadata", () => {
     const output = formatTasksText([sampleTask]);
-    // Should not have trailing metadata after title
-    const lines = output.split("\n");
-    const dataLine = lines[1];
-    expect(dataLine).toContain("Buy milk");
-    expect(dataLine).not.toContain("=");
+    expect(output).toContain("META");
+    expect(output).not.toContain("=");
   });
 });
 

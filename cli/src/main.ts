@@ -8,6 +8,7 @@ import {
   getTask,
   updateTask,
   appendNote,
+  setNotes,
   deleteTask,
 } from "./tasks/repository.js";
 import { writeOp } from "./oplog/writer.js";
@@ -34,6 +35,7 @@ export class TaskService {
             status: task.status,
             priority: task.priority,
             due_at: task.due_at,
+            blocked_by: task.blocked_by,
             labels: task.labels,
             notes: task.notes,
             metadata: task.metadata,
@@ -83,15 +85,22 @@ export class TaskService {
   async addNote(id: string, note: string): Promise<Task | null> {
     return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();
-      const task = await appendNote(trx, id, note, now);
-      if (!task) {
+      const existing = await getTask(trx, id);
+      if (!existing) {
         return null;
       }
+
+      const trimmed = note.trim();
+      if (trimmed.length === 0 || existing.notes.some((n) => n.trim() === trimmed)) {
+        return existing;
+      }
+
+      const task = await appendNote(trx, existing.id, note, now);
 
       await writeOp(
         trx,
         {
-          task_id: task.id,
+          task_id: existing.id,
           device_id: this.deviceId,
           op_type: "update",
           field: "notes",
@@ -128,7 +137,59 @@ export class TaskService {
         }
       }
 
-      task = await appendNote(trx, resolvedId, note, now);
+      const trimmed = note.trim();
+      if (trimmed.length > 0 && !task.notes.some((n) => n.trim() === trimmed)) {
+        task = await appendNote(trx, resolvedId, note, now);
+
+        await writeOp(
+          trx,
+          {
+            task_id: resolvedId,
+            device_id: this.deviceId,
+            op_type: "update",
+            field: "notes",
+            value: note,
+          },
+          now,
+        );
+      }
+
+      return task;
+    });
+  }
+
+  async clearNotes(id: string): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
+      const now = new Date().toISOString();
+      const task = await setNotes(trx, id, [], now);
+      if (!task) {
+        return null;
+      }
+
+      await writeOp(
+        trx,
+        {
+          task_id: task.id,
+          device_id: this.deviceId,
+          op_type: "update",
+          field: "notes_clear",
+          value: "",
+        },
+        now,
+      );
+      return task;
+    });
+  }
+
+  async replaceNotes(id: string, notes: string[]): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
+      const now = new Date().toISOString();
+      const task = await setNotes(trx, id, notes, now);
+      if (!task) {
+        return null;
+      }
+
+      const resolvedId = task.id;
 
       await writeOp(
         trx,
@@ -136,11 +197,25 @@ export class TaskService {
           task_id: resolvedId,
           device_id: this.deviceId,
           op_type: "update",
-          field: "notes",
-          value: note,
+          field: "notes_clear",
+          value: "",
         },
         now,
       );
+
+      for (const note of notes) {
+        await writeOp(
+          trx,
+          {
+            task_id: resolvedId,
+            device_id: this.deviceId,
+            op_type: "update",
+            field: "notes",
+            value: note,
+          },
+          now,
+        );
+      }
 
       return task;
     });

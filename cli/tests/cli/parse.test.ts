@@ -226,6 +226,37 @@ describe("CLI parse", () => {
     expect(result.notes).toContain("finished it");
   });
 
+  it("update --clear-notes removes all notes", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Noted task", "--note", "Keep this", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--clear-notes", "--json"]);
+    const result = JSON.parse(output.trim());
+    expect(result.notes).toEqual([]);
+  });
+
+  it("update --clear-notes + --note clears then adds new note", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Noted task", "--note", "Old note", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "update",
+      id,
+      "--clear-notes",
+      "--note",
+      "Fresh note",
+      "--json",
+    ]);
+    const result = JSON.parse(output.trim());
+    expect(result.notes).toEqual(["Fresh note"]);
+  });
+
   // AGENT-3: Idempotent create with --id
   it("add --id creates task with given ID", async () => {
     const p = createProgram(db, capture());
@@ -416,6 +447,26 @@ describe("CLI parse", () => {
     expect(parsed.metadata).toEqual({ key1: "val1", key2: "val2" });
   });
 
+  it("update --meta key without = removes the key", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Meta delete",
+      "--meta",
+      "keep=yes",
+      "remove=me",
+      "--json",
+    ]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--meta", "remove", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata).toEqual({ keep: "yes" });
+  });
+
   it("add --label accepts multiple labels", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "ao", "add", "Multi label", "--label", "work", "urgent", "--json"]);
@@ -442,6 +493,37 @@ describe("CLI parse", () => {
     const p2 = createProgram(db, capture());
     await p2.parseAsync(["node", "ao", "update", id, "--title", "   "]);
     expect(output).toContain("cannot be empty");
+  });
+
+  it("add strips newlines from title", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "ao", "add", "Title with\nnewline", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Title with newline");
+  });
+
+  it("add strips \\r\\n from title", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "ao", "add", "Title with\r\nnewline", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Title with newline");
+  });
+
+  it("add rejects title that is only newlines", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "ao", "add", "\n\n\n"]);
+    expect(output).toContain("cannot be empty");
+  });
+
+  it("update strips newlines from title", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Old title", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--title", "New\ntitle", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("New title");
   });
 
   it("add rejects title exceeding max length", async () => {
@@ -916,6 +998,116 @@ describe("CLI parse", () => {
     expect(parsed.labels).toEqual(["new"]);
   });
 
+  // blocked_by tests
+  it("add --blocked-by sets blocked_by", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Blocker", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Blocked task", "--blocked-by", blockerId, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocked_by).toEqual([blockerId]);
+  });
+
+  it("update --blocked-by replaces blocked_by list", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Dep A", "--json"]);
+    const depA = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Dep B", "--json"]);
+    const depB = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Task", "--blocked-by", depA, "--json"]);
+    const taskId = JSON.parse(output.trim()).id;
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "update", taskId, "--blocked-by", depB, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocked_by).toEqual([depB]);
+  });
+
+  it("list --actionable shows only unblocked tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Free task", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Blocker task", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Blocked task", "--blocked-by", blockerId, "--json"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--actionable"]);
+    expect(output).toContain("Free task");
+    expect(output).toContain("Blocker task");
+    expect(output).not.toContain("Blocked task");
+  });
+
+  it("list --actionable --json returns filtered JSON", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Free", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Blocker", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Blocked", "--blocked-by", blockerId, "--json"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--actionable", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    const titles = parsed.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Free");
+    expect(titles).toContain("Blocker");
+    expect(titles).not.toContain("Blocked");
+  });
+
+  it("list --limit returns at most N tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task 1"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task 2"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Task 3"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--limit", "2", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+  });
+
+  it("list --offset skips N tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task A", "--priority", "urgent"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task B", "--priority", "low"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--offset", "1", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe("Task B");
+  });
+
+  it("list --limit --offset paginates correctly", async () => {
+    for (let i = 1; i <= 5; i++) {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "ao", "add", `Task ${i}`]);
+    }
+
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "list", "--limit", "2", "--offset", "1", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0].title).toBe("Task 2");
+    expect(parsed[1].title).toBe("Task 3");
+  });
+
   it("list outputs JSON when config sets output_format = json", async () => {
     const config = {
       date_format: "mdy" as const,
@@ -931,5 +1123,195 @@ describe("CLI parse", () => {
     const parsed = JSON.parse(output.trim());
     expect(Array.isArray(parsed)).toBe(true);
     expect(parsed[0].title).toBe("Json list task");
+  });
+
+  // Sort tests
+  it("list --sort priority sorts by priority (default)", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Low task", "--priority", "low"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Urgent task", "--priority", "urgent"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--sort", "priority", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed[0].title).toBe("Urgent task");
+    expect(parsed[1].title).toBe("Low task");
+  });
+
+  it("list --sort due sorts by due date with nulls last", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "No due task"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Due later", "--due", "2026-06-01"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Due sooner", "--due", "2026-03-01"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--sort", "due", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed[0].title).toBe("Due sooner");
+    expect(parsed[1].title).toBe("Due later");
+    expect(parsed[2].title).toBe("No due task");
+  });
+
+  it("list --sort title sorts alphabetically case-insensitive", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "banana"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Apple"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "cherry"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--sort", "title", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.map((t: { title: string }) => t.title)).toEqual(["Apple", "banana", "cherry"]);
+  });
+
+  it("list --sort created sorts by creation time", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "First", "--priority", "low"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Second", "--priority", "urgent"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--sort", "created", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed[0].title).toBe("First");
+    expect(parsed[1].title).toBe("Second");
+  });
+
+  // Ambiguous prefix tests
+  it("get shows ambiguous prefix error in text mode", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task A",
+      "--id",
+      "aaaa-1111-0000-0000-000000000000",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task B",
+      "--id",
+      "aaaa-2222-0000-0000-000000000000",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "get", "aaaa"]);
+    expect(output).toContain("ambiguous");
+    expect(output).toContain("aaaa-1111-0000-0000-000000000000");
+    expect(output).toContain("aaaa-2222-0000-0000-000000000000");
+  });
+
+  it("get --json returns ambiguous_prefix error", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task A",
+      "--id",
+      "bbbb-1111-0000-0000-000000000000",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task B",
+      "--id",
+      "bbbb-2222-0000-0000-000000000000",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "get", "bbbb", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("ambiguous_prefix");
+    expect(parsed.id).toBe("bbbb");
+    expect(parsed.matches).toHaveLength(2);
+  });
+
+  it("update shows ambiguous prefix error", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task A",
+      "--id",
+      "cccc-1111-0000-0000-000000000000",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task B",
+      "--id",
+      "cccc-2222-0000-0000-000000000000",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "update", "cccc", "--status", "done", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("ambiguous_prefix");
+  });
+
+  it("done shows ambiguous prefix error", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task A",
+      "--id",
+      "dddd-1111-0000-0000-000000000000",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task B",
+      "--id",
+      "dddd-2222-0000-0000-000000000000",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "done", "dddd"]);
+    expect(output).toContain("ambiguous");
+  });
+
+  it("delete shows ambiguous prefix error", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task A",
+      "--id",
+      "eeee-1111-0000-0000-000000000000",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task B",
+      "--id",
+      "eeee-2222-0000-0000-000000000000",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "delete", "eeee", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("ambiguous_prefix");
   });
 });

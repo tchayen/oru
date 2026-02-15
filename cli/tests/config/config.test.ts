@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { loadConfig } from "../../src/config/config.js";
+import { getConfigPath, loadConfig } from "../../src/config/config.js";
 
 describe("config", () => {
   let tmpDir: string;
@@ -148,5 +148,37 @@ unknown_key = "whatever"
       output_format: "json",
       next_month: "same_day",
     });
+  });
+});
+
+describe("getConfigPath", () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it("returns default path when no env vars set", () => {
+    delete process.env.AO_CONFIG_PATH;
+    delete process.env.AO_CONFIG_DIR;
+    expect(getConfigPath()).toBe(path.join(os.homedir(), ".ao", "config.toml"));
+  });
+
+  it("respects AO_CONFIG_PATH", () => {
+    process.env.AO_CONFIG_PATH = "/tmp/custom/my-config.toml";
+    delete process.env.AO_CONFIG_DIR;
+    expect(getConfigPath()).toBe("/tmp/custom/my-config.toml");
+  });
+
+  it("respects AO_CONFIG_DIR", () => {
+    delete process.env.AO_CONFIG_PATH;
+    process.env.AO_CONFIG_DIR = "/tmp/custom-dir";
+    expect(getConfigPath()).toBe(path.join("/tmp/custom-dir", "config.toml"));
+  });
+
+  it("prefers AO_CONFIG_PATH over AO_CONFIG_DIR", () => {
+    process.env.AO_CONFIG_PATH = "/tmp/explicit.toml";
+    process.env.AO_CONFIG_DIR = "/tmp/custom-dir";
+    expect(getConfigPath()).toBe("/tmp/explicit.toml");
   });
 });
