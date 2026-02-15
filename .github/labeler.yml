@@ -1,0 +1,11 @@
+cli:
+  - changed-files:
+      - any-glob-to-any-file: "cli/**"
+
+app:
+  - changed-files:
+      - any-glob-to-any-file: "app/**"
+
+infra:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"

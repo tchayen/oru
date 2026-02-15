@@ -116,22 +116,10 @@ These sets must stay in sync:
 ## Git & PR conventions
 
 - Create PRs with `gh pr create`
-- PR description format:
-
-```
-# Why
-
-<describe why we are adding this, only the context and reasoning>
-
-# How
-
-<describe how the change was made>
-
-# Test plan
-
-<what gives us confidence it works? how do we verify? what automated tests did we add?>
-```
-
+- **PR title must have a scope prefix**: `cli:`, `app:`, or `infra:` (for CI, docs, repo config)
+  - Examples: `cli: Add shell completions`, `app: Add due date picker`, `infra: Add bundle size CI`
+- PR description uses the template in `.github/pull_request_template.md` — fill in Why/How/Test plan and check all applicable checklist items
+- Delete checklist sections that don't apply (e.g. remove "If adding a new CLI command" for an app-only PR)
 - Keep commit messages concise — focus on the "why", not the "what"
 - Do not add `Co-Authored-By` lines to commits
 - Run `pnpm check` before pushing
