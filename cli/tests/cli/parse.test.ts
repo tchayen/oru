@@ -748,6 +748,71 @@ describe("CLI parse", () => {
     expect(JSON.parse(output.trim())).toEqual([]);
   });
 
+  // Bulk operations
+  it("done accepts multiple IDs", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task A", "--json"]);
+    const idA = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task B", "--json"]);
+    const idB = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "done", idA, idB, "--json"]);
+    // Pretty-printed JSON objects separated by newlines; extract via regex
+    const objects = output.trim().split(/\n(?=\{)/);
+    expect(objects).toHaveLength(2);
+    expect(JSON.parse(objects[0]).status).toBe("done");
+    expect(JSON.parse(objects[1]).status).toBe("done");
+  });
+
+  it("start accepts multiple IDs", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task C", "--json"]);
+    const idC = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task D", "--json"]);
+    const idD = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "start", idC, idD, "--json"]);
+    const objects = output.trim().split(/\n(?=\{)/);
+    expect(objects).toHaveLength(2);
+    expect(JSON.parse(objects[0]).status).toBe("in_progress");
+    expect(JSON.parse(objects[1]).status).toBe("in_progress");
+  });
+
+  it("delete accepts multiple IDs", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task E", "--json"]);
+    const idE = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task F", "--json"]);
+    const idF = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "delete", idE, idF, "--json"]);
+    const objects = output.trim().split(/\n(?=\{)/);
+    expect(objects).toHaveLength(2);
+    expect(JSON.parse(objects[0])).toEqual({ id: idE, deleted: true });
+    expect(JSON.parse(objects[1])).toEqual({ id: idF, deleted: true });
+  });
+
+  it("bulk done reports errors for missing IDs without stopping", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Valid task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "done", "no-such-id", id, "--json"]);
+    const objects = output.trim().split(/\n(?=\{)/);
+    expect(objects).toHaveLength(2);
+    expect(JSON.parse(objects[0]).error).toBe("not_found");
+    expect(JSON.parse(objects[1]).status).toBe("done");
+  });
   it("list outputs JSON when config sets output_format = json", async () => {
     const config = {
       date_format: "mdy" as const,

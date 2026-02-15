@@ -36,7 +36,9 @@ complete -c ao -n __ao_needs_command -a add -d 'Add a new task'
 complete -c ao -n __ao_needs_command -a list -d 'List tasks'
 complete -c ao -n __ao_needs_command -a get -d 'Get a task by ID'
 complete -c ao -n __ao_needs_command -a update -d 'Update a task'
-complete -c ao -n __ao_needs_command -a delete -d 'Delete a task'
+complete -c ao -n __ao_needs_command -a delete -d 'Delete one or more tasks'
+complete -c ao -n __ao_needs_command -a done -d 'Mark one or more tasks as done'
+complete -c ao -n __ao_needs_command -a start -d 'Start one or more tasks'
 complete -c ao -n __ao_needs_command -a sync -d 'Sync with a filesystem remote'
 complete -c ao -n __ao_needs_command -a config -d 'Manage configuration'
 complete -c ao -n __ao_needs_command -a server -d 'Manage the HTTP server'
@@ -54,10 +56,12 @@ complete -c ao -n '__ao_using_subcommand server start' -l tunnel -d 'Create a pu
 # completions subcommands
 complete -c ao -n '__ao_using_command completions' -a 'bash zsh fish'
 
-# Task ID completions for get, update, delete
+# Task ID completions for get, update, delete, done, start
 complete -c ao -n '__ao_using_command get' -a '(__ao_task_ids)'
 complete -c ao -n '__ao_using_command update' -a '(__ao_task_ids)'
 complete -c ao -n '__ao_using_command delete' -a '(__ao_task_ids)'
+complete -c ao -n '__ao_using_command done' -a '(__ao_task_ids)'
+complete -c ao -n '__ao_using_command start' -a '(__ao_task_ids)'
 
 # sync gets file completions
 complete -c ao -n '__ao_using_command sync' -F
@@ -98,6 +102,10 @@ complete -c ao -n '__ao_using_command update' -s n -l note -d 'Append a note' -r
 complete -c ao -n '__ao_using_command update' -l meta -d 'Metadata key=value' -r
 complete -c ao -n '__ao_using_command delete' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command delete' -l plaintext -d 'Output as plain text'
+complete -c ao -n '__ao_using_command done' -l json -d 'Output as JSON'
+complete -c ao -n '__ao_using_command done' -l plaintext -d 'Output as plain text'
+complete -c ao -n '__ao_using_command start' -l json -d 'Output as JSON'
+complete -c ao -n '__ao_using_command start' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command sync' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command sync' -l plaintext -d 'Output as plain text'
 `;
