@@ -51,6 +51,10 @@ describe("bash completions script", () => {
     expect(script).toContain("sort_values");
   });
 
+  it("contains --actionable for list", () => {
+    expect(script).toContain("--actionable");
+  });
+
   it("registers the completion function", () => {
     expect(script).toContain("complete -F");
   });
@@ -107,6 +111,10 @@ describe("zsh completions script", () => {
     expect(script).toContain("--sort");
     expect(script).toContain("sort_values");
   });
+
+  it("contains --actionable for list", () => {
+    expect(script).toContain("--actionable");
+  });
 });
 
 describe("fish completions script", () => {
@@ -161,5 +169,9 @@ describe("fish completions script", () => {
   it("contains --sort completion with values", () => {
     expect(script).toContain("-l sort");
     expect(script).toContain("priority due title created");
+  });
+
+  it("contains --actionable for list", () => {
+    expect(script).toContain("actionable");
   });
 });

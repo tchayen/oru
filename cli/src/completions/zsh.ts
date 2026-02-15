@@ -66,6 +66,7 @@ _ao() {
             '--sort[Sort order]:sort:('"$sort_values"')' \\
             '--search[Search by title]:query:' \\
             '(-a --all)'{-a,--all}'[Include done tasks]' \\
+            '--actionable[Show only actionable tasks]' \\
             '--limit[Maximum number of tasks to return]:number:' \\
             '--offset[Number of tasks to skip]:number:' \\
             '--json[Output as JSON]' \\

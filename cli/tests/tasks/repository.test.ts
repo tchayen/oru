@@ -382,4 +382,16 @@ describe("task repository", () => {
     const actionable = await listTasks(ky, { actionable: true });
     expect(actionable.map((t) => t.title)).toContain("Always actionable");
   });
+
+  it("actionable filter excludes done tasks", async () => {
+    await createTask(ky, { title: "Todo task", status: "todo" });
+    await createTask(ky, { title: "In progress task", status: "in_progress" });
+    await createTask(ky, { title: "Done task", status: "done" });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    const titles = actionable.map((t) => t.title);
+    expect(titles).toContain("Todo task");
+    expect(titles).toContain("In progress task");
+    expect(titles).not.toContain("Done task");
+  });
 });
