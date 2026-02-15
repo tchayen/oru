@@ -6,6 +6,7 @@ export default defineConfig({
   target: "node22",
   outDir: "dist",
   clean: true,
+  minify: true,
   banner: { js: "#!/usr/bin/env node" },
   external: ["better-sqlite3"],
 });
