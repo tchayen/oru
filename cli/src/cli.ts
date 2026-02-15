@@ -12,10 +12,11 @@ import {
   formatTaskText,
   formatTasksText,
   formatLabelsText,
+  formatLogText,
   filterByDue,
   type DueFilter,
 } from "./format/text.js";
-import { formatTaskJson, formatTasksJson, formatLabelsJson } from "./format/json.js";
+import { formatTaskJson, formatTasksJson, formatLabelsJson, formatLogJson } from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
@@ -902,6 +903,38 @@ export function createProgram(
           }
           throw err;
         }
+      }
+    });
+
+  // log
+  program
+    .command("log <id>")
+    .description("Show change history of a task")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      try {
+        const entries = await service.log(id);
+        if (!entries) {
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "not_found", id }));
+          } else {
+            write(`Task ${id} not found.`);
+          }
+          process.exitCode = 1;
+          return;
+        }
+        if (useJson(opts)) {
+          write(formatLogJson(entries));
+        } else {
+          write(formatLogText(entries));
+        }
+      } catch (err) {
+        if (err instanceof AmbiguousPrefixError) {
+          handleAmbiguousPrefix(err, useJson(opts));
+          return;
+        }
+        throw err;
       }
     });
 

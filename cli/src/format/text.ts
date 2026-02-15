@@ -1,4 +1,5 @@
 import type { Task } from "../tasks/types.js";
+import type { OplogEntry } from "../oplog/types.js";
 import { bold, dim, italic, red, green, yellow, cyan } from "./colors.js";
 
 function isOverdue(dueAt: string, now?: Date): boolean {
@@ -130,6 +131,60 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
     return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${due.padEnd(dueW)}  ${cyan(labels.padEnd(labelsW))}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
   });
   return [header, ...rows].join("\n");
+}
+
+export function formatLogText(entries: OplogEntry[]): string {
+  if (entries.length === 0) {
+    return dim("No log entries found.");
+  }
+
+  const lines: string[] = [];
+  for (const entry of entries) {
+    const ts = dim(entry.timestamp);
+    const device = dim(`(${entry.device_id})`);
+    let opLabel: string;
+    switch (entry.op_type) {
+      case "create":
+        opLabel = green("CREATE");
+        break;
+      case "delete":
+        opLabel = red("DELETE");
+        break;
+      case "update":
+        opLabel = yellow("UPDATE");
+        break;
+    }
+
+    if (entry.op_type === "create") {
+      lines.push(`${ts}  ${opLabel}  ${device}`);
+      if (entry.value) {
+        try {
+          const obj = JSON.parse(entry.value);
+          const parts: string[] = [];
+          for (const [k, v] of Object.entries(obj)) {
+            if (v !== null && v !== undefined) {
+              parts.push(`${k} = ${JSON.stringify(v)}`);
+            }
+          }
+          if (parts.length > 0) {
+            lines.push(`  ${parts.join(", ")}`);
+          }
+        } catch {
+          lines.push(`  ${entry.value}`);
+        }
+      }
+    } else if (entry.op_type === "update") {
+      const field = entry.field ?? "";
+      lines.push(`${ts}  ${opLabel}  ${field} ${device}`);
+      if (entry.value !== null) {
+        lines.push(`  ${field} = ${JSON.stringify(entry.value)}`);
+      }
+    } else {
+      lines.push(`${ts}  ${opLabel}  ${device}`);
+    }
+  }
+
+  return lines.join("\n");
 }
 
 export type DueFilter = "today" | "this-week" | "overdue";

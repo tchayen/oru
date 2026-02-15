@@ -19,6 +19,10 @@ describe("bash completions script", () => {
     expect(script).toContain("completions");
   });
 
+  it("contains log command", () => {
+    expect(script).toContain("log");
+  });
+
   it("contains --unlabel completion", () => {
     expect(script).toContain("--unlabel");
   });
@@ -68,6 +72,10 @@ describe("zsh completions script", () => {
     expect(script).toContain("list:List tasks");
     expect(script).toContain("labels:List all labels in use");
     expect(script).toContain("get:Get a task by ID");
+  });
+
+  it("contains log command with description", () => {
+    expect(script).toContain("log:Show change history of a task");
   });
 
   it("contains --unlabel completion", () => {
@@ -127,6 +135,10 @@ describe("fish completions script", () => {
     expect(script).toContain("config");
     expect(script).toContain("server");
     expect(script).toContain("completions");
+  });
+
+  it("contains log command", () => {
+    expect(script).toContain("log");
   });
 
   it("contains --unlabel completion", () => {
