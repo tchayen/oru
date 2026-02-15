@@ -1,30 +1,29 @@
 # Tasks
 
-- [ ] Write a skill for using the playwright to inspect page.
-- [ ] Figure out a skill to see the app in iOS simulator (Radon?).
 - [~] Set up landing page with CloudFlare.
 - [~] Maybe consider a rename so that we can find both a domain and npm package that are available?
+- [~] Figure out installation. I guess npm package and an install script like bun/claude code. We want auto update.
+- [ ] Add colors to CLI help output.
+- [ ] Make orange theme color in the CLI - like the website one.
+- [ ] Write a skill for using the playwright to inspect page.
+- [ ] Figure out a skill to see the app in iOS simulator (Radon?).
 - [ ] Find domain for the landing page (what TLD or combination of words with `ao` will do the trick).
 - [ ] Ask agent for security review: let's do threat modelling exercise.
+- [ ] Completions command is not entirely useful - doesn't explain how to use/install the script.
+
+## Landing page
+
 - [~] Use tailwind on the landing page.
 - [ ] Use text balanced CSS instruction more on the landing page.
 - [ ] Update command formatting and colors on the landing page - check real command output.
-- [ ] Formatting of text like JSON is broken in terminals.
-- [ ] QR code example in terminal does not look good.
-- [ ] Add shipped JS bundle and HTML size (maybe?) of the landing page to the performance github comment.
-- [ ] Explore converting code in `site/` to TS.
-- [ ] Figure out installation. I guess npm package and an install script like bun/claude code. We want auto update.
+- [ ] Formatting of text like JSON is broken in terminals components on the landing page.
 - [ ] Verify claims from the homepage:
-
   > Requires Node 22+. That is the only dependency.
-
-  uhm not sure lol?
-
-- [ ] Phone on the homepage needs to be replaced with proper iPhone frame and proper app screenshot.
-- [x] Add colors to CLI help output. (PR #26)
-- [ ] Make orange theme color in the CLI - like the website one.
-- [ ] Completions is not entirely useful - doesn't explain how to use/install the script.
+- [ ] QR code example in terminal does not look good.
+- [ ] Explore converting code in `site/` to TS.
+- [ ] Add shipped JS bundle and HTML size (maybe?) of the landing page to the performance github comment.
 - [ ] 'Sync that actually works offline.' got some vertical drift.
+- [ ] Phone on the homepage needs to be replaced with proper iPhone frame and proper app screenshot.
 
 # Bugs
 
