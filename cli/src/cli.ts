@@ -567,7 +567,21 @@ export function createProgram(
 
       const document = serializeTask(task);
       const edited = await openInEditor(document);
-      const { fields, newNotes } = parseDocument(edited, task);
+
+      let fields: ReturnType<typeof parseDocument>["fields"];
+      let newNotes: ReturnType<typeof parseDocument>["newNotes"];
+      try {
+        ({ fields, newNotes } = parseDocument(edited, task));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "validation", message }));
+        } else {
+          write(message);
+        }
+        process.exitCode = 1;
+        return;
+      }
 
       const hasFields = Object.keys(fields).length > 0;
       const hasNotes = newNotes.length > 0;
