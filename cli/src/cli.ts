@@ -15,6 +15,7 @@ import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
 import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./config/config.js";
 import { parseDate } from "./dates/parse.js";
+import { serializeTask, parseDocument, openInEditor } from "./edit.js";
 import type { Status, Priority } from "./tasks/types.js";
 
 declare const __GIT_COMMIT__: string;
@@ -498,6 +499,125 @@ export function createProgram(
         }
       },
     );
+
+  // edit
+  program
+    .command("edit <id>")
+    .description("Open task in $EDITOR for complex edits")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const task = await service.get(id);
+      if (!task) {
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "not_found", id }));
+        } else {
+          write(`Task ${id} not found.`);
+        }
+        process.exitCode = 1;
+        return;
+      }
+
+      const document = serializeTask(task);
+      const edited = await openInEditor(document);
+      const { fields, newNotes } = parseDocument(edited, task);
+
+      const hasFields = Object.keys(fields).length > 0;
+      const hasNotes = newNotes.length > 0;
+
+      if (!hasFields && !hasNotes) {
+        if (useJson(opts)) {
+          write(formatTaskJson(task));
+        } else {
+          write("No changes.");
+        }
+        return;
+      }
+
+      // Validate
+      if (fields.title !== undefined && fields.title.trim().length === 0) {
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
+        } else {
+          write("Title cannot be empty.");
+        }
+        process.exitCode = 1;
+        return;
+      }
+      if (fields.title && fields.title.length > MAX_TITLE_LENGTH) {
+        if (useJson(opts)) {
+          write(
+            JSON.stringify({
+              error: "validation",
+              message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
+            }),
+          );
+        } else {
+          write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
+        }
+        process.exitCode = 1;
+        return;
+      }
+      for (const note of newNotes) {
+        if (note.length > MAX_NOTE_LENGTH) {
+          if (useJson(opts)) {
+            write(
+              JSON.stringify({
+                error: "validation",
+                message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
+              }),
+            );
+          } else {
+            write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
+          }
+          process.exitCode = 1;
+          return;
+        }
+      }
+      if (fields.labels) {
+        for (const l of fields.labels) {
+          if (l.length > MAX_LABEL_LENGTH) {
+            if (useJson(opts)) {
+              write(
+                JSON.stringify({
+                  error: "validation",
+                  message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+                }),
+              );
+            } else {
+              write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
+            }
+            process.exitCode = 1;
+            return;
+          }
+        }
+      }
+
+      let result;
+      if (hasNotes && newNotes.length === 1 && hasFields) {
+        result = await service.updateWithNote(id, fields, newNotes[0]);
+      } else if (hasNotes && newNotes.length === 1 && !hasFields) {
+        result = await service.addNote(id, newNotes[0]);
+      } else {
+        // Apply field updates first, then notes one by one
+        if (hasFields) {
+          result = await service.update(id, fields);
+        }
+        for (const note of newNotes) {
+          result = await service.addNote(id, note);
+        }
+      }
+
+      if (!result) {
+        result = await service.get(id);
+      }
+
+      if (useJson(opts)) {
+        write(formatTaskJson(result!));
+      } else {
+        write(formatTaskText(result!));
+      }
+    });
 
   // delete
   program
