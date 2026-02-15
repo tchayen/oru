@@ -12,6 +12,7 @@ import { formatTaskJson, formatTasksJson } from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
+import { loadConfig, type Config } from "./config/config.js";
 import type { Status, Priority } from "./tasks/types.js";
 
 declare const __GIT_COMMIT__: string;
@@ -39,7 +40,9 @@ function parseMetadata(pairs: string[]): Record<string, string> {
 export function createProgram(
   db: Database.Database,
   write: (text: string) => void = (t) => process.stdout.write(t + "\n"),
+  config?: Config,
 ): Command {
+  const resolvedConfig = config ?? loadConfig();
   const ky = createKysely(db);
   const deviceId = getDeviceId(db);
   const service = new TaskService(ky, deviceId);
@@ -60,8 +63,15 @@ export function createProgram(
   const statusChoices = ["todo", "in_progress", "done"] as const;
   const priorityChoices = ["low", "medium", "high", "urgent"] as const;
 
-  function useJson(opts: { json?: boolean }): boolean {
-    return !!(opts.json || process.env.AO_FORMAT === "json");
+  function useJson(opts: { json?: boolean; plaintext?: boolean }): boolean {
+    if (opts.plaintext) {
+      return false;
+    }
+    return !!(
+      opts.json ||
+      process.env.AO_FORMAT === "json" ||
+      resolvedConfig.output_format === "json"
+    );
   }
 
   // add
@@ -81,6 +91,7 @@ export function createProgram(
     .option("-n, --note <note>", "Add an initial note")
     .option("--meta <key=value...>", "Add metadata key=value pairs")
     .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
     .action(
       async (
         title: string,
@@ -92,6 +103,7 @@ export function createProgram(
           note?: string;
           meta?: string[];
           json?: boolean;
+          plaintext?: boolean;
         },
       ) => {
         if (title.trim().length === 0) {
@@ -194,6 +206,7 @@ export function createProgram(
     .option("--search <query>", "Search tasks by title")
     .option("-a, --all", "Include done tasks")
     .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
     .action(
       async (opts: {
         status?: Status;
@@ -202,6 +215,7 @@ export function createProgram(
         search?: string;
         all?: boolean;
         json?: boolean;
+        plaintext?: boolean;
       }) => {
         let tasks = await service.list({
           status: opts.status,
@@ -226,7 +240,8 @@ export function createProgram(
     .command("get <id>")
     .description("Get a task by ID")
     .option("--json", "Output as JSON")
-    .action(async (id: string, opts: { json?: boolean }) => {
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const task = await service.get(id);
       if (!task) {
         if (useJson(opts)) {
@@ -255,6 +270,7 @@ export function createProgram(
     .option("-n, --note <note>", "Append a note")
     .option("--meta <key=value...>", "Set metadata key=value pairs")
     .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
     .action(
       async (
         id: string,
@@ -266,6 +282,7 @@ export function createProgram(
           note?: string;
           meta?: string[];
           json?: boolean;
+          plaintext?: boolean;
         },
       ) => {
         if (opts.title !== undefined && opts.title.trim().length === 0) {
@@ -426,7 +443,8 @@ export function createProgram(
     .command("delete <id>")
     .description("Delete a task")
     .option("--json", "Output as JSON")
-    .action(async (id: string, opts: { json?: boolean }) => {
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const result = await service.delete(id);
       if (useJson(opts)) {
         if (!result) {
@@ -448,7 +466,8 @@ export function createProgram(
     .command("sync <remote-path>")
     .description("Sync with a filesystem remote")
     .option("--json", "Output as JSON")
-    .action(async (remotePath: string, opts: { json?: boolean }) => {
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (remotePath: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const remote = new FsRemote(remotePath);
       try {
         const engine = new SyncEngine(db, remote, deviceId);
@@ -506,7 +525,8 @@ export function createProgram(
 async function main() {
   const db = openDb();
   initSchema(db);
-  const program = createProgram(db);
+  const config = loadConfig();
+  const program = createProgram(db, undefined, config);
 
   try {
     await program.parseAsync(process.argv);
