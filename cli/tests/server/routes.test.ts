@@ -241,6 +241,32 @@ describe("GET /tasks", () => {
     const res = await req("GET", "/tasks?offset=-1");
     expect(res.status).toBe(400);
   });
+
+  it("actionable filter excludes blocked and done tasks", async () => {
+    const blocker = await service.add({ title: "Blocker" });
+    await service.add({ title: "Blocked", blocked_by: [blocker.id] });
+    await service.add({ title: "Done task", status: "done" });
+    await service.add({ title: "Free task" });
+
+    const res = await req("GET", "/tasks?actionable=1");
+    const tasks = await res.json();
+    const titles = tasks.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Blocker");
+    expect(titles).toContain("Free task");
+    expect(titles).not.toContain("Blocked");
+    expect(titles).not.toContain("Done task");
+  });
+
+  it("actionable with all=true still excludes done tasks", async () => {
+    await service.add({ title: "Active" });
+    await service.add({ title: "Completed", status: "done" });
+
+    const res = await req("GET", "/tasks?actionable=1&all=true");
+    const tasks = await res.json();
+    const titles = tasks.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Active");
+    expect(titles).not.toContain("Completed");
+  });
 });
 
 describe("GET /tasks/:id", () => {

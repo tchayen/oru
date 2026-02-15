@@ -70,7 +70,7 @@ _ao_completions() {
       ;;
     list)
       if [[ "$cur" == -* ]]; then
-        COMPREPLY=($(compgen -W "-s --status -p --priority -l --label --due --overdue --search -a --all --limit --offset --json --plaintext" -- "$cur"))
+        COMPREPLY=($(compgen -W "-s --status -p --priority -l --label --due --overdue --sort --search -a --all --actionable --limit --offset --json --plaintext" -- "$cur"))
       fi
       ;;
     labels)

@@ -142,12 +142,12 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
     );
   }
   if (filters?.actionable) {
-    query = query.where(
+    query = query.where("status", "!=", "done").where(
       sql<SqlBool>`NOT EXISTS (
-        SELECT 1 FROM json_each(tasks.blocked_by) AS dep
-        JOIN tasks AS blocker ON blocker.id = dep.value
-        WHERE blocker.status != 'done' AND blocker.deleted_at IS NULL
-      )`,
+          SELECT 1 FROM json_each(tasks.blocked_by) AS dep
+          JOIN tasks AS blocker ON blocker.id = dep.value
+          WHERE blocker.status != 'done' AND blocker.deleted_at IS NULL
+        )`,
     );
   }
 

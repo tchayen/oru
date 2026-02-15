@@ -1067,6 +1067,36 @@ describe("CLI parse", () => {
     expect(titles).not.toContain("Blocked");
   });
 
+  it("list --actionable excludes done tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Active task", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Finished task", "-s", "done", "--json"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--actionable", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    const titles = parsed.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Active task");
+    expect(titles).not.toContain("Finished task");
+  });
+
+  it("list --actionable --all still excludes done tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Todo task", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Done task", "-s", "done", "--json"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--actionable", "--all", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    const titles = parsed.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Todo task");
+    expect(titles).not.toContain("Done task");
+  });
+
   it("list --limit returns at most N tasks", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "ao", "add", "Task 1"]);
