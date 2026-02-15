@@ -71,6 +71,36 @@ describe("text formatter", () => {
     const output = formatTaskText(sampleTask);
     expect(output).toContain("Get organic");
   });
+
+  it("shows metadata in single task view", () => {
+    const task: Task = { ...sampleTask, metadata: { env: "prod", region: "us-east" } };
+    const output = formatTaskText(task);
+    expect(output).toContain("Metadata:");
+    expect(output).toContain("env:");
+    expect(output).toContain("prod");
+    expect(output).toContain("region:");
+    expect(output).toContain("us-east");
+  });
+
+  it("hides metadata section when metadata is empty", () => {
+    const output = formatTaskText(sampleTask);
+    expect(output).not.toContain("Metadata:");
+  });
+
+  it("shows metadata in list view", () => {
+    const task: Task = { ...sampleTask, metadata: { env: "prod" } };
+    const output = formatTasksText([task]);
+    expect(output).toContain("env=prod");
+  });
+
+  it("hides metadata in list view when empty", () => {
+    const output = formatTasksText([sampleTask]);
+    // Should not have trailing metadata after title
+    const lines = output.split("\n");
+    const dataLine = lines[1];
+    expect(dataLine).toContain("Buy milk");
+    expect(dataLine).not.toContain("=");
+  });
 });
 
 const sampleTaskNoDue: Task = { ...sampleTask, due_at: null };

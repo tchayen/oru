@@ -80,6 +80,13 @@ export function formatTaskText(task: Task, now?: Date): string {
       lines.push(`    ${dim("-")} ${italic(note)}`);
     }
   }
+  const metaKeys = Object.keys(task.metadata);
+  if (metaKeys.length > 0) {
+    lines.push(`  ${dim("Metadata:")}`);
+    for (const key of metaKeys) {
+      lines.push(`    ${dim(key + ":")} ${String(task.metadata[key])}`);
+    }
+  }
   return lines.join("\n");
 }
 
@@ -101,7 +108,11 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
     const check = colorCheck(t.status);
     const due = t.due_at ? formatDue(t.due_at, now) : "";
     const labels = t.labels.length > 0 ? t.labels.join(", ") : "";
-    return `${check}  ${dim(t.id.padEnd(8))}  ${colorPriority(t.priority.padEnd(6))}  ${due.padEnd(16)}  ${cyan(labels.padEnd(12))}  ${bold(t.title)}`;
+    const meta = Object.entries(t.metadata)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(", ");
+    const suffix = meta ? `  ${dim(meta)}` : "";
+    return `${check}  ${dim(t.id.padEnd(8))}  ${colorPriority(t.priority.padEnd(6))}  ${due.padEnd(16)}  ${cyan(labels.padEnd(12))}  ${bold(t.title)}${suffix}`;
   });
   return [header, ...rows].join("\n");
 }
