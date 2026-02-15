@@ -23,6 +23,11 @@ describe("bash completions script", () => {
     expect(script).toContain("--unlabel");
   });
 
+  it("contains --limit and --offset for list", () => {
+    expect(script).toContain("--limit");
+    expect(script).toContain("--offset");
+  });
+
   it("contains status values", () => {
     expect(script).toContain("todo");
     expect(script).toContain("in_progress");
@@ -66,6 +71,11 @@ describe("zsh completions script", () => {
 
   it("contains --clear-notes completion", () => {
     expect(script).toContain("--clear-notes");
+  });
+
+  it("contains --limit and --offset for list", () => {
+    expect(script).toContain("--limit");
+    expect(script).toContain("--offset");
   });
 
   it("contains status and priority values", () => {
@@ -115,6 +125,11 @@ describe("fish completions script", () => {
 
   it("contains --clear-notes completion", () => {
     expect(script).toContain("clear-notes");
+  });
+
+  it("contains --limit and --offset for list", () => {
+    expect(script).toContain("limit");
+    expect(script).toContain("offset");
   });
 
   it("contains status and priority values", () => {

@@ -104,6 +104,8 @@ export interface ListFilters {
   label?: string;
   search?: string;
   actionable?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<Task[]> {
@@ -142,6 +144,14 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
       sql`CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 END`,
     )
     .orderBy("created_at", "asc");
+
+  if (filters?.limit || filters?.offset) {
+    query = query.limit(filters?.limit ?? -1);
+  }
+  if (filters?.offset) {
+    query = query.offset(filters.offset);
+  }
+
   const rows = await query.execute();
   return rows.map(rowToTask);
 }
