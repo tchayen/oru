@@ -480,6 +480,7 @@ describe("CLI parse", () => {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p = createProgram(db, capture(), config);
     await p.parseAsync(["node", "ao", "add", "Config json task"]);
@@ -492,6 +493,7 @@ describe("CLI parse", () => {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p = createProgram(db, capture(), config);
     await p.parseAsync(["node", "ao", "add", "Plaintext task", "--plaintext"]);
@@ -505,6 +507,7 @@ describe("CLI parse", () => {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p1 = createProgram(db, capture(), config);
     await p1.parseAsync(["node", "ao", "add", "Task for list"]);
@@ -588,6 +591,7 @@ describe("CLI parse", () => {
       date_format: "dmy" as const,
       first_day_of_week: "monday" as const,
       output_format: "text" as const,
+      next_month: "same_day" as const,
     };
     const p = createProgram(db, capture(), config);
     await p.parseAsync(["node", "ao", "add", "DMY date", "--due", "20/03/2026", "--json"]);
@@ -621,6 +625,7 @@ describe("CLI parse", () => {
       date_format: "mdy" as const,
       first_day_of_week: "monday" as const,
       output_format: "json" as const,
+      next_month: "same_day" as const,
     };
     const p1 = createProgram(db, capture(), config);
     await p1.parseAsync(["node", "ao", "add", "Json list task"]);

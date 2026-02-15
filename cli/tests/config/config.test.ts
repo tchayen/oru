@@ -23,6 +23,7 @@ describe("config", () => {
       date_format: "mdy",
       first_day_of_week: "monday",
       output_format: "text",
+      next_month: "same_day",
     });
   });
 
@@ -33,6 +34,7 @@ describe("config", () => {
       date_format: "mdy",
       first_day_of_week: "monday",
       output_format: "text",
+      next_month: "same_day",
     });
   });
 
@@ -103,7 +105,26 @@ output_format = "json"
       date_format: "dmy",
       first_day_of_week: "wednesday",
       output_format: "json",
+      next_month: "same_day",
     });
+  });
+
+  it("parses next_month = first", () => {
+    fs.writeFileSync(configPath, 'next_month = "first"\n');
+    const config = loadConfig(configPath);
+    expect(config.next_month).toBe("first");
+  });
+
+  it("parses next_month = same_day", () => {
+    fs.writeFileSync(configPath, 'next_month = "same_day"\n');
+    const config = loadConfig(configPath);
+    expect(config.next_month).toBe("same_day");
+  });
+
+  it("ignores invalid next_month", () => {
+    fs.writeFileSync(configPath, 'next_month = "last"\n');
+    const config = loadConfig(configPath);
+    expect(config.next_month).toBe("same_day");
   });
 
   it("ignores unknown keys", () => {
@@ -125,6 +146,7 @@ unknown_key = "whatever"
       date_format: "mdy",
       first_day_of_week: "monday",
       output_format: "json",
+      next_month: "same_day",
     });
   });
 });

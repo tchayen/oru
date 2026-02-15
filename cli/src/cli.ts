@@ -184,6 +184,7 @@ export function createProgram(
             opts.due,
             resolvedConfig.date_format,
             resolvedConfig.first_day_of_week,
+            resolvedConfig.next_month,
           );
           if (!parsed) {
             if (useJson(opts)) {

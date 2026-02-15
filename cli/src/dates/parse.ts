@@ -1,4 +1,4 @@
-import type { DateFormat, Weekday } from "../config/config.js";
+import type { DateFormat, NextMonthBehavior, Weekday } from "../config/config.js";
 
 const WEEKDAY_NUMBERS: Record<Weekday, number> = {
   sunday: 0,
@@ -10,14 +10,63 @@ const WEEKDAY_NUMBERS: Record<Weekday, number> = {
   saturday: 6,
 };
 
+const DAY_NAMES: Record<string, number> = {
+  sunday: 0,
+  sun: 0,
+  monday: 1,
+  mon: 1,
+  tuesday: 2,
+  tue: 2,
+  wednesday: 3,
+  wed: 3,
+  thursday: 4,
+  thu: 4,
+  friday: 5,
+  fri: 5,
+  saturday: 6,
+  sat: 6,
+};
+
+const MONTH_NAMES: Record<string, number> = {
+  january: 1,
+  jan: 1,
+  february: 2,
+  feb: 2,
+  march: 3,
+  mar: 3,
+  april: 4,
+  apr: 4,
+  may: 5,
+  june: 6,
+  jun: 6,
+  july: 7,
+  jul: 7,
+  august: 8,
+  aug: 8,
+  september: 9,
+  sep: 9,
+  sept: 9,
+  october: 10,
+  oct: 10,
+  november: 11,
+  nov: 11,
+  december: 12,
+  dec: 12,
+};
+
 /**
- * Parse a friendly date string into an ISO 8601 datetime string.
+ * Parse a friendly date string into a local-time ISO 8601 datetime string.
  *
  * Supports:
  * - ISO: YYYY-MM-DD, YYYY-MM-DDTHH:MM
  * - Slash dates: DD/MM/YYYY or MM/DD/YYYY (based on dateFormat config, with smart fallback)
  * - Slash dates without year: DD/MM or MM/DD
- * - Relative: "today", "tod", "tomorrow", "tom", "next week"
+ * - Relative: "today", "tod", "tomorrow", "tom", "tonight"
+ * - Week: "next week", "end of week"
+ * - Month: "next month", "end of month"
+ * - Day names: "monday", "mon", "next friday", "next fri"
+ * - Relative durations: "in 3 days", "in 2 weeks", "in 1 month"
+ * - Month + day: "march 20", "mar 20", "20th march", "march 3rd"
  * - With time: "today 10am", "tom 3p", "tomorrow 14:30", "2026-02-15 9a"
  *
  * Returns null if the string can't be parsed.
@@ -26,6 +75,7 @@ export function parseDate(
   input: string,
   dateFormat: DateFormat = "mdy",
   firstDayOfWeek: Weekday = "monday",
+  nextMonth: NextMonthBehavior = "same_day",
   now?: Date,
 ): string | null {
   const ref = now ?? new Date();
@@ -37,7 +87,7 @@ export function parseDate(
   // Split into date part and optional time part
   const { datePart, timePart } = splitDateAndTime(trimmed);
 
-  const date = parseDatePart(datePart, dateFormat, firstDayOfWeek, ref);
+  const date = parseDatePart(datePart, dateFormat, firstDayOfWeek, nextMonth, ref);
   if (!date) {
     return null;
   }
@@ -64,7 +114,6 @@ function splitDateAndTime(input: string): { datePart: string; timePart: string |
   // Time patterns: "10am", "10a", "3pm", "3p", "14:30", "9:00am"
   const parts = input.split(/\s+/);
   if (parts.length === 1) {
-    // Could be just a date, or just a time-like thing
     return { datePart: parts[0], timePart: null };
   }
 
@@ -77,18 +126,19 @@ function splitDateAndTime(input: string): { datePart: string; timePart: string |
     };
   }
 
-  // "next week" is two words, no time
   return { datePart: input, timePart: null };
 }
 
 function looksLikeTime(s: string): boolean {
-  return /^\d{1,2}(:\d{2})?\s*(am?|pm?)?$/i.test(s);
+  // Require colon (HH:MM) or am/pm suffix to distinguish from bare day numbers
+  return /^\d{1,2}:\d{2}\s*(am?|pm?)?$/i.test(s) || /^\d{1,2}\s*(am?|pm?)$/i.test(s);
 }
 
 function parseDatePart(
   input: string,
   dateFormat: DateFormat,
   firstDayOfWeek: Weekday,
+  nextMonth: NextMonthBehavior,
   ref: Date,
 ): Date | null {
   const lower = input.toLowerCase().trim();
@@ -102,8 +152,99 @@ function parseDatePart(
     d.setDate(d.getDate() + 1);
     return d;
   }
+  if (lower === "tonight") {
+    const d = startOfDay(ref);
+    d.setHours(18, 0, 0, 0);
+    return d;
+  }
+
+  // Keywords
   if (lower === "next week") {
-    return nextWeekday(ref, firstDayOfWeek);
+    return findNextWeekday(ref, WEEKDAY_NUMBERS[firstDayOfWeek]);
+  }
+  if (lower === "next month") {
+    if (nextMonth === "first") {
+      return new Date(ref.getFullYear(), ref.getMonth() + 1, 1);
+    }
+    // same_day: clamp to last day of target month if needed
+    const targetMonth = (ref.getMonth() + 1) % 12;
+    const d = new Date(ref.getFullYear(), ref.getMonth() + 1, ref.getDate());
+    if (d.getMonth() !== targetMonth) {
+      return new Date(ref.getFullYear(), ref.getMonth() + 2, 0);
+    }
+    return d;
+  }
+  if (lower === "end of month") {
+    return new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
+  }
+  if (lower === "end of week") {
+    const endDayNum = (WEEKDAY_NUMBERS[firstDayOfWeek] + 6) % 7;
+    const d = startOfDay(ref);
+    const current = d.getDay();
+    const daysAhead = (endDayNum - current + 7) % 7;
+    if (daysAhead === 0) {
+      return d;
+    }
+    d.setDate(d.getDate() + daysAhead);
+    return d;
+  }
+
+  // Day names: "monday", "mon", "next monday", "next mon"
+  {
+    let dayInput = lower;
+    if (dayInput.startsWith("next ")) {
+      dayInput = dayInput.slice(5);
+    }
+    const dayNum = DAY_NAMES[dayInput];
+    if (dayNum !== undefined) {
+      return findNextWeekday(ref, dayNum);
+    }
+  }
+
+  // Relative durations: "in N days/weeks/months"
+  {
+    const match = lower.match(/^in\s+(\d+)\s+(days?|weeks?|months?)$/);
+    if (match) {
+      const n = Number(match[1]);
+      const unit = match[2];
+      const d = startOfDay(ref);
+      if (unit.startsWith("day")) {
+        d.setDate(d.getDate() + n);
+      } else if (unit.startsWith("week")) {
+        d.setDate(d.getDate() + n * 7);
+      } else if (unit.startsWith("month")) {
+        const originalDay = d.getDate();
+        d.setDate(1);
+        d.setMonth(d.getMonth() + n);
+        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        d.setDate(Math.min(originalDay, lastDay));
+      }
+      return d;
+    }
+  }
+
+  // Month + day: "march 20", "mar 20", "march 3rd"
+  {
+    const monthDayMatch = lower.match(/^([a-z]+)\s+(\d+)(?:st|nd|rd|th)?$/);
+    if (monthDayMatch) {
+      const monthNum = MONTH_NAMES[monthDayMatch[1]];
+      if (monthNum !== undefined) {
+        const day = Number(monthDayMatch[2]);
+        return buildDateInferYear(ref, monthNum, day);
+      }
+    }
+  }
+
+  // Day + month: "20th march", "3rd mar"
+  {
+    const dayMonthMatch = lower.match(/^(\d+)(?:st|nd|rd|th)?\s+([a-z]+)$/);
+    if (dayMonthMatch) {
+      const monthNum = MONTH_NAMES[dayMonthMatch[2]];
+      if (monthNum !== undefined) {
+        const day = Number(dayMonthMatch[1]);
+        return buildDateInferYear(ref, monthNum, day);
+      }
+    }
   }
 
   // ISO format: YYYY-MM-DD
@@ -171,6 +312,19 @@ function buildDate(year: number, month: number, day: number): Date | null {
   return d;
 }
 
+function buildDateInferYear(ref: Date, month: number, day: number): Date | null {
+  const year = ref.getFullYear();
+  const d = buildDate(year, month, day);
+  if (!d) {
+    return null;
+  }
+  // If date is in the past, use next year
+  if (d < startOfDay(ref)) {
+    return buildDate(year + 1, month, day);
+  }
+  return d;
+}
+
 function parseTimePart(input: string): { hours: number; minutes: number } | null {
   const trimmed = input.trim().toLowerCase();
 
@@ -194,16 +348,6 @@ function parseTimePart(input: string): { hours: number; minutes: number } | null
   if (simpleMatch) {
     let hours = Number(simpleMatch[1]);
     hours = applyAmPm(hours, simpleMatch[2]);
-    if (hours < 0 || hours > 23) {
-      return null;
-    }
-    return { hours, minutes: 0 };
-  }
-
-  // Plain 24h: "14", "9"
-  const plainMatch = trimmed.match(/^(\d{1,2})$/);
-  if (plainMatch) {
-    const hours = Number(plainMatch[1]);
     if (hours < 0 || hours > 23) {
       return null;
     }
@@ -238,8 +382,7 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-function nextWeekday(ref: Date, targetDay: Weekday): Date {
-  const target = WEEKDAY_NUMBERS[targetDay];
+function findNextWeekday(ref: Date, target: number): Date {
   const d = startOfDay(ref);
   const currentDay = d.getDay();
   let daysAhead = target - currentDay;

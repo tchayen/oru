@@ -13,17 +13,20 @@ export type Weekday =
   | "saturday"
   | "sunday";
 export type OutputFormat = "text" | "json";
+export type NextMonthBehavior = "same_day" | "first";
 
 export interface Config {
   date_format: DateFormat;
   first_day_of_week: Weekday;
   output_format: OutputFormat;
+  next_month: NextMonthBehavior;
 }
 
 const DEFAULTS: Config = {
   date_format: "mdy",
   first_day_of_week: "monday",
   output_format: "text",
+  next_month: "same_day",
 };
 
 const VALID_DATE_FORMATS = new Set<string>(["dmy", "mdy"]);
@@ -37,6 +40,7 @@ const VALID_WEEKDAYS = new Set<string>([
   "sunday",
 ]);
 const VALID_OUTPUT_FORMATS = new Set<string>(["text", "json"]);
+const VALID_NEXT_MONTH = new Set<string>(["same_day", "first"]);
 
 export function getConfigPath(): string {
   if (process.env.AO_CONFIG_PATH) {
@@ -69,6 +73,10 @@ export function loadConfig(configPath?: string): Config {
 
   if (typeof parsed.output_format === "string" && VALID_OUTPUT_FORMATS.has(parsed.output_format)) {
     config.output_format = parsed.output_format as OutputFormat;
+  }
+
+  if (typeof parsed.next_month === "string" && VALID_NEXT_MONTH.has(parsed.next_month)) {
+    config.next_month = parsed.next_month as NextMonthBehavior;
   }
 
   return config;
