@@ -1,8 +1,17 @@
 import { use, useEffect, useState, useCallback } from "react";
-import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  Alert,
+  ActivityIndicator,
+  TextInput,
+  Pressable,
+  PlatformColor,
+} from "react-native";
+import { Picker, Host, ContextMenu, Button } from "@expo/ui/swift-ui";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
-import * as Haptics from "expo-haptics";
 import { ConnectionContext } from "@/hooks/use-connection";
 import {
   type Task,
@@ -14,7 +23,6 @@ import {
 } from "@/utils/api";
 
 const STATUSES: Status[] = ["todo", "in_progress", "done"];
-const PRIORITIES: Priority[] = ["urgent", "high", "medium", "low"];
 
 const STATUS_LABELS: Record<Status, string> = {
   todo: "To Do",
@@ -22,42 +30,12 @@ const STATUS_LABELS: Record<Status, string> = {
   done: "Done",
 };
 
-const PRIORITY_COLORS: Record<Priority, string> = {
-  urgent: "#FF3B30",
-  high: "#FF9500",
-  medium: "#007AFF",
-  low: "#8E8E93",
+const PRIORITY_LABELS: Record<Priority, string> = {
+  urgent: "Urgent",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
 };
-
-function OptionButton({
-  label,
-  selected,
-  color,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  color?: string;
-  onPress: () => void;
-}) {
-  const bg = selected ? (color ?? "#007AFF") : "#F2F2F7";
-  const fg = selected ? "#fff" : "#000";
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 8,
-        borderCurve: "continuous",
-        backgroundColor: bg,
-      }}
-    >
-      <Text style={{ fontSize: 15, fontWeight: "500", color: fg }}>{label}</Text>
-    </Pressable>
-  );
-}
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -65,6 +43,8 @@ export default function TaskDetailScreen() {
   const router = useRouter();
   const [task, setTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
 
   useEffect(() => {
     fetchTask(serverUrl, id).then((t) => {
@@ -74,13 +54,11 @@ export default function TaskDetailScreen() {
   }, [serverUrl, id]);
 
   const handleStatusChange = useCallback(
-    async (status: Status) => {
+    async (event: { nativeEvent: { index: number; label: string } }) => {
       if (!task) {
         return;
       }
-      if (process.env.EXPO_OS === "ios") {
-        Haptics.selectionAsync();
-      }
+      const status = STATUSES[event.nativeEvent.index];
       const updated = await updateTask(serverUrl, task.id, { status });
       setTask(updated);
     },
@@ -88,18 +66,29 @@ export default function TaskDetailScreen() {
   );
 
   const handlePriorityChange = useCallback(
-    async (priority: Priority) => {
+    async (newPriority: Priority) => {
       if (!task) {
         return;
       }
-      if (process.env.EXPO_OS === "ios") {
-        Haptics.selectionAsync();
-      }
-      const updated = await updateTask(serverUrl, task.id, { priority });
+      const updated = await updateTask(serverUrl, task.id, { priority: newPriority });
       setTask(updated);
     },
     [task, serverUrl],
   );
+
+  const handleTitleSave = useCallback(async () => {
+    if (!task) {
+      return;
+    }
+    const trimmed = editedTitle.trim();
+    if (!trimmed || trimmed === task.title) {
+      setIsEditingTitle(false);
+      return;
+    }
+    const updated = await updateTask(serverUrl, task.id, { title: trimmed });
+    setTask(updated);
+    setIsEditingTitle(false);
+  }, [task, editedTitle, serverUrl]);
 
   const handleDelete = useCallback(() => {
     if (!task) {
@@ -132,9 +121,22 @@ export default function TaskDetailScreen() {
         options={{
           title: "Task",
           headerRight: () => (
-            <Pressable onPress={handleDelete} hitSlop={8}>
-              <Image source="sf:trash" style={{ width: 20, height: 20 }} tintColor="#FF3B30" />
-            </Pressable>
+            <Host matchContents>
+              <ContextMenu activationMethod="singlePress">
+                <ContextMenu.Trigger>
+                  <Image
+                    source="sf:ellipsis"
+                    style={{ width: 22, height: 22 }}
+                    tintColor={PlatformColor("label") as unknown as string}
+                  />
+                </ContextMenu.Trigger>
+                <ContextMenu.Items>
+                  <Button systemImage="trash" role="destructive" onPress={handleDelete}>
+                    Delete Task
+                  </Button>
+                </ContextMenu.Items>
+              </ContextMenu>
+            </Host>
           ),
         }}
       />
@@ -143,55 +145,117 @@ export default function TaskDetailScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ padding: 16, gap: 24 }}
       >
-        <Text selectable style={{ fontSize: 28, fontWeight: "700" }}>
-          {task.title}
-        </Text>
+        {isEditingTitle ? (
+          <TextInput
+            value={editedTitle}
+            onChangeText={setEditedTitle}
+            onBlur={handleTitleSave}
+            onSubmitEditing={handleTitleSave}
+            autoFocus
+            multiline
+            style={{ fontSize: 28, fontWeight: "700", color: PlatformColor("label"), padding: 0 }}
+          />
+        ) : (
+          <Pressable
+            onPress={() => {
+              setEditedTitle(task.title);
+              setIsEditingTitle(true);
+            }}
+          >
+            <Text style={{ fontSize: 28, fontWeight: "700", color: PlatformColor("label") }}>
+              {task.title}
+            </Text>
+          </Pressable>
+        )}
 
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>STATUS</Text>
-          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-            {STATUSES.map((s) => (
-              <OptionButton
-                key={s}
-                label={STATUS_LABELS[s]}
-                selected={task.status === s}
-                onPress={() => handleStatusChange(s)}
-              />
-            ))}
-          </View>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            STATUS
+          </Text>
+          <Host matchContents>
+            <Picker
+              options={STATUSES.map((s) => STATUS_LABELS[s])}
+              selectedIndex={STATUSES.indexOf(task.status)}
+              onOptionSelected={handleStatusChange}
+              variant="segmented"
+            />
+          </Host>
         </View>
 
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>PRIORITY</Text>
-          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-            {PRIORITIES.map((p) => (
-              <OptionButton
-                key={p}
-                label={p.charAt(0).toUpperCase() + p.slice(1)}
-                selected={task.priority === p}
-                color={PRIORITY_COLORS[p]}
-                onPress={() => handlePriorityChange(p)}
-              />
-            ))}
-          </View>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            PRIORITY
+          </Text>
+          <Host matchContents>
+            <ContextMenu activationMethod="singlePress">
+              <ContextMenu.Trigger>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    backgroundColor: PlatformColor("tertiarySystemFill"),
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    borderRadius: 8,
+                    borderCurve: "continuous",
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  <Text style={{ fontSize: 15, fontWeight: "500", color: PlatformColor("label") }}>
+                    {PRIORITY_LABELS[task.priority]}
+                  </Text>
+                  <Image
+                    source="sf:chevron.up.chevron.down"
+                    style={{ width: 12, height: 12 }}
+                    tintColor={PlatformColor("secondaryLabel") as unknown as string}
+                  />
+                </View>
+              </ContextMenu.Trigger>
+              <ContextMenu.Items>
+                <Button
+                  systemImage="exclamationmark.3"
+                  onPress={() => handlePriorityChange("urgent")}
+                >
+                  Urgent
+                </Button>
+                <Button
+                  systemImage="exclamationmark.2"
+                  onPress={() => handlePriorityChange("high")}
+                >
+                  High
+                </Button>
+                <Button systemImage="minus" onPress={() => handlePriorityChange("medium")}>
+                  Medium
+                </Button>
+                <Button systemImage="arrow.down" onPress={() => handlePriorityChange("low")}>
+                  Low
+                </Button>
+              </ContextMenu.Items>
+            </ContextMenu>
+          </Host>
         </View>
 
         {task.labels.length > 0 && (
           <View style={{ gap: 8 }}>
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>LABELS</Text>
+            <Text
+              style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}
+            >
+              LABELS
+            </Text>
             <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
               {task.labels.map((label) => (
                 <View
                   key={label}
                   style={{
-                    backgroundColor: "#F2F2F7",
+                    backgroundColor: PlatformColor("tertiarySystemFill"),
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderRadius: 6,
                     borderCurve: "continuous",
                   }}
                 >
-                  <Text style={{ fontSize: 14, color: "#3C3C43" }}>{label}</Text>
+                  <Text style={{ fontSize: 14, color: PlatformColor("label") }}>{label}</Text>
                 </View>
               ))}
             </View>
@@ -200,16 +264,16 @@ export default function TaskDetailScreen() {
 
         {task.notes.length > 0 && (
           <View style={{ gap: 8 }}>
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>NOTES</Text>
+            <Text
+              style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}
+            >
+              NOTES
+            </Text>
             {task.notes.map((note, i) => (
               <Text
                 key={i}
                 selectable
-                style={{
-                  fontSize: 15,
-                  color: "#3C3C43",
-                  lineHeight: 22,
-                }}
+                style={{ fontSize: 15, color: PlatformColor("label"), lineHeight: 22 }}
               >
                 {note}
               </Text>
@@ -218,10 +282,10 @@ export default function TaskDetailScreen() {
         )}
 
         <View style={{ gap: 4 }}>
-          <Text style={{ fontSize: 13, color: "#C7C7CC" }}>
+          <Text selectable style={{ fontSize: 13, color: PlatformColor("tertiaryLabel") }}>
             Created {new Date(task.created_at).toLocaleDateString()}
           </Text>
-          <Text style={{ fontSize: 13, color: "#C7C7CC" }}>
+          <Text selectable style={{ fontSize: 13, color: PlatformColor("tertiaryLabel") }}>
             Updated {new Date(task.updated_at).toLocaleDateString()}
           </Text>
         </View>

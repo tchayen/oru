@@ -1,5 +1,13 @@
 import { use } from "react";
-import { FlatList, ActivityIndicator, View, Text, Pressable } from "react-native";
+import {
+  FlatList,
+  ActivityIndicator,
+  View,
+  Text,
+  Pressable,
+  Alert,
+  PlatformColor,
+} from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ConnectionContext } from "@/hooks/use-connection";
@@ -22,19 +30,34 @@ export default function TaskListScreen() {
     update(task.id, { status: NEXT_STATUS[task.status] });
   };
 
+  const handleDisconnect = () => {
+    Alert.alert("Disconnect", "Disconnect from server?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Disconnect", style: "destructive", onPress: disconnect },
+    ]);
+  };
+
   return (
     <>
       <Stack.Screen
         options={{
           title: "Tasks",
           headerLeft: () => (
-            <Pressable onPress={disconnect} hitSlop={8}>
-              <Image source="sf:wifi.slash" style={{ width: 22, height: 22 }} tintColor="#FF3B30" />
+            <Pressable onPress={handleDisconnect} hitSlop={8}>
+              <Image
+                source="sf:wifi.slash"
+                style={{ width: 22, height: 22 }}
+                tintColor={PlatformColor("systemRed") as unknown as string}
+              />
             </Pressable>
           ),
           headerRight: () => (
             <Pressable onPress={() => router.push("/add")} hitSlop={8}>
-              <Image source="sf:plus" style={{ width: 22, height: 22 }} tintColor="#007AFF" />
+              <Image
+                source="sf:plus"
+                style={{ width: 22, height: 22 }}
+                tintColor={PlatformColor("label") as unknown as string}
+              />
             </Pressable>
           ),
         }}
@@ -57,34 +80,44 @@ export default function TaskListScreen() {
           <Image
             source="sf:wifi.exclamationmark"
             style={{ width: 48, height: 48, marginBottom: 8 }}
-            tintColor="#FF3B30"
+            tintColor={PlatformColor("systemRed") as unknown as string}
           />
-          <Text style={{ fontSize: 20, fontWeight: "600" }}>Server Unreachable</Text>
-          <Text style={{ fontSize: 15, color: "#8E8E93", textAlign: "center" }}>{error}</Text>
+          <Text style={{ fontSize: 20, fontWeight: "600", color: PlatformColor("label") }}>
+            Server Unreachable
+          </Text>
+          <Text
+            style={{
+              fontSize: 15,
+              color: PlatformColor("secondaryLabel"),
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </Text>
           <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
             <Pressable
               onPress={refresh}
               style={{
-                backgroundColor: "#007AFF",
+                backgroundColor: PlatformColor("link"),
                 paddingHorizontal: 20,
                 paddingVertical: 10,
                 borderRadius: 10,
                 borderCurve: "continuous",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>Retry</Text>
+              <Text style={{ color: "white", fontSize: 15, fontWeight: "600" }}>Retry</Text>
             </Pressable>
             <Pressable
               onPress={disconnect}
               style={{
-                backgroundColor: "#FF3B30",
+                backgroundColor: PlatformColor("systemRed"),
                 paddingHorizontal: 20,
                 paddingVertical: 10,
                 borderRadius: 10,
                 borderCurve: "continuous",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>Disconnect</Text>
+              <Text style={{ color: "white", fontSize: 15, fontWeight: "600" }}>Disconnect</Text>
             </Pressable>
           </View>
         </View>
@@ -101,10 +134,18 @@ export default function TaskListScreen() {
           <Image
             source="sf:checkmark.circle"
             style={{ width: 48, height: 48, marginBottom: 8 }}
-            tintColor="#34C759"
+            tintColor={PlatformColor("systemGreen") as unknown as string}
           />
-          <Text style={{ fontSize: 20, fontWeight: "600" }}>All done!</Text>
-          <Text style={{ fontSize: 15, color: "#8E8E93", textAlign: "center" }}>
+          <Text style={{ fontSize: 20, fontWeight: "600", color: PlatformColor("label") }}>
+            All done!
+          </Text>
+          <Text
+            style={{
+              fontSize: 15,
+              color: PlatformColor("secondaryLabel"),
+              textAlign: "center",
+            }}
+          >
             No open tasks. Tap + to add one.
           </Text>
         </View>
@@ -120,7 +161,7 @@ export default function TaskListScreen() {
             <View
               style={{
                 height: 0.5,
-                backgroundColor: "#C6C6C8",
+                backgroundColor: PlatformColor("separator"),
                 marginLeft: 52,
               }}
             />

@@ -17,6 +17,9 @@ importers:
 
   app:
     dependencies:
+      '@expo/ui':
+        specifier: 0.2.0-beta.9
+        version: 0.2.0-beta.9(expo@55.0.0-preview.10)(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       expo:
         specifier: ^55.0.0-preview.10
         version: 55.0.0-preview.10(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@55.0.5)(expo-router@55.0.0-preview.7)(react-dom@19.2.4(react@19.2.0))(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
@@ -909,6 +912,13 @@ packages:
 
   '@expo/sudo-prompt@9.3.2':
     resolution: {integrity: sha512-HHQigo3rQWKMDzYDLkubN5WQOYXJJE2eNqIQC2axC2iO3mHdwnIR7FgZVvHWtBwAdzBgAP0ECp8KqS8TiMKvgw==}
+
+  '@expo/ui@0.2.0-beta.9':
+    resolution: {integrity: sha512-RaBcp0cMe5GykQogJwRZGy4o4JHDLtrr+HaurDPhwPKqVATsV0rR11ysmFe4QX8XWLP/L3od7NOkXUi5ailvaw==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
 
   '@expo/vector-icons@15.0.3':
     resolution: {integrity: sha512-SBUyYKphmlfUBqxSfDdJ3jAdEVSALS2VUPOUyqn48oZmb2TL/O7t7/PQm5v4NQujYEPLPMTLn9KVw6H7twwbTA==}
@@ -5080,6 +5090,13 @@ snapshots:
       cross-spawn: 7.0.6
 
   '@expo/sudo-prompt@9.3.2': {}
+
+  '@expo/ui@0.2.0-beta.9(expo@55.0.0-preview.10)(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      expo: 55.0.0-preview.10(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@55.0.5)(expo-router@55.0.0-preview.7)(react-dom@19.2.4(react@19.2.0))(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      react: 19.2.0
+      react-native: 0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0)
+      sf-symbols-typescript: 2.2.0
 
   '@expo/vector-icons@15.0.3(expo-font@55.0.3)(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)':
     dependencies:

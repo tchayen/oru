@@ -1,17 +1,17 @@
 import { use, useState } from "react";
-import { ScrollView, Text, View, TextInput, Pressable, Alert } from "react-native";
+import { ScrollView, Text, View, TextInput, Pressable, Alert, PlatformColor } from "react-native";
+import { Host, ContextMenu, Button } from "@expo/ui/swift-ui";
+import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { ConnectionContext } from "@/hooks/use-connection";
 import { type Priority, createTask } from "@/utils/api";
 
-const PRIORITIES: Priority[] = ["urgent", "high", "medium", "low"];
-
-const PRIORITY_COLORS: Record<Priority, string> = {
-  urgent: "#FF3B30",
-  high: "#FF9500",
-  medium: "#007AFF",
-  low: "#8E8E93",
+const PRIORITY_LABELS: Record<Priority, string> = {
+  urgent: "Urgent",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
 };
 
 export default function AddTaskScreen() {
@@ -47,16 +47,16 @@ export default function AddTaskScreen() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable onPress={handleSave} disabled={isSaving} hitSlop={8}>
-              <Text
-                style={{
-                  fontSize: 17,
-                  fontWeight: "600",
-                  color: isSaving ? "#C7C7CC" : "#007AFF",
-                }}
-              >
-                Save
-              </Text>
+            <Pressable onPress={handleSave} disabled={isSaving || !title.trim()} hitSlop={8}>
+              <Image
+                source="sf:checkmark"
+                style={{ width: 22, height: 22 }}
+                tintColor={
+                  (isSaving || !title.trim()
+                    ? PlatformColor("tertiaryLabel")
+                    : PlatformColor("link")) as unknown as string
+                }
+              />
             </Pressable>
           ),
         }}
@@ -67,18 +67,22 @@ export default function AddTaskScreen() {
         contentContainerStyle={{ padding: 16, gap: 24 }}
       >
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>TITLE</Text>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            TITLE
+          </Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
             placeholder="What needs to be done?"
+            placeholderTextColor={PlatformColor("placeholderText")}
             autoFocus
             returnKeyType="done"
             onSubmitEditing={handleSave}
             style={{
               fontSize: 17,
               padding: 12,
-              backgroundColor: "#F2F2F7",
+              color: PlatformColor("label"),
+              backgroundColor: PlatformColor("tertiarySystemFill"),
               borderRadius: 10,
               borderCurve: "continuous",
             }}
@@ -86,42 +90,51 @@ export default function AddTaskScreen() {
         </View>
 
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>PRIORITY</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {PRIORITIES.map((p) => {
-              const selected = priority === p;
-              const color = PRIORITY_COLORS[p];
-              return (
-                <Pressable
-                  key={p}
-                  onPress={() => {
-                    setPriority(p);
-                    if (process.env.EXPO_OS === "ios") {
-                      Haptics.selectionAsync();
-                    }
-                  }}
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            PRIORITY
+          </Text>
+          <Host matchContents>
+            <ContextMenu activationMethod="singlePress">
+              <ContextMenu.Trigger>
+                <View
                   style={{
-                    flex: 1,
-                    paddingVertical: 10,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    backgroundColor: PlatformColor("tertiarySystemFill"),
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
                     borderRadius: 8,
                     borderCurve: "continuous",
-                    backgroundColor: selected ? color : "#F2F2F7",
-                    alignItems: "center",
+                    alignSelf: "flex-start",
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "600",
-                      color: selected ? "#fff" : "#000",
-                    }}
-                  >
-                    {p.charAt(0).toUpperCase() + p.slice(1)}
+                  <Text style={{ fontSize: 15, fontWeight: "500", color: PlatformColor("label") }}>
+                    {PRIORITY_LABELS[priority]}
                   </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+                  <Image
+                    source="sf:chevron.up.chevron.down"
+                    style={{ width: 12, height: 12 }}
+                    tintColor={PlatformColor("secondaryLabel") as unknown as string}
+                  />
+                </View>
+              </ContextMenu.Trigger>
+              <ContextMenu.Items>
+                <Button systemImage="exclamationmark.3" onPress={() => setPriority("urgent")}>
+                  Urgent
+                </Button>
+                <Button systemImage="exclamationmark.2" onPress={() => setPriority("high")}>
+                  High
+                </Button>
+                <Button systemImage="minus" onPress={() => setPriority("medium")}>
+                  Medium
+                </Button>
+                <Button systemImage="arrow.down" onPress={() => setPriority("low")}>
+                  Low
+                </Button>
+              </ContextMenu.Items>
+            </ContextMenu>
+          </Host>
         </View>
       </ScrollView>
     </>
