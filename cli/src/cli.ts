@@ -499,6 +499,54 @@ export function createProgram(
       },
     );
 
+  // done (shortcut for update --status done)
+  program
+    .command("done <id>")
+    .description("Mark a task as done (shortcut for update -s done)")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const task = await service.update(id, { status: "done" });
+      if (!task) {
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "not_found", id }));
+        } else {
+          write(`Task ${id} not found.`);
+        }
+        process.exitCode = 1;
+        return;
+      }
+      if (useJson(opts)) {
+        write(formatTaskJson(task));
+      } else {
+        write(formatTaskText(task));
+      }
+    });
+
+  // start (shortcut for update --status in_progress)
+  program
+    .command("start <id>")
+    .description("Start a task (shortcut for update -s in_progress)")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const task = await service.update(id, { status: "in_progress" });
+      if (!task) {
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "not_found", id }));
+        } else {
+          write(`Task ${id} not found.`);
+        }
+        process.exitCode = 1;
+        return;
+      }
+      if (useJson(opts)) {
+        write(formatTaskJson(task));
+      } else {
+        write(formatTaskText(task));
+      }
+    });
+
   // delete
   program
     .command("delete <id>")
