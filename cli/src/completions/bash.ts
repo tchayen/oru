@@ -2,10 +2,10 @@ import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import { SORT_FIELDS } from "../tasks/repository.js";
 
 export function generateBashCompletions(): string {
-  return `# ao shell completions for bash
-# Install: ao completions bash >> ~/.bashrc
+  return `# oru shell completions for bash
+# Install: oru completions bash >> ~/.bashrc
 
-_ao_completions() {
+_oru_completions() {
   local cur prev words cword
   _init_completion || return
 
@@ -41,7 +41,7 @@ _ao_completions() {
       ;;
     -l|--label|--unlabel)
       local labels
-      labels=$(ao _complete labels "$cur" 2>/dev/null)
+      labels=$(oru _complete labels "$cur" 2>/dev/null)
       COMPREPLY=($(compgen -W "$labels" -- "$cur"))
       return
       ;;
@@ -86,7 +86,7 @@ _ao_completions() {
     update)
       if [[ "$cur" != -* ]]; then
         local tasks
-        tasks=$(ao _complete tasks "$cur" 2>/dev/null | cut -f1)
+        tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
         COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
       else
         COMPREPLY=($(compgen -W "-t --title -s --status -p --priority -d --due --assign -l --label --unlabel -b --blocked-by -n --note --clear-notes --meta --json --plaintext" -- "$cur"))
@@ -100,7 +100,7 @@ _ao_completions() {
     get|delete|done|start|review|log)
       if [[ "$cur" != -* ]]; then
         local tasks
-        tasks=$(ao _complete tasks "$cur" 2>/dev/null | cut -f1)
+        tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
         COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
       fi
       ;;
@@ -110,6 +110,6 @@ _ao_completions() {
   esac
 }
 
-complete -F _ao_completions ao
+complete -F _oru_completions oru
 `;
 }

@@ -1,12 +1,12 @@
 {
-  "name": "ao-root",
+  "name": "oru-root",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "pnpm --filter ao test",
-    "build": "pnpm --filter ao build",
-    "dev": "pnpm --filter ao dev",
+    "test": "pnpm --filter oru test",
+    "build": "pnpm --filter oru build",
+    "dev": "pnpm --filter oru dev",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",

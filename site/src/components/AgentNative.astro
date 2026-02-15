@@ -10,7 +10,7 @@ import Badge from "./ui/Badge.astro";
       <h2 class="mb-4">Built for agents. Not retrofitted.</h2>
       <p class="body-lg max-w-[640px] mx-auto mb-4 text-text-secondary">
         Your AI agents generate tasks, track progress, and need structured
-        output to reason about what to do next. ao treats them as first-class
+        output to reason about what to do next. oru treats them as first-class
         participants — not afterthoughts bolted onto a human-only interface.
       </p>
       <p class="body max-w-[640px] mx-auto text-text-tertiary">
@@ -27,9 +27,9 @@ import Badge from "./ui/Badge.astro";
         <div class="text-center">
           <Badge>Human-friendly</Badge>
         </div>
-        <Terminal title="ao list">
+        <Terminal title="orulist">
           <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            ><span class="prompt">$ </span><span class="cmd">oru</span>
             <span class="sub">list</span></span
           >
           <span class="line"
@@ -56,9 +56,9 @@ import Badge from "./ui/Badge.astro";
         <div class="text-center">
           <Badge>Agent-friendly</Badge>
         </div>
-        <Terminal title="ao list --json">
+        <Terminal title="orulist --json">
           <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            ><span class="prompt">$ </span><span class="cmd">oru</span>
             <span class="sub">list</span>
             <span class="flag">--json</span></span
           >
@@ -102,7 +102,7 @@ import Badge from "./ui/Badge.astro";
       <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
         <h3 class="text-[22px]">Idempotent creates. Safe retries.</h3>
         <p class="body text-text-secondary">
-          Agents retry. Network calls fail. ao's <code
+          Agents retry. Network calls fail. oru's <code
             class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
             >--id</code
           > flag lets agents supply their own UUIDv7, making creates idempotent. Run
@@ -110,7 +110,7 @@ import Badge from "./ui/Badge.astro";
         </p>
         <Terminal title="idempotent creates">
           <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            ><span class="prompt">$ </span><span class="cmd">oru</span>
             <span class="sub">add</span>
             <span class="str">"Deploy to staging"</span>
             <span class="flag">--id</span>
@@ -121,7 +121,7 @@ import Badge from "./ui/Badge.astro";
           >
           <span class="blank"></span>
           <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            ><span class="prompt">$ </span><span class="cmd">oru</span>
             <span class="sub">add</span>
             <span class="str">"Deploy to staging"</span>
             <span class="flag">--id</span>
@@ -144,7 +144,7 @@ import Badge from "./ui/Badge.astro";
         </p>
         <Terminal title="metadata">
           <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            ><span class="prompt">$ </span><span class="cmd">oru</span>
             <span class="sub">add</span>
             <span class="str">"Review PR feedback"</span> \</span
           >

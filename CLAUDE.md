@@ -1,4 +1,4 @@
-# ao
+# oru
 
 Agent-friendly todo CLI with offline-first sync via oplog.
 
@@ -65,7 +65,7 @@ cd app && pnpm tsgo  # type check the app
 
 ## DB location
 
-Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
+Defaults to `~/.oru/oru.db`. Override with `ORU_DB_PATH` env var.
 
 ## Checklists
 
@@ -74,7 +74,7 @@ Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 1. `cli/src/cli.ts` — add `.command()` block (before `return program`)
 2. `cli/src/completions/bash.ts` — add to `commands` string, add case in switch
 3. `cli/src/completions/zsh.ts` — add to `commands` array, add case with `_arguments`
-4. `cli/src/completions/fish.ts` — add `complete -c ao` lines for command + flags
+4. `cli/src/completions/fish.ts` — add `complete -c oru` lines for command + flags
 5. `cli/tests/cli/parse.test.ts` — add tests for the new command
 6. `cli/tests/completions/scripts.test.ts` — add assertions that scripts contain the command
 
@@ -88,7 +88,7 @@ Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 6. `cli/src/server/routes.ts` — add to POST/PATCH validation and field extraction
 7. `cli/src/cli.ts` — add flag to relevant commands (`add`, `update`, `edit`)
 8. `cli/src/format/text.ts` — update `formatTaskText()` and `formatTasksText()` if visible
-9. `cli/src/edit.ts` — update `serializeTask()` and `parseDocument()` for `ao edit`
+9. `cli/src/edit.ts` — update `serializeTask()` and `parseDocument()` for `oru edit`
 10. `cli/src/completions/bash.ts`, `zsh.ts`, `fish.ts` — add flag completions if enum-like
 11. `app/utils/api.ts` — sync `Task`, `CreateTaskInput`, `UpdateTaskInput` types
 12. Add tests in `cli/tests/` mirroring each layer changed

@@ -25,7 +25,7 @@ export function useTasks(serverUrl: string | null) {
       setError(null);
     } catch {
       setTasks([]);
-      setError("Server unreachable. Check that ao server is running.");
+      setError("Server unreachable. Check that oru server is running.");
     } finally {
       setIsLoading(false);
     }

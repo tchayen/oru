@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "ao",
-    "slug": "ao",
-    "scheme": "ao",
+    "name": "oru",
+    "slug": "oru",
+    "scheme": "oru",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,13 +16,13 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "ao needs camera access to scan QR codes for server connection.",
-        "NSLocalNetworkUsageDescription": "ao connects to a server on your local network.",
+        "NSCameraUsageDescription": "oru needs camera access to scan QR codes for server connection.",
+        "NSLocalNetworkUsageDescription": "oru connects to a server on your local network.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }
       },
-      "bundleIdentifier": "com.tomekexpo.ao"
+      "bundleIdentifier": "sh.oru"
     },
     "android": {
       "adaptiveIcon": {
@@ -31,7 +31,7 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": ["android.permission.CAMERA"],
-      "package": "com.tomekexpo.ao"
+      "package": "sh.oru"
     },
     "plugins": [
       "expo-router",
@@ -40,7 +40,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "ao needs camera access to scan QR codes for server connection."
+          "cameraPermission": "oru needs camera access to scan QR codes for server connection."
         }
       ]
     ]

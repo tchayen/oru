@@ -4,10 +4,10 @@ import os from "os";
 import fs from "fs";
 
 export function getDbPath(): string {
-  if (process.env.AO_DB_PATH) {
-    return process.env.AO_DB_PATH;
+  if (process.env.ORU_DB_PATH) {
+    return process.env.ORU_DB_PATH;
   }
-  return path.join(os.homedir(), ".ao", "ao.db");
+  return path.join(os.homedir(), ".oru", "oru.db");
 }
 
 export function openDb(dbPath?: string): Database.Database {

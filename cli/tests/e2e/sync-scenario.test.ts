@@ -13,7 +13,7 @@ describe("e2e sync scenarios", () => {
   let remote: FsRemote;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ao-e2e-test-"));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-e2e-test-"));
     remote = new FsRemote(path.join(tmpDir, "remote-oplog.db"));
   });
 

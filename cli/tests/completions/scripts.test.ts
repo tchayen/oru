@@ -54,9 +54,9 @@ describe("bash completions script", () => {
     expect(script).toContain("context");
   });
 
-  it("calls ao _complete for dynamic values", () => {
-    expect(script).toContain("ao _complete tasks");
-    expect(script).toContain("ao _complete labels");
+  it("calls oru _complete for dynamic values", () => {
+    expect(script).toContain("oru _complete tasks");
+    expect(script).toContain("oru _complete labels");
   });
 
   it("contains --assign completion for add and update", () => {
@@ -128,9 +128,9 @@ describe("zsh completions script", () => {
     expect(script).toContain("context:Show agent briefing of current task status");
   });
 
-  it("calls ao _complete for dynamic values", () => {
-    expect(script).toContain("ao _complete tasks");
-    expect(script).toContain("ao _complete labels");
+  it("calls oru _complete for dynamic values", () => {
+    expect(script).toContain("oru _complete tasks");
+    expect(script).toContain("oru _complete labels");
   });
 
   it("uses _describe for task completions", () => {
@@ -162,8 +162,8 @@ describe("zsh completions script", () => {
 describe("fish completions script", () => {
   const script = generateFishCompletions();
 
-  it("uses complete -c ao", () => {
-    expect(script).toContain("complete -c ao");
+  it("uses complete -c oru", () => {
+    expect(script).toContain("complete -c oru");
   });
 
   it("contains command names", () => {
@@ -210,10 +210,10 @@ describe("fish completions script", () => {
   });
 
   it("defines helper functions for dynamic completions", () => {
-    expect(script).toContain("__ao_task_ids");
-    expect(script).toContain("__ao_labels");
-    expect(script).toContain("ao _complete tasks");
-    expect(script).toContain("ao _complete labels");
+    expect(script).toContain("__oru_task_ids");
+    expect(script).toContain("__oru_labels");
+    expect(script).toContain("oru _complete tasks");
+    expect(script).toContain("oru _complete labels");
   });
 
   it("uses -F for sync file completion", () => {

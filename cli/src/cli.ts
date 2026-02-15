@@ -86,7 +86,7 @@ function colorizeHelp(text: string): string {
         section = line.slice(0, -1).toLowerCase();
         return bold(line);
       }
-      // Usage line: "Usage: ao [options] [command]"
+      // Usage line: "Usage: oru [options] [command]"
       if (line.startsWith("Usage: ")) {
         section = "";
         return bold("Usage:") + " " + line.slice(7);
@@ -137,9 +137,9 @@ export function createProgram(
   const ky = createKysely(db);
   const deviceId = getDeviceId(db);
   const service = new TaskService(ky, deviceId);
-  const program = new Command("ao")
+  const program = new Command("oru")
     .description(
-      "ao — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set AO_FORMAT=json, or output_format in config). Run 'ao config init' to create a config file.",
+      "oru — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file.",
     )
     .version(`0.1.0 (${__GIT_COMMIT__})`);
 
@@ -157,7 +157,7 @@ export function createProgram(
     }
     return !!(
       opts.json ||
-      process.env.AO_FORMAT === "json" ||
+      process.env.ORU_FORMAT === "json" ||
       resolvedConfig.output_format === "json"
     );
   }
@@ -1219,8 +1219,8 @@ export function createProgram(
         stdio: "inherit",
         env: {
           ...process.env,
-          AO_PORT: opts.port,
-          ...(opts.tunnel ? { AO_TUNNEL: "1" } : {}),
+          ORU_PORT: opts.port,
+          ...(opts.tunnel ? { ORU_TUNNEL: "1" } : {}),
         },
       });
 

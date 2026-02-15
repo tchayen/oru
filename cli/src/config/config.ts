@@ -43,17 +43,17 @@ const VALID_OUTPUT_FORMATS = new Set<string>(["text", "json"]);
 const VALID_NEXT_MONTH = new Set<string>(["same_day", "first"]);
 
 export function getConfigPath(): string {
-  if (process.env.AO_CONFIG_PATH) {
-    return process.env.AO_CONFIG_PATH;
+  if (process.env.ORU_CONFIG_PATH) {
+    return process.env.ORU_CONFIG_PATH;
   }
-  if (process.env.AO_CONFIG_DIR) {
-    return path.join(process.env.AO_CONFIG_DIR, "config.toml");
+  if (process.env.ORU_CONFIG_DIR) {
+    return path.join(process.env.ORU_CONFIG_DIR, "config.toml");
   }
-  return path.join(os.homedir(), ".ao", "config.toml");
+  return path.join(os.homedir(), ".oru", "config.toml");
 }
 
-export const DEFAULT_CONFIG_TOML = `# ao configuration
-# Docs: https://github.com/tchayen/ao
+export const DEFAULT_CONFIG_TOML = `# oru configuration
+# Docs: https://github.com/tchayen/oru
 
 # Date input format for slash dates (e.g. 03/04/2026)
 # "mdy" = MM/DD/YYYY (US)

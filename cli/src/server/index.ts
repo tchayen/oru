@@ -29,7 +29,7 @@ function printQr(url: string): void {
   });
 }
 
-const port = parseInt(process.env.AO_PORT ?? "2358", 10);
+const port = parseInt(process.env.ORU_PORT ?? "2358", 10);
 const db = openDb();
 initSchema(db);
 
@@ -43,9 +43,9 @@ let tunnelStop: (() => void) | undefined;
 const server = serve({ fetch: app.fetch, port }, async (info) => {
   const localIp = getLocalIp();
   const localUrl = `http://${localIp}:${info.port}`;
-  console.log(`ao server listening on ${localUrl}`);
+  console.log(`oru server listening on ${localUrl}`);
 
-  if (process.env.AO_TUNNEL === "1") {
+  if (process.env.ORU_TUNNEL === "1") {
     try {
       const { Tunnel } = await import("cloudflared");
       const tunnel = Tunnel.quick(`http://localhost:${info.port}`);

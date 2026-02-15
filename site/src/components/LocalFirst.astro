@@ -11,10 +11,10 @@ import Terminal from "./ui/Terminal.astro";
         <p class="section-label">Local-first</p>
         <h2 class="mb-4">Your data never leaves your machine.</h2>
         <p class="body-lg text-text-secondary mb-4">
-          ao stores everything in a single SQLite database at
+          oru stores everything in a single SQLite database at
           <code
             class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-accent"
-            >~/.ao/ao.db</code
+            >~/.oru/oru.db</code
           >. No accounts. No cloud. No third-party servers between you and your
           tasks.
         </p>
@@ -36,10 +36,10 @@ import Terminal from "./ui/Terminal.astro";
             ><span class="prompt">$ </span><span class="cmd">npm</span>
             <span class="sub">install</span>
             <span class="flag">-g</span>
-            <span class="val">ao</span></span
+            <span class="val">oru-cli</span></span
           >
           <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            ><span class="prompt">$ </span><span class="cmd">oru</span>
             <span class="sub">add</span>
             <span class="str">"First task"</span></span
           >
@@ -77,7 +77,7 @@ import Terminal from "./ui/Terminal.astro";
             </svg>
           </div>
           <span class="text-sm font-semibold text-text-primary">CLI</span>
-          <span class="text-xs text-text-tertiary font-mono">ao commands</span>
+          <span class="text-xs text-text-tertiary font-mono">oru commands</span>
         </div>
         <div class="flex justify-center h-8">
           <div class="w-px h-full bg-border-default"></div>
@@ -102,7 +102,7 @@ import Terminal from "./ui/Terminal.astro";
             </svg>
           </div>
           <span class="text-sm font-semibold text-text-primary">SQLite</span>
-          <span class="text-xs text-text-tertiary font-mono">~/.ao/ao.db</span>
+          <span class="text-xs text-text-tertiary font-mono">~/.oru/oru.db</span>
         </div>
         <div class="flex justify-center h-8">
           <div class="w-px h-full bg-border-default"></div>
@@ -127,7 +127,7 @@ import Terminal from "./ui/Terminal.astro";
               <line x1="6" y1="18" x2="6.01" y2="18"></line>
             </svg>
           </div>
-          <span class="text-sm font-semibold text-text-primary">ao server</span>
+          <span class="text-sm font-semibold text-text-primary">oru server</span>
           <span class="text-xs text-text-tertiary font-mono">Local HTTP</span>
         </div>
         <div class="flex justify-center h-8">

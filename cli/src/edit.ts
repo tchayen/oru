@@ -160,7 +160,7 @@ export function parseDocument(
 }
 
 export async function openInEditor(content: string): Promise<string> {
-  const tmpFile = path.join(os.tmpdir(), `ao-edit-${Date.now()}.toml`);
+  const tmpFile = path.join(os.tmpdir(), `oru-edit-${Date.now()}.toml`);
   fs.writeFileSync(tmpFile, content);
 
   const editor = process.env.EDITOR || "vi";

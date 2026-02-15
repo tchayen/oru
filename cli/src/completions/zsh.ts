@@ -2,14 +2,14 @@ import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import { SORT_FIELDS } from "../tasks/repository.js";
 
 export function generateZshCompletions(): string {
-  return `#compdef ao
-# ao shell completions for zsh
+  return `#compdef oru
+# oru shell completions for zsh
 # Install:
 #   mkdir -p ~/.zsh/completions
-#   ao completions zsh > ~/.zsh/completions/_ao
+#   oru completions zsh > ~/.zsh/completions/_oru
 #   # Add to .zshrc before compinit: fpath=(~/.zsh/completions $fpath)
 
-_ao() {
+_oru() {
   local -a commands
   commands=(
     'add:Add a new task'
@@ -44,7 +44,7 @@ _ao() {
 
   case $state in
     command)
-      _describe -t commands 'ao command' commands
+      _describe -t commands 'oru command' commands
       ;;
     args)
       case $words[1] in
@@ -187,7 +187,7 @@ _ao() {
       case $state in
         tasks)
           local -a task_ids
-          task_ids=(\${(f)"$(ao _complete tasks "$words[CURRENT]" 2>/dev/null)"})
+          task_ids=(\${(f)"$(oru _complete tasks "$words[CURRENT]" 2>/dev/null)"})
           if (( \${#task_ids} )); then
             local -a descriptions
             for entry in $task_ids; do
@@ -200,7 +200,7 @@ _ao() {
           ;;
         labels)
           local -a label_list
-          label_list=(\${(f)"$(ao _complete labels "$words[CURRENT]" 2>/dev/null)"})
+          label_list=(\${(f)"$(oru _complete labels "$words[CURRENT]" 2>/dev/null)"})
           compadd -a label_list
           ;;
       esac
@@ -208,6 +208,6 @@ _ao() {
   esac
 }
 
-_ao "$@"
+_oru "$@"
 `;
 }
