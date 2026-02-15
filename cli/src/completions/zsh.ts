@@ -11,6 +11,7 @@ _ao() {
   commands=(
     'add:Add a new task'
     'list:List tasks'
+    'labels:List all labels in use'
     'get:Get a task by ID'
     'update:Update a task'
     'delete:Delete one or more tasks'
@@ -61,6 +62,11 @@ _ao() {
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]'
           ;;
+        labels)
+          _arguments \\
+            '--json[Output as JSON]' \\
+            '--plaintext[Output as plain text]'
+          ;;
         get)
           _arguments \\
             '--json[Output as JSON]' \\
@@ -74,6 +80,7 @@ _ao() {
             '(-p --priority)'{-p,--priority}'[New priority]:priority:('"$priority_values"')' \\
             '(-d --due)'{-d,--due}'[Due date]:date:' \\
             '*'{-l,--label}'[Add labels]:label:->labels' \\
+            '*--unlabel[Remove labels]:label:->labels' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\
             '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\

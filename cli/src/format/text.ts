@@ -83,6 +83,13 @@ export function formatTaskText(task: Task, now?: Date): string {
   return lines.join("\n");
 }
 
+export function formatLabelsText(labels: string[]): string {
+  if (labels.length === 0) {
+    return dim("No labels found.");
+  }
+  return labels.map((l) => cyan(l)).join("\n");
+}
+
 export function formatTasksText(tasks: Task[], now?: Date): string {
   if (tasks.length === 0) {
     return dim("No tasks found.");

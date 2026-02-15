@@ -8,8 +8,14 @@ import { TaskService } from "./main.js";
 import { createKysely } from "./db/kysely.js";
 import { openDb } from "./db/connection.js";
 import { initSchema } from "./db/schema.js";
-import { formatTaskText, formatTasksText, filterByDue, type DueFilter } from "./format/text.js";
-import { formatTaskJson, formatTasksJson } from "./format/json.js";
+import {
+  formatTaskText,
+  formatTasksText,
+  formatLabelsText,
+  filterByDue,
+  type DueFilter,
+} from "./format/text.js";
+import { formatTaskJson, formatTasksJson, formatLabelsJson } from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
@@ -282,6 +288,21 @@ export function createProgram(
       },
     );
 
+  // labels
+  program
+    .command("labels")
+    .description("List all labels in use")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (opts: { json?: boolean; plaintext?: boolean }) => {
+      const labels = await service.listLabels();
+      if (useJson(opts)) {
+        write(formatLabelsJson(labels));
+      } else {
+        write(formatLabelsText(labels));
+      }
+    });
+
   // get
   program
     .command("get <id>")
@@ -318,6 +339,7 @@ export function createProgram(
       "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20', 'none' to clear)",
     )
     .option("-l, --label <labels...>", "Add labels")
+    .option("--unlabel <labels...>", "Remove labels")
     .option("-n, --note <note>", "Append a note")
     .option("--meta <key=value...>", "Set metadata key=value pairs")
     .option("--json", "Output as JSON")
@@ -331,6 +353,7 @@ export function createProgram(
           priority?: Priority;
           due?: string;
           label?: string[];
+          unlabel?: string[];
           note?: string;
           meta?: string[];
           json?: boolean;
@@ -431,7 +454,7 @@ export function createProgram(
           }
         }
 
-        if (opts.label) {
+        if (opts.label || opts.unlabel) {
           const existing = await service.get(id);
           if (!existing) {
             if (useJson(opts)) {
@@ -442,11 +465,16 @@ export function createProgram(
             process.exitCode = 1;
             return;
           }
-          const labels = [...existing.labels];
-          for (const l of opts.label) {
-            if (!labels.includes(l)) {
-              labels.push(l);
+          let labels = [...existing.labels];
+          if (opts.label) {
+            for (const l of opts.label) {
+              if (!labels.includes(l)) {
+                labels.push(l);
+              }
             }
+          }
+          if (opts.unlabel) {
+            labels = labels.filter((l) => !opts.unlabel!.includes(l));
           }
           updateFields.labels = labels;
         }
