@@ -15,7 +15,7 @@ const NEXT_STATUS: Record<Status, Status> = {
 
 export default function TaskListScreen() {
   const { serverUrl, disconnect } = use(ConnectionContext);
-  const { tasks, isLoading, isRefreshing, refresh, update } = useTasks(serverUrl);
+  const { tasks, isLoading, isRefreshing, error, refresh, update } = useTasks(serverUrl);
   const router = useRouter();
 
   const handleToggleStatus = (task: Task) => {
@@ -43,6 +43,50 @@ export default function TaskListScreen() {
       {isLoading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" />
+        </View>
+      ) : error ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 8,
+            padding: 32,
+          }}
+        >
+          <Image
+            source="sf:wifi.exclamationmark"
+            style={{ width: 48, height: 48, marginBottom: 8 }}
+            tintColor="#FF3B30"
+          />
+          <Text style={{ fontSize: 20, fontWeight: "600" }}>Server Unreachable</Text>
+          <Text style={{ fontSize: 15, color: "#8E8E93", textAlign: "center" }}>{error}</Text>
+          <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
+            <Pressable
+              onPress={refresh}
+              style={{
+                backgroundColor: "#007AFF",
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 10,
+                borderCurve: "continuous",
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>Retry</Text>
+            </Pressable>
+            <Pressable
+              onPress={disconnect}
+              style={{
+                backgroundColor: "#FF3B30",
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 10,
+                borderCurve: "continuous",
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>Disconnect</Text>
+            </Pressable>
+          </View>
         </View>
       ) : tasks.length === 0 ? (
         <View

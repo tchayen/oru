@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigation } from "expo-router";
 import {
   type Task,
   type CreateTaskInput,
@@ -14,13 +15,17 @@ export function useTasks(serverUrl: string | null) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigation = useNavigation();
 
   const load = useCallback(async () => {
     try {
       const data = await fetchTasks(serverUrl);
       setTasks(sortTasks(data.filter((t) => t.status !== "done")));
+      setError(null);
     } catch {
       setTasks([]);
+      setError("Server unreachable. Check that ao server is running.");
     } finally {
       setIsLoading(false);
     }
@@ -29,6 +34,12 @@ export function useTasks(serverUrl: string | null) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    return navigation.addListener("focus", () => {
+      load();
+    });
+  }, [navigation, load]);
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -64,5 +75,5 @@ export function useTasks(serverUrl: string | null) {
     [serverUrl],
   );
 
-  return { tasks, isLoading, isRefreshing, refresh, add, update, remove };
+  return { tasks, isLoading, isRefreshing, error, refresh, add, update, remove };
 }

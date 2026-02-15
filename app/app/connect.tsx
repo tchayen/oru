@@ -1,5 +1,5 @@
 import { use, useState } from "react";
-import { Text, View, Pressable } from "react-native";
+import { Text, View, Pressable, ActivityIndicator } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -9,6 +9,8 @@ export default function ConnectScreen() {
   const { connect } = use(ConnectionContext);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleBarCodeScanned = async ({ data }: { type: string; data: string }) => {
@@ -23,6 +25,24 @@ export default function ConnectScreen() {
     }
 
     setScanned(true);
+    setValidating(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${data}/tasks`, { signal: AbortSignal.timeout(5000) });
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+    } catch {
+      setValidating(false);
+      setError("Could not reach the server. Make sure ao server is running.");
+      if (process.env.EXPO_OS === "ios") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+      return;
+    }
+
+    setValidating(false);
     if (process.env.EXPO_OS === "ios") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
@@ -110,42 +130,42 @@ export default function ConnectScreen() {
       <View
         style={{
           position: "absolute",
-          bottom: 100,
+          bottom: 80,
           left: 0,
           right: 0,
           alignItems: "center",
+          gap: 16,
+          paddingHorizontal: 32,
         }}
       >
-        <Text style={{ color: "#fff", fontSize: 17, textAlign: "center" }}>
-          Scan the QR code from{"\n"}
-          <Text style={{ fontWeight: "600" }}>ao server start</Text>
-        </Text>
+        {validating ? (
+          <ActivityIndicator color="#fff" />
+        ) : error ? (
+          <>
+            <Text style={{ color: "#FF6961", fontSize: 15, textAlign: "center" }}>{error}</Text>
+            <Pressable
+              onPress={() => {
+                setScanned(false);
+                setError(null);
+              }}
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 10,
+                borderCurve: "continuous",
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 15 }}>Scan Again</Text>
+            </Pressable>
+          </>
+        ) : (
+          <Text style={{ color: "#fff", fontSize: 17, textAlign: "center" }}>
+            Scan the QR code from{"\n"}
+            <Text style={{ fontWeight: "600" }}>ao server start</Text>
+          </Text>
+        )}
       </View>
-
-      {scanned && (
-        <View
-          style={{
-            position: "absolute",
-            bottom: 60,
-            left: 0,
-            right: 0,
-            alignItems: "center",
-          }}
-        >
-          <Pressable
-            onPress={() => setScanned(false)}
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              borderRadius: 10,
-              borderCurve: "continuous",
-            }}
-          >
-            <Text style={{ color: "#fff", fontSize: 15 }}>Scan Again</Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
 }
