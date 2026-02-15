@@ -27,72 +27,27 @@ import Badge from "./ui/Badge.astro";
         <div class="text-center">
           <Badge>Human-friendly</Badge>
         </div>
-        <Terminal title="orulist">
-          <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">oru</span>
-            <span class="sub">list</span></span
-          >
-          <span class="line"
-            ><span class="output"> # Title Priority Due Status</span></span
-          >
-          <span class="line"
-            ><span class="output"> 1 Refactor auth middleware </span><span
-              class="val">high</span
-            ><span class="output"> Fri Feb 20 todo</span></span
-          >
-          <span class="line"
-            ><span class="output"> 2 Write migration tests </span><span
-              class="val">medium</span
-            ><span class="output"> — in-progress</span></span
-          >
-          <span class="line"
-            ><span class="output"> 3 Update API docs </span><span class="val"
-              >low</span
-            ><span class="output"> — todo</span></span
-          >
+        <Terminal title="oru list">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span></span>
+          <span class="line"><span class="output">     ID        PRI     DUE         TITLE</span></span>
+          <span class="line"><span class="output">[ ]  zj9rESjT  </span><span class="val">high  </span><span class="output">  2026-02-20  </span><span class="cmd">Refactor auth middleware</span></span>
+          <span class="line"><span class="val">[~]</span><span class="output">  fj6EmFhu  medium              </span><span class="cmd">Write migration tests</span></span>
+          <span class="line"><span class="output">[ ]  yX9K9UbF  low                 </span><span class="cmd">Update API docs</span></span>
         </Terminal>
       </div>
       <div class="flex flex-col gap-4 min-w-0">
         <div class="text-center">
           <Badge>Agent-friendly</Badge>
         </div>
-        <Terminal title="orulist --json">
-          <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">oru</span>
-            <span class="sub">list</span>
-            <span class="flag">--json</span></span
-          >
+        <Terminal title="oru list --json">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--json</span></span>
           <span class="line"><span class="output">[</span></span>
-          <span class="line"><span class="output"> {"{"}</span></span>
-          <span class="line"
-            ><span class="output"> </span><span class="key">"id"</span><span
-              class="output"
-              >:
-            </span><span class="str">"019414a2-7b1a-..."</span><span
-              class="output">,</span
-            ></span
-          >
-          <span class="line"
-            ><span class="output"> </span><span class="key">"title"</span><span
-              class="output"
-              >:
-            </span><span class="str">"Refactor auth middleware"</span><span
-              class="output">,</span
-            ></span
-          >
-          <span class="line"
-            ><span class="output"> </span><span class="key">"status"</span
-            ><span class="output"
-              >:
-            </span><span class="str">"todo"</span><span class="output">,</span
-            ></span
-          >
-          <span class="line"
-            ><span class="output"> </span><span class="key">"priority"</span
-            ><span class="output">: </span><span class="str">"high"</span
-            ></span
-          >
-          <span class="line"><span class="output"> {"}"}</span></span>
+          <span class="line"><span class="output">  {"{"}</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"id"</span><span class="output">: </span><span class="str">"zj9rESjT-7b1a-..."</span><span class="output">,</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"title"</span><span class="output">: </span><span class="str">"Refactor auth..."</span><span class="output">,</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"status"</span><span class="output">: </span><span class="str">"todo"</span><span class="output">,</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"priority"</span><span class="output">: </span><span class="str">"high"</span></span>
+          <span class="line"><span class="output">  {"}"}</span></span>
           <span class="line"><span class="output">]</span></span>
         </Terminal>
       </div>
@@ -109,27 +64,13 @@ import Badge from "./ui/Badge.astro";
           it twice, get one task.
         </p>
         <Terminal title="idempotent creates">
-          <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">oru</span>
-            <span class="sub">add</span>
-            <span class="str">"Deploy to staging"</span>
-            <span class="flag">--id</span>
-            <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span
-          >
-          <span class="line"
-            ><span class="output">Created task 019414a3</span></span
-          >
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
+          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
           <span class="blank"></span>
-          <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">oru</span>
-            <span class="sub">add</span>
-            <span class="str">"Deploy to staging"</span>
-            <span class="flag">--id</span>
-            <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span
-          >
-          <span class="line"
-            ><span class="output">Task already exists. No-op.</span></span
-          >
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
+          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
         </Terminal>
       </div>
 
@@ -143,26 +84,16 @@ import Badge from "./ui/Badge.astro";
           > flag takes arbitrary key-value pairs.
         </p>
         <Terminal title="metadata">
-          <span class="line"
-            ><span class="prompt">$ </span><span class="cmd">oru</span>
-            <span class="sub">add</span>
-            <span class="str">"Review PR feedback"</span> \</span
-          >
-          <span class="line">
-            <span class="flag">--meta</span>
-            <span class="val">agent=claude-code</span> \</span
-          >
-          <span class="line">
-            <span class="flag">--meta</span>
-            <span class="val">pr=142</span> \</span
-          >
-          <span class="line">
-            <span class="flag">--meta</span>
-            <span class="val">run=a1b2c3</span></span
-          >
-          <span class="line"
-            ><span class="output">Created task 019414a4</span></span
-          >
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Review PR feedback"</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">agent=claude-code</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">pr=142</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">run=a1b2c3</span></span>
+          <span class="line"><span class="output">019414a4  </span><span class="cmd">Review PR feedback</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="line"><span class="output">  Metadata:</span></span>
+          <span class="line"><span class="output">    agent: claude-code</span></span>
+          <span class="line"><span class="output">    pr: 142</span></span>
+          <span class="line"><span class="output">    run: a1b2c3</span></span>
         </Terminal>
       </div>
     </div>
