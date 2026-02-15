@@ -15,6 +15,7 @@ import {
   formatLogText,
   filterByDue,
   isOverdue,
+  isDueSoon,
   formatContextText,
   type DueFilter,
   type ContextSections,
@@ -1039,6 +1040,7 @@ export function createProgram(
 
       const sections: ContextSections = {
         overdue: [],
+        due_soon: [],
         in_progress: [],
         actionable: [],
         blocked: [],
@@ -1064,6 +1066,12 @@ export function createProgram(
         // Overdue takes priority
         if (t.due_at && isOverdue(t.due_at, now)) {
           sections.overdue.push(t);
+          continue;
+        }
+
+        // Due within 48 hours but not yet overdue
+        if (t.due_at && isDueSoon(t.due_at, now)) {
+          sections.due_soon.push(t);
           continue;
         }
 
