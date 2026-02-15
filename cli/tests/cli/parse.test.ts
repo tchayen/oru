@@ -1559,4 +1559,152 @@ describe("CLI parse", () => {
     const p = createProgram(db, capture());
     await expect(p.parseAsync(["node", "ao", "list", "-p", "high,nope"])).rejects.toThrow();
   });
+
+  // context command tests
+  it("context with no tasks shows nothing to report", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "context"]);
+    expect(output).toContain("Nothing to report");
+  });
+
+  it("context shows overdue tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Overdue task", "--due", "2020-01-01"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "context"]);
+    expect(output).toContain("Overdue");
+    expect(output).toContain("Overdue task");
+  });
+
+  it("context shows in_progress tasks in In Progress section", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Active task", "--status", "in_progress"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "context"]);
+    expect(output).toContain("In Progress");
+    expect(output).toContain("Active task");
+  });
+
+  it("context shows in_review tasks in In Progress section", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Review task", "--status", "in_review"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "context"]);
+    expect(output).toContain("In Progress");
+    expect(output).toContain("Review task");
+  });
+
+  it("context shows high/urgent todo tasks in Actionable section", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Urgent item", "--priority", "urgent"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "High item", "--priority", "high"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "context"]);
+    expect(output).toContain("Actionable");
+    expect(output).toContain("Urgent item");
+    expect(output).toContain("High item");
+  });
+
+  it("context does not show medium/low todo tasks in Actionable", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Medium item", "--priority", "medium"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Low item", "--priority", "low"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "context"]);
+    expect(output).not.toContain("Actionable");
+  });
+
+  it("context shows blocked tasks in Blocked section", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Blocker task", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Blocked task", "--blocked-by", blockerId]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "context"]);
+    expect(output).toContain("Blocked");
+    expect(output).toContain("Blocked task");
+  });
+
+  it("context --json returns structured sections", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Urgent task", "--priority", "urgent"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Active task", "--status", "in_progress"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.actionable).toBeDefined();
+    expect(parsed.actionable.length).toBe(1);
+    expect(parsed.actionable[0].title).toBe("Urgent task");
+    expect(parsed.in_progress).toBeDefined();
+    expect(parsed.in_progress[0].title).toBe("Active task");
+  });
+
+  it("context --json omits empty sections", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Active task", "--status", "in_progress"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.overdue).toBeUndefined();
+    expect(parsed.actionable).toBeUndefined();
+    expect(parsed.blocked).toBeUndefined();
+    expect(parsed.recently_completed).toBeUndefined();
+  });
+
+  it("context --owner scopes briefing to owner", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Agent task",
+      "--assign",
+      "agent",
+      "--priority",
+      "urgent",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Human task",
+      "--assign",
+      "human",
+      "--priority",
+      "urgent",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "context", "--owner", "agent", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.actionable).toHaveLength(1);
+    expect(parsed.actionable[0].title).toBe("Agent task");
+  });
+
+  it("context empty sections are omitted in text output", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Active task", "--status", "in_progress"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "context"]);
+    expect(output).toContain("In Progress");
+    expect(output).not.toContain("Overdue");
+    expect(output).not.toContain("Actionable");
+    expect(output).not.toContain("Blocked");
+    expect(output).not.toContain("Recently Completed");
+  });
 });

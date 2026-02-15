@@ -14,9 +14,18 @@ import {
   formatLabelsText,
   formatLogText,
   filterByDue,
+  isOverdue,
+  formatContextText,
   type DueFilter,
+  type ContextSections,
 } from "./format/text.js";
-import { formatTaskJson, formatTasksJson, formatLabelsJson, formatLogJson } from "./format/json.js";
+import {
+  formatTaskJson,
+  formatTasksJson,
+  formatLabelsJson,
+  formatLogJson,
+  formatContextJson,
+} from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
@@ -940,6 +949,85 @@ export function createProgram(
           }
           throw err;
         }
+      }
+    });
+
+  // context
+  program
+    .command("context")
+    .description("Show agent briefing of current task status")
+    .option("--owner <owner>", "Scope briefing to a specific owner")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (opts: { owner?: string; json?: boolean; plaintext?: boolean }) => {
+      const now = new Date();
+      const tasks = await service.list({
+        sort: "priority",
+        owner: opts.owner,
+      });
+
+      const allTasks = tasks;
+      // Also fetch done tasks for recently completed
+      const doneTasks = await service.list({
+        status: "done",
+        sort: "priority",
+        owner: opts.owner,
+      });
+
+      const sections: ContextSections = {
+        overdue: [],
+        in_progress: [],
+        actionable: [],
+        blocked: [],
+        recently_completed: [],
+      };
+
+      // Build a set of non-done task IDs for blocker checking
+      const nonDoneIds = new Set(allTasks.filter((t) => t.status !== "done").map((t) => t.id));
+
+      // Recently completed: done within last 24 hours
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+      for (const t of doneTasks) {
+        if (t.updated_at >= oneDayAgo) {
+          sections.recently_completed.push(t);
+        }
+      }
+
+      for (const t of allTasks) {
+        if (t.status === "done") {
+          continue;
+        }
+
+        // Overdue takes priority
+        if (t.due_at && isOverdue(t.due_at, now)) {
+          sections.overdue.push(t);
+          continue;
+        }
+
+        // In progress / in review
+        if (t.status === "in_progress" || t.status === "in_review") {
+          sections.in_progress.push(t);
+          continue;
+        }
+
+        // Blocked: has incomplete blockers
+        const hasIncompleteBlocker = t.blocked_by.some((id) => nonDoneIds.has(id));
+        if (hasIncompleteBlocker) {
+          sections.blocked.push(t);
+          continue;
+        }
+
+        // Actionable: todo with high/urgent priority, not blocked
+        if (t.status === "todo" && (t.priority === "high" || t.priority === "urgent")) {
+          sections.actionable.push(t);
+          continue;
+        }
+      }
+
+      if (useJson(opts)) {
+        write(formatContextJson(sections));
+      } else {
+        write(formatContextText(sections, now));
       }
     });
 
