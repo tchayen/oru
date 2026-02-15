@@ -12,7 +12,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "tsgo": "pnpm -r tsgo",
-    "ci": "pnpm lint && pnpm fmt:check && pnpm test && pnpm tsgo"
+    "check": "pnpm lint && pnpm fmt:check && pnpm test && pnpm tsgo"
   },
   "devDependencies": {
     "oxfmt": "^0.32.0",

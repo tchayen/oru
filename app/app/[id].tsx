@@ -1,5 +1,14 @@
 import { use, useEffect, useState, useCallback } from "react";
-import { ScrollView, Text, View, Alert, ActivityIndicator, PlatformColor } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  Alert,
+  ActivityIndicator,
+  TextInput,
+  Pressable,
+  PlatformColor,
+} from "react-native";
 import { Picker, Host, ContextMenu, Button } from "@expo/ui/swift-ui";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
@@ -34,6 +43,8 @@ export default function TaskDetailScreen() {
   const router = useRouter();
   const [task, setTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
 
   useEffect(() => {
     fetchTask(serverUrl, id).then((t) => {
@@ -64,6 +75,20 @@ export default function TaskDetailScreen() {
     },
     [task, serverUrl],
   );
+
+  const handleTitleSave = useCallback(async () => {
+    if (!task) {
+      return;
+    }
+    const trimmed = editedTitle.trim();
+    if (!trimmed || trimmed === task.title) {
+      setIsEditingTitle(false);
+      return;
+    }
+    const updated = await updateTask(serverUrl, task.id, { title: trimmed });
+    setTask(updated);
+    setIsEditingTitle(false);
+  }, [task, editedTitle, serverUrl]);
 
   const handleDelete = useCallback(() => {
     if (!task) {
@@ -120,9 +145,28 @@ export default function TaskDetailScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ padding: 16, gap: 24 }}
       >
-        <Text selectable style={{ fontSize: 28, fontWeight: "700", color: PlatformColor("label") }}>
-          {task.title}
-        </Text>
+        {isEditingTitle ? (
+          <TextInput
+            value={editedTitle}
+            onChangeText={setEditedTitle}
+            onBlur={handleTitleSave}
+            onSubmitEditing={handleTitleSave}
+            autoFocus
+            multiline
+            style={{ fontSize: 28, fontWeight: "700", color: PlatformColor("label"), padding: 0 }}
+          />
+        ) : (
+          <Pressable
+            onPress={() => {
+              setEditedTitle(task.title);
+              setIsEditingTitle(true);
+            }}
+          >
+            <Text style={{ fontSize: 28, fontWeight: "700", color: PlatformColor("label") }}>
+              {task.title}
+            </Text>
+          </Pressable>
+        )}
 
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
