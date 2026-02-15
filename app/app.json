@@ -17,14 +17,19 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "ao needs camera access to scan QR codes for server connection."
-      }
+      },
+      "bundleIdentifier": "com.tomekexpo.ao"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "package": "com.tomekexpo.ao"
     },
     "plugins": [
       "expo-router",

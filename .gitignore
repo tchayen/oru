@@ -1,5 +1,37 @@
 node_modules/
 dist/
+.DS_Store
+
+# SQLite
 *.db
 *.db-wal
 *.db-shm
+
+# Expo
+.expo/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+app/ios/
+app/android/
+
+# Native build artifacts
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Debug logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Environment
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
