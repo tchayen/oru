@@ -416,6 +416,26 @@ describe("CLI parse", () => {
     expect(parsed.metadata).toEqual({ key1: "val1", key2: "val2" });
   });
 
+  it("update --meta key without = removes the key", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Meta delete",
+      "--meta",
+      "keep=yes",
+      "remove=me",
+      "--json",
+    ]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--meta", "remove", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata).toEqual({ keep: "yes" });
+  });
+
   it("add --label accepts multiple labels", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "ao", "add", "Multi label", "--label", "work", "urgent", "--json"]);
