@@ -3,19 +3,27 @@ document.addEventListener("DOMContentLoaded", () => {
     "(prefers-reduced-motion: reduce)"
   ).matches;
 
-  if (prefersReducedMotion) return;
+  if (prefersReducedMotion) {
+    return;
+  }
 
   const container = document.querySelector("[data-terminal-typing]");
-  if (!container) return;
+  if (!container) {
+    return;
+  }
 
   const terminalBody = container.querySelector(".terminal-body");
-  if (!terminalBody) return;
+  if (!terminalBody) {
+    return;
+  }
 
   // Collect all line/blank elements as an ordered sequence
   const elements = Array.from(
     terminalBody.querySelectorAll(".line, .blank")
   );
-  if (elements.length === 0) return;
+  if (elements.length === 0) {
+    return;
+  }
 
   // Parse elements into commands and output groups
   const groups = [];
@@ -74,7 +82,9 @@ document.addEventListener("DOMContentLoaded", () => {
   observer.observe(container);
 
   function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
   }
 
   function showElement(el) {

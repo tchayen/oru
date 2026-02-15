@@ -4,7 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   ).matches;
 
   const nav = document.querySelector(".nav");
-  if (!nav) return;
+  if (!nav) {
+    return;
+  }
 
   let ticking = false;
 

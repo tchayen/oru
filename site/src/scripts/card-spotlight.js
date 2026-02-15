@@ -3,7 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
     "(prefers-reduced-motion: reduce)"
   ).matches;
 
-  if (prefersReducedMotion) return;
+  if (prefersReducedMotion) {
+    return;
+  }
 
   const cards = document.querySelectorAll(".feature-card, .card");
 

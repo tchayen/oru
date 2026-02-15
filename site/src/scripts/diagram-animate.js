@@ -3,7 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
     "(prefers-reduced-motion: reduce)"
   ).matches;
 
-  if (prefersReducedMotion) return;
+  if (prefersReducedMotion) {
+    return;
+  }
 
   // Architecture diagram animation (LocalFirst section)
   const diagram = document.querySelector(".diagram");
