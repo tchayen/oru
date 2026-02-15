@@ -196,6 +196,11 @@ export async function appendNote(
     return null;
   }
 
+  const trimmed = note.trim();
+  if (trimmed.length === 0 || existing.notes.some((n) => n.trim() === trimmed)) {
+    return existing;
+  }
+
   const notes = [...existing.notes, note];
   const now = timestamp ?? new Date().toISOString();
   await db

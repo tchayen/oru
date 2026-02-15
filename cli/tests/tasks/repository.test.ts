@@ -128,6 +128,30 @@ describe("task repository", () => {
     expect(found!.notes).toEqual(["First note", "Second note"]);
   });
 
+  it("deduplicates notes with same text", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Same note");
+    await appendNote(ky, task.id, "Same note");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Same note"]);
+  });
+
+  it("deduplicates notes after trimming whitespace", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Hello");
+    await appendNote(ky, task.id, "  Hello  ");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Hello"]);
+  });
+
+  it("skips empty and whitespace-only notes", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "");
+    await appendNote(ky, task.id, "   ");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual([]);
+  });
+
   it("soft deletes a task", async () => {
     const task = await createTask(ky, { title: "Delete me" });
     await deleteTask(ky, task.id);
