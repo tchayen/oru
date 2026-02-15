@@ -436,7 +436,6 @@ describe("CLI parse", () => {
     expect(parsed.metadata).toEqual({ keep: "yes" });
   });
 
-
   it("add --label accepts multiple labels", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "ao", "add", "Multi label", "--label", "work", "urgent", "--json"]);
@@ -1035,6 +1034,47 @@ describe("CLI parse", () => {
     expect(titles).toContain("Free");
     expect(titles).toContain("Blocker");
     expect(titles).not.toContain("Blocked");
+  });
+
+  it("list --limit returns at most N tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task 1"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task 2"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Task 3"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--limit", "2", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+  });
+
+  it("list --offset skips N tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task A", "--priority", "urgent"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task B", "--priority", "low"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--offset", "1", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe("Task B");
+  });
+
+  it("list --limit --offset paginates correctly", async () => {
+    for (let i = 1; i <= 5; i++) {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "ao", "add", `Task ${i}`]);
+    }
+
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "list", "--limit", "2", "--offset", "1", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0].title).toBe("Task 2");
+    expect(parsed[1].title).toBe("Task 3");
   });
 
   it("list outputs JSON when config sets output_format = json", async () => {

@@ -61,6 +61,8 @@ _ao() {
             '(-l --label)'{-l,--label}'[Filter by label]:label:->labels' \\
             '--search[Search by title]:query:' \\
             '(-a --all)'{-a,--all}'[Include done tasks]' \\
+            '--limit[Maximum number of tasks to return]:number:' \\
+            '--offset[Number of tasks to skip]:number:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]'
           ;;

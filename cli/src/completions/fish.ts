@@ -98,6 +98,8 @@ complete -c ao -n '__ao_using_command list' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command list' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command list' -l search -d 'Search by title' -r
 complete -c ao -n '__ao_using_command list' -s a -l all -d 'Include done tasks'
+complete -c ao -n '__ao_using_command list' -l limit -d 'Maximum number of tasks' -r
+complete -c ao -n '__ao_using_command list' -l offset -d 'Number of tasks to skip' -r
 complete -c ao -n '__ao_using_command get' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command get' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command update' -l json -d 'Output as JSON'
