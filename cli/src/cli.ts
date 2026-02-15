@@ -1,4 +1,5 @@
 import { fileURLToPath } from "url";
+import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import { Command, Option } from "commander";
@@ -12,7 +13,7 @@ import { formatTaskJson, formatTasksJson } from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
-import { loadConfig, type Config } from "./config/config.js";
+import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./config/config.js";
 import { parseDate } from "./dates/parse.js";
 import type { Status, Priority } from "./tasks/types.js";
 
@@ -541,6 +542,30 @@ export function createProgram(
       } finally {
         remote.close();
       }
+    });
+
+  // config
+  const configCmd = program.command("config").description("Manage configuration");
+
+  configCmd
+    .command("init")
+    .description("Create a default config file with documented options")
+    .action(() => {
+      const configPath = getConfigPath();
+      if (fs.existsSync(configPath)) {
+        write(`Config file already exists at ${configPath}`);
+        return;
+      }
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(configPath, DEFAULT_CONFIG_TOML);
+      write(`Created ${configPath}`);
+    });
+
+  configCmd
+    .command("path")
+    .description("Print the config file path")
+    .action(() => {
+      write(getConfigPath());
     });
 
   // server
