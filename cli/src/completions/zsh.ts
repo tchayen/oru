@@ -53,6 +53,7 @@ _ao() {
             '(-s --status)'{-s,--status}'[Initial status]:status:('"$status_values"')' \\
             '(-p --priority)'{-p,--priority}'[Priority level]:priority:('"$priority_values"')' \\
             '(-d --due)'{-d,--due}'[Due date]:date:' \\
+            '--assign[Assign to owner]:owner:' \\
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '(-n --note)'{-n,--note}'[Add a note]:note:' \\
             '--meta[Metadata key=value]:meta:' \\
@@ -65,6 +66,7 @@ _ao() {
             '(-s --status)'{-s,--status}'[Filter by status]:status:('"$status_values"')' \\
             '(-p --priority)'{-p,--priority}'[Filter by priority]:priority:('"$priority_values"')' \\
             '(-l --label)'{-l,--label}'[Filter by label]:label:->labels' \\
+            '--owner[Filter by owner]:owner:' \\
             '--sort[Sort order]:sort:('"$sort_values"')' \\
             '--search[Search by title]:query:' \\
             '(-a --all)'{-a,--all}'[Include done tasks]' \\
@@ -91,6 +93,7 @@ _ao() {
             '(-s --status)'{-s,--status}'[New status]:status:('"$status_values"')' \\
             '(-p --priority)'{-p,--priority}'[New priority]:priority:('"$priority_values"')' \\
             '(-d --due)'{-d,--due}'[Due date]:date:' \\
+            '--assign[Assign to owner]:owner:' \\
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '*--unlabel[Remove labels]:label:->labels' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\

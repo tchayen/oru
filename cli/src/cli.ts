@@ -124,6 +124,7 @@ export function createProgram(
         .default("medium"),
     )
     .option("-d, --due <date>", "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20')")
+    .option("--assign <owner>", "Assign to owner")
     .option("-l, --label <labels...>", "Add labels")
     .option("-b, --blocked-by <ids...>", "IDs of tasks that block this task")
     .option("-n, --note <note>", "Add an initial note")
@@ -138,6 +139,7 @@ export function createProgram(
           status?: Status;
           priority?: Priority;
           due?: string;
+          assign?: string;
           label?: string[];
           blockedBy?: string[];
           note?: string;
@@ -248,6 +250,7 @@ export function createProgram(
           id: opts.id,
           status: opts.status,
           priority: opts.priority,
+          owner: opts.assign,
           due_at: dueAt,
           blocked_by: opts.blockedBy,
           labels: opts.label ?? undefined,
@@ -289,6 +292,7 @@ export function createProgram(
       },
     )
     .option("-l, --label <label>", "Filter by label")
+    .option("--owner <owner>", "Filter by owner")
     .addOption(new Option("--due <range>", "Filter by due date").choices(["today", "this-week"]))
     .option("--overdue", "Show only overdue tasks")
     .addOption(
@@ -308,6 +312,7 @@ export function createProgram(
         status?: Status | Status[];
         priority?: Priority | Priority[];
         label?: string;
+        owner?: string;
         sort?: SortField;
         due?: "today" | "this-week";
         overdue?: boolean;
@@ -322,6 +327,7 @@ export function createProgram(
         let tasks = await service.list({
           status: opts.status,
           priority: opts.priority,
+          owner: opts.owner,
           label: opts.label,
           search: opts.search,
           sort: opts.sort,
@@ -405,6 +411,7 @@ export function createProgram(
       "-d, --due <date>",
       "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20', 'none' to clear)",
     )
+    .option("--assign <owner>", "Assign to owner ('none' to clear)")
     .option("-l, --label <labels...>", "Add labels")
     .option("--unlabel <labels...>", "Remove labels")
     .option("-b, --blocked-by <ids...>", "Set blocker task IDs (replaces full list)")
@@ -421,6 +428,7 @@ export function createProgram(
           status?: Status;
           priority?: Priority;
           due?: string;
+          assign?: string;
           label?: string[];
           unlabel?: string[];
           blockedBy?: string[];
@@ -526,6 +534,14 @@ export function createProgram(
                 return;
               }
               updateFields.due_at = parsed;
+            }
+          }
+
+          if (opts.assign !== undefined) {
+            if (opts.assign.toLowerCase() === "none") {
+              updateFields.owner = null;
+            } else {
+              updateFields.owner = opts.assign;
             }
           }
 

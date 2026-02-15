@@ -8,6 +8,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     title: "Buy groceries",
     status: "todo",
     priority: "medium",
+    owner: null,
     due_at: null,
     blocked_by: [],
     labels: [],
@@ -231,6 +232,44 @@ describe("parseDocument", () => {
   it("throws on invalid document format", () => {
     const task = makeTask();
     expect(() => parseDocument("no delimiters here", task)).toThrow("missing +++ delimiters");
+  });
+
+  it("roundtrip with owner produces no changes", () => {
+    const task = makeTask({ owner: "agent" });
+    const doc = serializeTask(task);
+    const { fields, newNotes } = parseDocument(doc, task);
+    expect(Object.keys(fields)).toHaveLength(0);
+    expect(newNotes).toHaveLength(0);
+  });
+
+  it("serializes owner in frontmatter", () => {
+    const task = makeTask({ owner: "agent" });
+    const doc = serializeTask(task);
+    expect(doc).toContain('owner = "agent"');
+  });
+
+  it("detects owner change", () => {
+    const task = makeTask({ owner: "agent" });
+    const doc = serializeTask(task).replace('owner = "agent"', 'owner = "human"');
+    const { fields } = parseDocument(doc, task);
+    expect(fields.owner).toBe("human");
+  });
+
+  it("detects owner being cleared", () => {
+    const task = makeTask({ owner: "agent" });
+    const doc = serializeTask(task).replace('owner = "agent"\n', "");
+    const { fields } = parseDocument(doc, task);
+    expect(fields.owner).toBeNull();
+  });
+
+  it("detects owner being added", () => {
+    const task = makeTask();
+    const doc = serializeTask(task).replace(
+      'priority = "medium"',
+      'priority = "medium"\nowner = "agent"',
+    );
+    const { fields } = parseDocument(doc, task);
+    expect(fields.owner).toBe("agent");
   });
 
   it("roundtrip with blocked_by produces no changes", () => {

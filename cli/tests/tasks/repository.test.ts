@@ -329,6 +329,38 @@ describe("task repository", () => {
     expect(found!.metadata).toEqual({});
   });
 
+  it("creates a task with owner", async () => {
+    const task = await createTask(ky, { title: "Owned task", owner: "agent" });
+    expect(task.owner).toBe("agent");
+  });
+
+  it("owner defaults to null", async () => {
+    const task = await createTask(ky, { title: "No owner" });
+    expect(task.owner).toBeNull();
+  });
+
+  it("updates owner", async () => {
+    const task = await createTask(ky, { title: "T" });
+    const updated = await updateTask(ky, task.id, { owner: "human" });
+    expect(updated!.owner).toBe("human");
+  });
+
+  it("clears owner with null", async () => {
+    const task = await createTask(ky, { title: "T", owner: "agent" });
+    const updated = await updateTask(ky, task.id, { owner: null });
+    expect(updated!.owner).toBeNull();
+  });
+
+  it("filters by owner", async () => {
+    await createTask(ky, { title: "Agent task", owner: "agent" });
+    await createTask(ky, { title: "Human task", owner: "human" });
+    await createTask(ky, { title: "Unowned" });
+
+    const agentTasks = await listTasks(ky, { owner: "agent" });
+    expect(agentTasks).toHaveLength(1);
+    expect(agentTasks[0].title).toBe("Agent task");
+  });
+
   it("creates a task with blocked_by", async () => {
     const blocker = await createTask(ky, { title: "Blocker" });
     const task = await createTask(ky, { title: "Blocked", blocked_by: [blocker.id] });

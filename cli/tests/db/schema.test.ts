@@ -34,8 +34,8 @@ describe("schema", () => {
       | { value: string }
       | undefined;
     expect(row).toBeDefined();
-    // Version 5 after all migrations run
-    expect(row!.value).toBe("5");
+    // Version 6 after all migrations run
+    expect(row!.value).toBe("6");
     db.close();
   });
 
@@ -43,6 +43,15 @@ describe("schema", () => {
     const db = freshDb();
     initSchema(db);
     expect(() => initSchema(db)).not.toThrow();
+    db.close();
+  });
+
+  it("migration v6 adds owner column to tasks", () => {
+    const db = freshDb();
+    initSchema(db);
+    const columns = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
+    const columnNames = columns.map((c) => c.name);
+    expect(columnNames).toContain("owner");
     db.close();
   });
 

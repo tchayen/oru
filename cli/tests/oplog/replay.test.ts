@@ -775,6 +775,90 @@ describe("oplog replay", () => {
     expect(task).toBeNull();
   });
 
+  it("replays create with owner", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Owned task",
+          status: "todo",
+          priority: "medium",
+          owner: "agent",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    expect(task!.owner).toBe("agent");
+  });
+
+  it("replays update to owner", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+      makeOp({
+        id: "op-2",
+        task_id: "t1",
+        op_type: "update",
+        field: "owner",
+        value: "human",
+        timestamp: "2024-01-01T00:01:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    expect(task!.owner).toBe("human");
+  });
+
+  it("clears owner with empty value", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          owner: "agent",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+      makeOp({
+        id: "op-2",
+        task_id: "t1",
+        op_type: "update",
+        field: "owner",
+        value: "",
+        timestamp: "2024-01-01T00:01:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    expect(task!.owner).toBeNull();
+  });
+
   it("replays create with blocked_by", async () => {
     replayOps(db, [
       makeOp({

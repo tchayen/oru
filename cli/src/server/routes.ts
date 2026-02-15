@@ -15,6 +15,7 @@ export function createApp(service: TaskService): Hono {
     const label = c.req.query("label");
     const search = c.req.query("search");
     const all = c.req.query("all");
+    const owner = c.req.query("owner");
     const actionable = c.req.query("actionable");
     const limitRaw = c.req.query("limit");
     const offsetRaw = c.req.query("offset");
@@ -54,6 +55,7 @@ export function createApp(service: TaskService): Hono {
     let tasks = await service.list({
       status,
       priority,
+      owner,
       label,
       search,
       actionable: !!actionable,
@@ -84,7 +86,7 @@ export function createApp(service: TaskService): Hono {
   app.post("/tasks", async (c) => {
     const body = await c.req.json();
     let { title } = body;
-    const { status, priority, due_at, blocked_by, labels, notes, metadata, id } = body;
+    const { status, priority, owner, due_at, blocked_by, labels, notes, metadata, id } = body;
 
     if (!title || typeof title !== "string") {
       return c.json({ error: "validation", message: "Title is required" }, 400);
@@ -111,6 +113,7 @@ export function createApp(service: TaskService): Hono {
       title,
       status,
       priority,
+      owner,
       due_at,
       blocked_by,
       labels,
@@ -124,7 +127,8 @@ export function createApp(service: TaskService): Hono {
     const id = c.req.param("id");
     const body = await c.req.json();
     let { title } = body;
-    const { status, priority, due_at, blocked_by, labels, note, clear_notes, metadata } = body;
+    const { status, priority, owner, due_at, blocked_by, labels, note, clear_notes, metadata } =
+      body;
 
     if (title !== undefined) {
       if (typeof title !== "string") {
@@ -164,6 +168,9 @@ export function createApp(service: TaskService): Hono {
       }
       if (labels) {
         updateFields.labels = labels;
+      }
+      if (owner !== undefined) {
+        updateFields.owner = owner;
       }
       if (due_at !== undefined) {
         updateFields.due_at = due_at;

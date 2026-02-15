@@ -1054,6 +1054,50 @@ describe("CLI parse", () => {
     expect(parsed.labels).toEqual(["new"]);
   });
 
+  // owner tests
+  it("add --assign sets owner", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "ao", "add", "Task", "--assign", "agent", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.owner).toBe("agent");
+  });
+
+  it("update --assign sets owner", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--assign", "human", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.owner).toBe("human");
+  });
+
+  it("update --assign none clears owner", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task", "--assign", "agent", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--assign", "none", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.owner).toBeNull();
+  });
+
+  it("list --owner filters by owner", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Agent task", "--assign", "agent"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Human task", "--assign", "human"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--owner", "agent", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe("Agent task");
+  });
+
   // blocked_by tests
   it("add --blocked-by sets blocked_by", async () => {
     const p1 = createProgram(db, capture());

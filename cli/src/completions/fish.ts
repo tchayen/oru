@@ -98,10 +98,12 @@ complete -c ao -n '__ao_using_command add' -l plaintext -d 'Output as plain text
 complete -c ao -n '__ao_using_command add' -s d -l due -d 'Due date' -r
 complete -c ao -n '__ao_using_command add' -s n -l note -d 'Add a note' -r
 complete -c ao -n '__ao_using_command add' -l id -d 'Task ID' -r
+complete -c ao -n '__ao_using_command add' -l assign -d 'Assign to owner' -r
 complete -c ao -n '__ao_using_command add' -l meta -d 'Metadata key=value' -r
 complete -c ao -n '__ao_using_command list' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command list' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command list' -l search -d 'Search by title' -r
+complete -c ao -n '__ao_using_command list' -l owner -d 'Filter by owner' -r
 complete -c ao -n '__ao_using_command list' -l sort -a '${SORT_FIELDS.join(" ")}' -d 'Sort order' -r
 complete -c ao -n '__ao_using_command list' -s a -l all -d 'Include done tasks'
 complete -c ao -n '__ao_using_command list' -l actionable -d 'Show only actionable tasks'
@@ -114,6 +116,7 @@ complete -c ao -n '__ao_using_command update' -l plaintext -d 'Output as plain t
 complete -c ao -n '__ao_using_command update' -s t -l title -d 'New title' -r
 complete -c ao -n '__ao_using_command update' -s d -l due -d 'Due date' -r
 complete -c ao -n '__ao_using_command update' -s n -l note -d 'Append a note' -r
+complete -c ao -n '__ao_using_command update' -l assign -d 'Assign to owner' -r
 complete -c ao -n '__ao_using_command update' -l clear-notes -d 'Remove all notes'
 complete -c ao -n '__ao_using_command update' -l meta -d 'Metadata key=value' -r
 complete -c ao -n '__ao_using_command delete' -l json -d 'Output as JSON'
