@@ -63,7 +63,7 @@ export function createProgram(
   const service = new TaskService(ky, deviceId);
   const program = new Command("ao")
     .description(
-      "agentodo — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set AO_FORMAT=json, or output_format in config). Run 'ao config init' to create a config file.",
+      "ao — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set AO_FORMAT=json, or output_format in config). Run 'ao config init' to create a config file.",
     )
     .version(`0.1.0 (${__GIT_COMMIT__})`);
 

@@ -1,4 +1,4 @@
-# ao (agentodo)
+# ao
 
 Agent-friendly todo CLI with offline-first sync via oplog.
 
