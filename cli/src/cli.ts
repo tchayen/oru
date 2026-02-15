@@ -627,71 +627,77 @@ export function createProgram(
 
   // done (shortcut for update --status done)
   program
-    .command("done <id>")
-    .description("Mark a task as done (shortcut for update -s done)")
+    .command("done <id...>")
+    .description("Mark one or more tasks as done (shortcut for update -s done)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
-    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
-      const task = await service.update(id, { status: "done" });
-      if (!task) {
-        if (useJson(opts)) {
-          write(JSON.stringify({ error: "not_found", id }));
-        } else {
-          write(`Task ${id} not found.`);
+    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
+      for (const id of ids) {
+        const task = await service.update(id, { status: "done" });
+        if (!task) {
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "not_found", id }));
+          } else {
+            write(`Task ${id} not found.`);
+          }
+          process.exitCode = 1;
+          continue;
         }
-        process.exitCode = 1;
-        return;
-      }
-      if (useJson(opts)) {
-        write(formatTaskJson(task));
-      } else {
-        write(formatTaskText(task));
+        if (useJson(opts)) {
+          write(formatTaskJson(task));
+        } else {
+          write(formatTaskText(task));
+        }
       }
     });
 
   // start (shortcut for update --status in_progress)
   program
-    .command("start <id>")
-    .description("Start a task (shortcut for update -s in_progress)")
+    .command("start <id...>")
+    .description("Start one or more tasks (shortcut for update -s in_progress)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
-    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
-      const task = await service.update(id, { status: "in_progress" });
-      if (!task) {
-        if (useJson(opts)) {
-          write(JSON.stringify({ error: "not_found", id }));
-        } else {
-          write(`Task ${id} not found.`);
+    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
+      for (const id of ids) {
+        const task = await service.update(id, { status: "in_progress" });
+        if (!task) {
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "not_found", id }));
+          } else {
+            write(`Task ${id} not found.`);
+          }
+          process.exitCode = 1;
+          continue;
         }
-        process.exitCode = 1;
-        return;
-      }
-      if (useJson(opts)) {
-        write(formatTaskJson(task));
-      } else {
-        write(formatTaskText(task));
+        if (useJson(opts)) {
+          write(formatTaskJson(task));
+        } else {
+          write(formatTaskText(task));
+        }
       }
     });
   // delete
   program
-    .command("delete <id>")
-    .description("Delete a task")
+    .command("delete <id...>")
+    .description("Delete one or more tasks")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
-    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
-      const result = await service.delete(id);
-      if (useJson(opts)) {
-        if (!result) {
-          write(JSON.stringify({ error: "not_found", id }));
-          process.exitCode = 1;
+    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
+      for (const id of ids) {
+        const result = await service.delete(id);
+        if (useJson(opts)) {
+          if (!result) {
+            write(JSON.stringify({ error: "not_found", id }));
+            process.exitCode = 1;
+          } else {
+            write(JSON.stringify({ id, deleted: true }));
+          }
+        } else if (result) {
+          write(`Deleted ${id}`);
         } else {
-          write(JSON.stringify({ id, deleted: true }));
+          write(`Task ${id} not found.`);
+          process.exitCode = 1;
         }
-      } else if (result) {
-        write(`Deleted ${id}`);
-      } else {
-        write(`Task ${id} not found.`);
-        process.exitCode = 1;
       }
     });
 

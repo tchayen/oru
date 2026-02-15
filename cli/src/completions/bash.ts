@@ -6,7 +6,7 @@ _ao_completions() {
   local cur prev words cword
   _init_completion || return
 
-  local commands="add list get update delete sync config server completions"
+  local commands="add list get update delete done start sync config server completions"
   local config_subcommands="init path"
   local server_subcommands="start"
   local completion_shells="bash zsh fish"
@@ -18,7 +18,7 @@ _ao_completions() {
   local i
   for ((i = 1; i < cword; i++)); do
     case "\${words[i]}" in
-      add|list|get|update|delete|sync|config|server|completions)
+      add|list|get|update|delete|done|start|sync|config|server|completions)
         subcmd="\${words[i]}"
         break
         ;;
@@ -60,7 +60,7 @@ _ao_completions() {
     completions)
       COMPREPLY=($(compgen -W "$completion_shells" -- "$cur"))
       ;;
-    get|update|delete)
+    get|update|delete|done|start)
       if [[ "$cur" != -* ]]; then
         local tasks
         tasks=$(ao _complete tasks "$cur" 2>/dev/null | cut -f1)

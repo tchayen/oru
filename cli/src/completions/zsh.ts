@@ -13,7 +13,9 @@ _ao() {
     'list:List tasks'
     'get:Get a task by ID'
     'update:Update a task'
-    'delete:Delete a task'
+    'delete:Delete one or more tasks'
+    'done:Mark one or more tasks as done'
+    'start:Start one or more tasks'
     'sync:Sync with a filesystem remote'
     'config:Manage configuration'
     'server:Manage the HTTP server'
@@ -82,7 +84,19 @@ _ao() {
           _arguments \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\
-            '1:task:->tasks'
+            '*:task:->tasks'
+          ;;
+        done)
+          _arguments \\
+            '--json[Output as JSON]' \\
+            '--plaintext[Output as plain text]' \\
+            '*:task:->tasks'
+          ;;
+        start)
+          _arguments \\
+            '--json[Output as JSON]' \\
+            '--plaintext[Output as plain text]' \\
+            '*:task:->tasks'
           ;;
         sync)
           _arguments \\
