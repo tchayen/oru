@@ -16,6 +16,8 @@ export function createApp(service: TaskService): Hono {
     const search = c.req.query("search");
     const all = c.req.query("all");
     const actionable = c.req.query("actionable");
+    const limitRaw = c.req.query("limit");
+    const offsetRaw = c.req.query("offset");
 
     if (status && !validStatuses.has(status)) {
       return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
@@ -24,7 +26,25 @@ export function createApp(service: TaskService): Hono {
       return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
     }
 
-    let tasks = await service.list({ status, priority, label, search, actionable: !!actionable });
+    const limit = limitRaw ? Number(limitRaw) : undefined;
+    const offset = offsetRaw ? Number(offsetRaw) : undefined;
+
+    if (limit !== undefined && (!Number.isInteger(limit) || limit < 0)) {
+      return c.json({ error: "validation", message: "limit must be a non-negative integer" }, 400);
+    }
+    if (offset !== undefined && (!Number.isInteger(offset) || offset < 0)) {
+      return c.json({ error: "validation", message: "offset must be a non-negative integer" }, 400);
+    }
+
+    let tasks = await service.list({
+      status,
+      priority,
+      label,
+      search,
+      actionable: !!actionable,
+      limit,
+      offset,
+    });
     if (!all && !status) {
       tasks = tasks.filter((t) => t.status !== "done");
     }

@@ -273,6 +273,8 @@ export function createProgram(
     .option("--search <query>", "Search tasks by title")
     .option("-a, --all", "Include done tasks")
     .option("--actionable", "Show only tasks with no incomplete blockers")
+    .option("--limit <n>", "Maximum number of tasks to return", Number)
+    .option("--offset <n>", "Number of tasks to skip", Number)
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(
@@ -285,6 +287,8 @@ export function createProgram(
         search?: string;
         all?: boolean;
         actionable?: boolean;
+        limit?: number;
+        offset?: number;
         json?: boolean;
         plaintext?: boolean;
       }) => {
@@ -294,6 +298,8 @@ export function createProgram(
           label: opts.label,
           search: opts.search,
           actionable: opts.actionable,
+          limit: opts.limit,
+          offset: opts.offset,
         });
         // Hide done tasks unless --all or --status is specified
         if (!opts.all && !opts.status) {
