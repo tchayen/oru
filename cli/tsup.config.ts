@@ -1,7 +1,9 @@
 import { execSync } from "child_process";
+import { readFileSync } from "fs";
 import { defineConfig } from "tsup";
 
 const gitCommit = execSync("git rev-parse --short HEAD").toString().trim();
+const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
 
 export default defineConfig([
   {
@@ -15,6 +17,7 @@ export default defineConfig([
     external: ["better-sqlite3"],
     define: {
       __GIT_COMMIT__: JSON.stringify(gitCommit),
+      __VERSION__: JSON.stringify(pkg.version),
     },
   },
   {

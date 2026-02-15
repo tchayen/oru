@@ -23,6 +23,14 @@ describe("bash completions script", () => {
     expect(script).toContain("log");
   });
 
+  it("contains self-update command", () => {
+    expect(script).toContain("self-update");
+  });
+
+  it("contains edit command", () => {
+    expect(script).toContain("edit");
+  });
+
   it("contains --unlabel completion", () => {
     expect(script).toContain("--unlabel");
   });
@@ -97,6 +105,10 @@ describe("zsh completions script", () => {
 
   it("contains log command with description", () => {
     expect(script).toContain("log:Show change history of a task");
+  });
+
+  it("contains self-update command", () => {
+    expect(script).toContain("self-update");
   });
 
   it("contains --unlabel completion", () => {
@@ -181,6 +193,10 @@ describe("fish completions script", () => {
 
   it("contains log command", () => {
     expect(script).toContain("log");
+  });
+
+  it("contains self-update command", () => {
+    expect(script).toContain("self-update");
   });
 
   it("contains --unlabel completion", () => {
