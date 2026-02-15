@@ -41,12 +41,15 @@ function sanitizeTitle(title: string): string {
   return title.replace(/[\r\n]+/g, " ").trim();
 }
 
-function parseMetadata(pairs: string[]): Record<string, string> {
-  const meta: Record<string, string> = {};
+function parseMetadata(pairs: string[]): Record<string, string | null> {
+  const meta: Record<string, string | null> = {};
   for (const pair of pairs) {
     const eqIdx = pair.indexOf("=");
     if (eqIdx === -1) {
-      throw new Error(`Invalid --meta value "${pair}": expected key=value format`);
+      if (pair) {
+        meta[pair] = null;
+      }
+      continue;
     }
     const key = pair.slice(0, eqIdx);
     const value = pair.slice(eqIdx + 1);
@@ -122,7 +125,7 @@ export function createProgram(
     .option("-d, --due <date>", "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20')")
     .option("-l, --label <labels...>", "Add labels")
     .option("-n, --note <note>", "Add an initial note")
-    .option("--meta <key=value...>", "Add metadata key=value pairs")
+    .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(
@@ -365,7 +368,7 @@ export function createProgram(
     .option("-l, --label <labels...>", "Add labels")
     .option("--unlabel <labels...>", "Remove labels")
     .option("-n, --note <note>", "Append a note")
-    .option("--meta <key=value...>", "Set metadata key=value pairs")
+    .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(
@@ -518,7 +521,15 @@ export function createProgram(
               process.exitCode = 1;
               return;
             }
-            const merged = { ...existing.metadata, ...parseMetadata(opts.meta) };
+            const parsed = parseMetadata(opts.meta);
+            const merged = { ...existing.metadata };
+            for (const [key, value] of Object.entries(parsed)) {
+              if (value === null) {
+                delete merged[key];
+              } else {
+                merged[key] = value;
+              }
+            }
             updateFields.metadata = merged;
           }
 
@@ -563,7 +574,6 @@ export function createProgram(
             process.exitCode = 1;
             return;
           }
-
           if (useJson(opts)) {
             write(formatTaskJson(task));
           } else {
