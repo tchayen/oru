@@ -1,5 +1,5 @@
 import type { Kysely } from "kysely";
-import { generateId } from "../id.js";
+import { generateSortableId } from "../id.js";
 import type { DB } from "../db/kysely.js";
 import type { OplogEntry, OpType } from "./types.js";
 
@@ -16,7 +16,7 @@ export async function writeOp(
   input: WriteOpInput,
   timestamp?: string,
 ): Promise<OplogEntry> {
-  const id = generateId();
+  const id = generateSortableId();
   const ts = timestamp ?? new Date().toISOString();
 
   await db

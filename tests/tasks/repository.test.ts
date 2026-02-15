@@ -157,9 +157,9 @@ describe("task repository", () => {
     expect(JSON.parse(raw.metadata)).toEqual({ key: "value" });
   });
 
-  it("getTask matches by prefix when id < 36 chars and unique", async () => {
+  it("getTask matches by prefix when unique", async () => {
     const task = await createTask(ky, { title: "Prefix match" });
-    const prefix = task.id.slice(0, 8);
+    const prefix = task.id.slice(0, 4);
     const found = await getTask(ky, prefix);
     expect(found).toBeDefined();
     expect(found!.id).toBe(task.id);
@@ -186,7 +186,7 @@ describe("task repository", () => {
 
   it("updateTask works with prefix ID", async () => {
     const task = await createTask(ky, { title: "Original" });
-    const prefix = task.id.slice(0, 8);
+    const prefix = task.id.slice(0, 4);
     const updated = await updateTask(ky, prefix, { title: "Updated via prefix" });
     expect(updated).toBeDefined();
     expect(updated!.title).toBe("Updated via prefix");
@@ -197,7 +197,7 @@ describe("task repository", () => {
 
   it("appendNote works with prefix ID", async () => {
     const task = await createTask(ky, { title: "Note task" });
-    const prefix = task.id.slice(0, 8);
+    const prefix = task.id.slice(0, 4);
     const updated = await appendNote(ky, prefix, "Note via prefix");
     expect(updated).toBeDefined();
     expect(updated!.notes).toEqual(["Note via prefix"]);
@@ -208,7 +208,7 @@ describe("task repository", () => {
 
   it("deleteTask works with prefix ID", async () => {
     const task = await createTask(ky, { title: "Delete via prefix" });
-    const prefix = task.id.slice(0, 8);
+    const prefix = task.id.slice(0, 4);
     const result = await deleteTask(ky, prefix);
     expect(result).toBe(true);
     // Verify it's actually deleted

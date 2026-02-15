@@ -124,17 +124,16 @@ export async function getTask(db: Kysely<DB>, id: string): Promise<Task | null> 
     return rowToTask(row);
   }
 
-  if (id.length < 36) {
-    const escaped = id.replace(/[\\%_]/g, "\\$&");
-    const rows = await db
-      .selectFrom("tasks")
-      .selectAll()
-      .where(sql<SqlBool>`id LIKE ${escaped} || '%' ESCAPE '\\'`)
-      .where("deleted_at", "is", null)
-      .execute();
-    if (rows.length === 1) {
-      return rowToTask(rows[0]);
-    }
+  // Prefix matching: if exact match failed, try prefix lookup
+  const escaped = id.replace(/[\\%_]/g, "\\$&");
+  const rows = await db
+    .selectFrom("tasks")
+    .selectAll()
+    .where(sql<SqlBool>`id LIKE ${escaped} || '%' ESCAPE '\\'`)
+    .where("deleted_at", "is", null)
+    .execute();
+  if (rows.length === 1) {
+    return rowToTask(rows[0]);
   }
 
   return null;

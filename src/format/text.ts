@@ -22,7 +22,7 @@ export function formatTasksText(tasks: Task[]): string {
   }
   const header = `${"ID".padEnd(8)}  ${"STATUS".padEnd(11)}  ${"PRI".padEnd(6)}  TITLE`;
   const rows = tasks.map(
-    (t) => `${t.id.slice(0, 8)}  ${t.status.padEnd(11)}  ${t.priority.padEnd(6)}  ${t.title}`,
+    (t) => `${t.id.padEnd(8)}  ${t.status.padEnd(11)}  ${t.priority.padEnd(6)}  ${t.title}`,
   );
   return [header, ...rows].join("\n");
 }
