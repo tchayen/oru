@@ -45,6 +45,9 @@ export default function TaskDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
+  const [newNote, setNewNote] = useState("");
+  const [isAddingLabel, setIsAddingLabel] = useState(false);
+  const [newLabel, setNewLabel] = useState("");
 
   useEffect(() => {
     fetchTask(serverUrl, id).then((t) => {
@@ -89,6 +92,48 @@ export default function TaskDetailScreen() {
     setTask(updated);
     setIsEditingTitle(false);
   }, [task, editedTitle, serverUrl]);
+
+  const handleAddNote = useCallback(async () => {
+    if (!task) {
+      return;
+    }
+    const trimmed = newNote.trim();
+    if (!trimmed) {
+      return;
+    }
+    const updated = await updateTask(serverUrl, task.id, { note: trimmed });
+    setTask(updated);
+    setNewNote("");
+  }, [task, newNote, serverUrl]);
+
+  const handleAddLabel = useCallback(async () => {
+    if (!task) {
+      return;
+    }
+    const trimmed = newLabel.trim();
+    if (!trimmed || task.labels.includes(trimmed)) {
+      setIsAddingLabel(false);
+      setNewLabel("");
+      return;
+    }
+    const updated = await updateTask(serverUrl, task.id, { labels: [...task.labels, trimmed] });
+    setTask(updated);
+    setIsAddingLabel(false);
+    setNewLabel("");
+  }, [task, newLabel, serverUrl]);
+
+  const handleRemoveLabel = useCallback(
+    async (label: string) => {
+      if (!task) {
+        return;
+      }
+      const updated = await updateTask(serverUrl, task.id, {
+        labels: task.labels.filter((l) => l !== label),
+      });
+      setTask(updated);
+    },
+    [task, serverUrl],
+  );
 
   const handleDelete = useCallback(() => {
     if (!task) {
@@ -236,50 +281,106 @@ export default function TaskDetailScreen() {
           </Host>
         </View>
 
-        {task.labels.length > 0 && (
-          <View style={{ gap: 8 }}>
-            <Text
-              style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}
-            >
-              LABELS
-            </Text>
-            <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-              {task.labels.map((label) => (
-                <View
-                  key={label}
-                  style={{
-                    backgroundColor: PlatformColor("tertiarySystemFill"),
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    borderRadius: 6,
-                    borderCurve: "continuous",
-                  }}
-                >
-                  <Text style={{ fontSize: 14, color: PlatformColor("label") }}>{label}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {task.notes.length > 0 && (
-          <View style={{ gap: 8 }}>
-            <Text
-              style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}
-            >
-              NOTES
-            </Text>
-            {task.notes.map((note, i) => (
-              <Text
-                key={i}
-                selectable
-                style={{ fontSize: 15, color: PlatformColor("label"), lineHeight: 22 }}
-              >
-                {note}
-              </Text>
+        <View style={{ gap: 8 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            LABELS
+          </Text>
+          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+            {task.labels.map((label) => (
+              <Host key={label} matchContents>
+                <ContextMenu activationMethod="singlePress">
+                  <ContextMenu.Trigger>
+                    <View
+                      style={{
+                        backgroundColor: PlatformColor("tertiarySystemFill"),
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 6,
+                        borderCurve: "continuous",
+                      }}
+                    >
+                      <Text style={{ fontSize: 14, color: PlatformColor("label") }}>{label}</Text>
+                    </View>
+                  </ContextMenu.Trigger>
+                  <ContextMenu.Items>
+                    <Button
+                      systemImage="trash"
+                      role="destructive"
+                      onPress={() => handleRemoveLabel(label)}
+                    >
+                      Remove
+                    </Button>
+                  </ContextMenu.Items>
+                </ContextMenu>
+              </Host>
             ))}
+            {isAddingLabel ? (
+              <TextInput
+                value={newLabel}
+                onChangeText={setNewLabel}
+                onBlur={handleAddLabel}
+                onSubmitEditing={handleAddLabel}
+                autoFocus
+                placeholder="Label"
+                placeholderTextColor={PlatformColor("placeholderText")}
+                style={{
+                  fontSize: 14,
+                  color: PlatformColor("label"),
+                  backgroundColor: PlatformColor("tertiarySystemFill"),
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                  borderCurve: "continuous",
+                  minWidth: 60,
+                }}
+              />
+            ) : (
+              <Pressable
+                onPress={() => setIsAddingLabel(true)}
+                style={{
+                  backgroundColor: PlatformColor("tertiarySystemFill"),
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                  borderCurve: "continuous",
+                }}
+              >
+                <Text style={{ fontSize: 14, color: PlatformColor("secondaryLabel") }}>+</Text>
+              </Pressable>
+            )}
           </View>
-        )}
+        </View>
+
+        <View style={{ gap: 8 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            NOTES
+          </Text>
+          {task.notes.map((note, i) => (
+            <Text
+              key={i}
+              selectable
+              style={{ fontSize: 15, color: PlatformColor("label"), lineHeight: 22 }}
+            >
+              {note}
+            </Text>
+          ))}
+          <TextInput
+            value={newNote}
+            onChangeText={setNewNote}
+            onSubmitEditing={handleAddNote}
+            placeholder="Add a note..."
+            placeholderTextColor={PlatformColor("placeholderText")}
+            returnKeyType="done"
+            style={{
+              fontSize: 15,
+              color: PlatformColor("label"),
+              backgroundColor: PlatformColor("tertiarySystemFill"),
+              padding: 10,
+              borderRadius: 8,
+              borderCurve: "continuous",
+            }}
+          />
+        </View>
 
         <View style={{ gap: 4 }}>
           <Text selectable style={{ fontSize: 13, color: PlatformColor("tertiaryLabel") }}>

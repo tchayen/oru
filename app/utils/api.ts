@@ -24,6 +24,8 @@ export interface UpdateTaskInput {
   title?: string;
   status?: Status;
   priority?: Priority;
+  labels?: string[];
+  note?: string;
 }
 
 const PRIORITY_ORDER: Record<Priority, number> = {
@@ -180,9 +182,17 @@ export async function updateTask(
   input: UpdateTaskInput,
 ): Promise<Task> {
   if (!serverUrl) {
-    mockTasks = mockTasks.map((t) =>
-      t.id === id ? { ...t, ...input, updated_at: new Date().toISOString() } : t,
-    );
+    mockTasks = mockTasks.map((t) => {
+      if (t.id !== id) {
+        return t;
+      }
+      const { note, ...fields } = input;
+      const updated = { ...t, ...fields, updated_at: new Date().toISOString() };
+      if (note) {
+        updated.notes = [...t.notes, note];
+      }
+      return updated;
+    });
     const task = mockTasks.find((t) => t.id === id);
     if (!task) {
       throw new Error("Task not found");
