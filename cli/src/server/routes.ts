@@ -10,8 +10,8 @@ export function createApp(service: TaskService): Hono {
   const app = new Hono();
 
   app.get("/tasks", async (c) => {
-    const status = c.req.query("status") as Status | undefined;
-    const priority = c.req.query("priority") as Priority | undefined;
+    const statusRaw = c.req.query("status");
+    const priorityRaw = c.req.query("priority");
     const label = c.req.query("label");
     const search = c.req.query("search");
     const all = c.req.query("all");
@@ -19,11 +19,26 @@ export function createApp(service: TaskService): Hono {
     const limitRaw = c.req.query("limit");
     const offsetRaw = c.req.query("offset");
 
-    if (status && !validStatuses.has(status)) {
-      return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
+    let status: Status | Status[] | undefined;
+    if (statusRaw) {
+      const parts = statusRaw.split(",");
+      for (const s of parts) {
+        if (!validStatuses.has(s)) {
+          return c.json({ error: "validation", message: `Invalid status: ${s}` }, 400);
+        }
+      }
+      status = parts.length === 1 ? (parts[0] as Status) : (parts as Status[]);
     }
-    if (priority && !validPriorities.has(priority)) {
-      return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
+
+    let priority: Priority | Priority[] | undefined;
+    if (priorityRaw) {
+      const parts = priorityRaw.split(",");
+      for (const p of parts) {
+        if (!validPriorities.has(p)) {
+          return c.json({ error: "validation", message: `Invalid priority: ${p}` }, 400);
+        }
+      }
+      priority = parts.length === 1 ? (parts[0] as Priority) : (parts as Priority[]);
     }
 
     const limit = limitRaw ? Number(limitRaw) : undefined;
