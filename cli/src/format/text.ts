@@ -2,7 +2,7 @@ import type { Task } from "../tasks/types.js";
 import type { OplogEntry } from "../oplog/types.js";
 import { bold, dim, italic, red, green, yellow, magenta, cyan } from "./colors.js";
 
-function isOverdue(dueAt: string, now?: Date): boolean {
+export function isOverdue(dueAt: string, now?: Date): boolean {
   const ref = now ?? new Date();
   const dueDate = new Date(
     Number(dueAt.slice(0, 4)),
@@ -196,6 +196,36 @@ export function formatLogText(entries: OplogEntry[]): string {
   }
 
   return lines.join("\n");
+}
+
+export interface ContextSections {
+  overdue: Task[];
+  in_progress: Task[];
+  actionable: Task[];
+  blocked: Task[];
+  recently_completed: Task[];
+}
+
+export function formatContextText(sections: ContextSections, now?: Date): string {
+  const entries: [string, Task[]][] = [
+    ["Overdue", sections.overdue],
+    ["In Progress", sections.in_progress],
+    ["Actionable", sections.actionable],
+    ["Blocked", sections.blocked],
+    ["Recently Completed", sections.recently_completed],
+  ];
+
+  const nonEmpty = entries.filter(([, tasks]) => tasks.length > 0);
+  if (nonEmpty.length === 0) {
+    return dim("Nothing to report.");
+  }
+
+  const parts: string[] = [];
+  for (const [name, tasks] of nonEmpty) {
+    parts.push(`${bold(name)} ${dim(`(${tasks.length})`)}`);
+    parts.push(formatTasksText(tasks, now));
+  }
+  return parts.join("\n\n");
 }
 
 export type DueFilter = "today" | "this-week" | "overdue";

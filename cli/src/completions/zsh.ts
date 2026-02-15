@@ -21,6 +21,7 @@ _ao() {
     'done:Mark one or more tasks as done'
     'start:Start one or more tasks'
     'review:Mark one or more tasks as in_review'
+    'context:Show agent briefing of current task status'
     'log:Show change history of a task'
     'sync:Sync with a filesystem remote'
     'config:Manage configuration'
@@ -126,6 +127,12 @@ _ao() {
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\
             '*:task:->tasks'
+          ;;
+        context)
+          _arguments \\
+            '--owner[Scope briefing to a specific owner]:owner:' \\
+            '--json[Output as JSON]' \\
+            '--plaintext[Output as plain text]'
           ;;
         log)
           _arguments \\

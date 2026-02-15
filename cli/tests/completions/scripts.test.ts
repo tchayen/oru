@@ -50,6 +50,10 @@ describe("bash completions script", () => {
     expect(script).toContain("review");
   });
 
+  it("contains context command", () => {
+    expect(script).toContain("context");
+  });
+
   it("calls ao _complete for dynamic values", () => {
     expect(script).toContain("ao _complete tasks");
     expect(script).toContain("ao _complete labels");
@@ -118,6 +122,10 @@ describe("zsh completions script", () => {
 
   it("contains review command", () => {
     expect(script).toContain("review");
+  });
+
+  it("contains context command", () => {
+    expect(script).toContain("context:Show agent briefing of current task status");
   });
 
   it("calls ao _complete for dynamic values", () => {
@@ -195,6 +203,10 @@ describe("fish completions script", () => {
 
   it("contains review command", () => {
     expect(script).toContain("review");
+  });
+
+  it("contains context command", () => {
+    expect(script).toContain("context");
   });
 
   it("defines helper functions for dynamic completions", () => {
