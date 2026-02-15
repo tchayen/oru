@@ -25,6 +25,9 @@ jobs:
       - name: Check formatting
         run: npm run fmt:check
 
+      - name: Typecheck
+        run: npm run tsgo
+
       - name: Test
         run: npm test
 
