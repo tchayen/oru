@@ -1,4 +1,5 @@
-import type Database from "better-sqlite3";
+import type { Kysely } from "kysely";
+import type { DB } from "./db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types.js";
 import type { ListFilters } from "./tasks/repository.js";
 import {
@@ -10,21 +11,19 @@ import {
   deleteTask,
 } from "./tasks/repository.js";
 import { writeOp } from "./oplog/writer.js";
-import { getDeviceId } from "./device.js";
 
 export class TaskService {
-  private deviceId: string;
+  constructor(
+    private db: Kysely<DB>,
+    private deviceId: string,
+  ) {}
 
-  constructor(private db: Database.Database) {
-    this.deviceId = getDeviceId(db);
-  }
-
-  add(input: CreateTaskInput): Task {
-    const task = this.db.transaction(() => {
+  async add(input: CreateTaskInput): Promise<Task> {
+    return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();
-      const task = createTask(this.db, input, now);
-      writeOp(
-        this.db,
+      const task = await createTask(trx, input, now);
+      await writeOp(
+        trx,
         {
           task_id: task.id,
           device_id: this.deviceId,
@@ -42,30 +41,29 @@ export class TaskService {
         now,
       );
       return task;
-    })();
-    return task;
+    });
   }
 
-  list(filters?: ListFilters): Task[] {
+  async list(filters?: ListFilters): Promise<Task[]> {
     return listTasks(this.db, filters);
   }
 
-  get(id: string): Task | null {
+  async get(id: string): Promise<Task | null> {
     return getTask(this.db, id);
   }
 
-  update(id: string, input: UpdateTaskInput): Task | null {
-    return this.db.transaction(() => {
+  async update(id: string, input: UpdateTaskInput): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();
-      const task = updateTask(this.db, id, input, now);
+      const task = await updateTask(trx, id, input, now);
       if (!task) {
         return null;
       }
 
       for (const [field, value] of Object.entries(input)) {
         if (value !== undefined) {
-          writeOp(
-            this.db,
+          await writeOp(
+            trx,
             {
               task_id: task.id,
               device_id: this.deviceId,
@@ -78,19 +76,19 @@ export class TaskService {
         }
       }
       return task;
-    })();
+    });
   }
 
-  addNote(id: string, note: string): Task | null {
-    return this.db.transaction(() => {
+  async addNote(id: string, note: string): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();
-      const task = appendNote(this.db, id, note, now);
+      const task = await appendNote(trx, id, note, now);
       if (!task) {
         return null;
       }
 
-      writeOp(
-        this.db,
+      await writeOp(
+        trx,
         {
           task_id: task.id,
           device_id: this.deviceId,
@@ -101,14 +99,13 @@ export class TaskService {
         now,
       );
       return task;
-    })();
+    });
   }
 
-  updateWithNote(id: string, input: UpdateTaskInput, note: string): Task | null {
-    return this.db.transaction(() => {
+  async updateWithNote(id: string, input: UpdateTaskInput, note: string): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();
-      // Apply field updates
-      let task = updateTask(this.db, id, input, now);
+      let task = await updateTask(trx, id, input, now);
       if (!task) {
         return null;
       }
@@ -116,8 +113,8 @@ export class TaskService {
       const resolvedId = task.id;
       for (const [field, value] of Object.entries(input)) {
         if (value !== undefined) {
-          writeOp(
-            this.db,
+          await writeOp(
+            trx,
             {
               task_id: resolvedId,
               device_id: this.deviceId,
@@ -130,11 +127,10 @@ export class TaskService {
         }
       }
 
-      // Append the note
-      task = appendNote(this.db, resolvedId, note, now);
+      task = await appendNote(trx, resolvedId, note, now);
 
-      writeOp(
-        this.db,
+      await writeOp(
+        trx,
         {
           task_id: resolvedId,
           device_id: this.deviceId,
@@ -146,21 +142,21 @@ export class TaskService {
       );
 
       return task;
-    })();
+    });
   }
 
-  delete(id: string): boolean {
-    return this.db.transaction(() => {
+  async delete(id: string): Promise<boolean> {
+    return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();
-      const task = getTask(this.db, id);
+      const task = await getTask(trx, id);
       if (!task) {
         return false;
       }
 
-      const result = deleteTask(this.db, task.id, now);
+      const result = await deleteTask(trx, task.id, now);
       if (result) {
-        writeOp(
-          this.db,
+        await writeOp(
+          trx,
           {
             task_id: task.id,
             device_id: this.deviceId,
@@ -172,6 +168,6 @@ export class TaskService {
         );
       }
       return result;
-    })();
+    });
   }
 }

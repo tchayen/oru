@@ -19,6 +19,7 @@
   "dependencies": {
     "better-sqlite3": "^11.7.0",
     "commander": "^13.1.0",
+    "kysely": "^0.28.11",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

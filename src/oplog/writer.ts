@@ -1,5 +1,6 @@
-import type Database from "better-sqlite3";
+import type { Kysely } from "kysely";
 import { generateId } from "../id.js";
+import type { DB } from "../db/kysely.js";
 import type { OplogEntry, OpType } from "./types.js";
 
 export interface WriteOpInput {
@@ -10,18 +11,26 @@ export interface WriteOpInput {
   value: string | null;
 }
 
-export function writeOp(
-  db: Database.Database,
+export async function writeOp(
+  db: Kysely<DB>,
   input: WriteOpInput,
   timestamp?: string,
-): OplogEntry {
+): Promise<OplogEntry> {
   const id = generateId();
   const ts = timestamp ?? new Date().toISOString();
 
-  db.prepare(
-    `INSERT INTO oplog (id, task_id, device_id, op_type, field, value, timestamp)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, input.task_id, input.device_id, input.op_type, input.field, input.value, ts);
+  await db
+    .insertInto("oplog")
+    .values({
+      id,
+      task_id: input.task_id,
+      device_id: input.device_id,
+      op_type: input.op_type,
+      field: input.field,
+      value: input.value,
+      timestamp: ts,
+    })
+    .execute();
 
   return {
     id,

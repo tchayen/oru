@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { createTestDb } from "../helpers/test-db.js";
+import { createTestDb, createTestKysely } from "../helpers/test-db.js";
 import { FsRemote } from "../../src/sync/fs-remote.js";
 import { SyncEngine } from "../../src/sync/engine.js";
 import { writeOp } from "../../src/oplog/writer.js";
@@ -24,7 +24,9 @@ describe("e2e sync scenarios", () => {
 
   it("shopping list: PC creates, phone edits offline, both sync", async () => {
     const pc = createTestDb();
+    const pcKy = createTestKysely(pc);
     const phone = createTestDb();
+    const phoneKy = createTestKysely(phone);
 
     const enginePC = new SyncEngine(pc, remote, "pc");
     const enginePhone = new SyncEngine(phone, remote, "phone");
@@ -40,22 +42,22 @@ describe("e2e sync scenarios", () => {
         metadata: {},
       });
 
-    writeOp(pc, {
+    await writeOp(pcKy, {
       task_id: "t1",
       device_id: "pc",
       op_type: "create",
       field: null,
       value: createVal("Buy milk"),
     });
-    createTask(pc, { id: "t1", title: "Buy milk" });
-    writeOp(pc, {
+    await createTask(pcKy, { id: "t1", title: "Buy milk" });
+    await writeOp(pcKy, {
       task_id: "t2",
       device_id: "pc",
       op_type: "create",
       field: null,
       value: createVal("Buy eggs"),
     });
-    createTask(pc, { id: "t2", title: "Buy eggs" });
+    await createTask(pcKy, { id: "t2", title: "Buy eggs" });
 
     // PC syncs
     await enginePC.push();
@@ -64,14 +66,14 @@ describe("e2e sync scenarios", () => {
     await enginePhone.pull();
 
     // Phone goes offline and makes edits
-    writeOp(phone, {
+    await writeOp(phoneKy, {
       task_id: "t1",
       device_id: "phone",
       op_type: "update",
       field: "status",
       value: "done",
     });
-    writeOp(phone, {
+    await writeOp(phoneKy, {
       task_id: "t2",
       device_id: "phone",
       op_type: "update",
@@ -80,7 +82,7 @@ describe("e2e sync scenarios", () => {
     });
 
     // PC also makes edits offline
-    writeOp(pc, {
+    await writeOp(pcKy, {
       task_id: "t1",
       device_id: "pc",
       op_type: "update",
@@ -95,15 +97,15 @@ describe("e2e sync scenarios", () => {
     await enginePhone.pull();
 
     // Both devices converge
-    const pcT1 = getTask(pc, "t1");
-    const phoneT1 = getTask(phone, "t1");
+    const pcT1 = await getTask(pcKy, "t1");
+    const phoneT1 = await getTask(phoneKy, "t1");
     expect(pcT1!.status).toBe("done");
     expect(pcT1!.priority).toBe("high");
     expect(phoneT1!.status).toBe("done");
     expect(phoneT1!.priority).toBe("high");
 
-    const pcT2 = getTask(pc, "t2");
-    const phoneT2 = getTask(phone, "t2");
+    const pcT2 = await getTask(pcKy, "t2");
+    const phoneT2 = await getTask(phoneKy, "t2");
     expect(pcT2!.notes).toContain("Get organic");
     expect(phoneT2!.notes).toContain("Get organic");
 
@@ -113,8 +115,11 @@ describe("e2e sync scenarios", () => {
 
   it("three devices, staggered syncs, all converge", async () => {
     const d1 = createTestDb();
+    const d1Ky = createTestKysely(d1);
     const d2 = createTestDb();
+    const d2Ky = createTestKysely(d2);
     const d3 = createTestDb();
+    const d3Ky = createTestKysely(d3);
 
     const e1 = new SyncEngine(d1, remote, "d1");
     const e2 = new SyncEngine(d2, remote, "d2");
@@ -129,20 +134,20 @@ describe("e2e sync scenarios", () => {
       notes: [],
       metadata: {},
     });
-    writeOp(d1, {
+    await writeOp(d1Ky, {
       task_id: "t1",
       device_id: "d1",
       op_type: "create",
       field: null,
       value: createVal,
     });
-    createTask(d1, { id: "t1", title: "Shared", priority: "low" });
+    await createTask(d1Ky, { id: "t1", title: "Shared", priority: "low" });
 
     await e1.push();
 
     // d2 syncs and updates
     await e2.pull();
-    writeOp(d2, {
+    await writeOp(d2Ky, {
       task_id: "t1",
       device_id: "d2",
       op_type: "update",
@@ -153,7 +158,7 @@ describe("e2e sync scenarios", () => {
 
     // d3 syncs (gets create + d2's update)
     await e3.pull();
-    writeOp(d3, {
+    await writeOp(d3Ky, {
       task_id: "t1",
       device_id: "d3",
       op_type: "update",
@@ -167,9 +172,9 @@ describe("e2e sync scenarios", () => {
     await e2.pull();
     await e3.pull();
 
-    const t1 = getTask(d1, "t1");
-    const t2 = getTask(d2, "t1");
-    const t3 = getTask(d3, "t1");
+    const t1 = await getTask(d1Ky, "t1");
+    const t2 = await getTask(d2Ky, "t1");
+    const t3 = await getTask(d3Ky, "t1");
 
     // All converge to same state
     expect(t1!.status).toBe("in_progress");
@@ -186,7 +191,9 @@ describe("e2e sync scenarios", () => {
 
   it("delete vs update: update wins after sync", async () => {
     const deleter = createTestDb();
+    const deleterKy = createTestKysely(deleter);
     const updater = createTestDb();
+    const updaterKy = createTestKysely(updater);
 
     const eDeleter = new SyncEngine(deleter, remote, "deleter");
     const eUpdater = new SyncEngine(updater, remote, "updater");
@@ -200,19 +207,19 @@ describe("e2e sync scenarios", () => {
       notes: [],
       metadata: {},
     });
-    writeOp(deleter, {
+    await writeOp(deleterKy, {
       task_id: "t1",
       device_id: "deleter",
       op_type: "create",
       field: null,
       value: createVal,
     });
-    createTask(deleter, { id: "t1", title: "Task" });
+    await createTask(deleterKy, { id: "t1", title: "Task" });
     await eDeleter.push();
     await eUpdater.pull();
 
     // Deleter deletes
-    writeOp(deleter, {
+    await writeOp(deleterKy, {
       task_id: "t1",
       device_id: "deleter",
       op_type: "delete",
@@ -224,7 +231,7 @@ describe("e2e sync scenarios", () => {
     await new Promise((r) => {
       setTimeout(r, 5);
     });
-    writeOp(updater, {
+    await writeOp(updaterKy, {
       task_id: "t1",
       device_id: "updater",
       op_type: "update",
@@ -239,8 +246,8 @@ describe("e2e sync scenarios", () => {
     await eUpdater.pull();
 
     // Update wins — task should exist on both
-    const tDel = getTask(deleter, "t1");
-    const tUpd = getTask(updater, "t1");
+    const tDel = await getTask(deleterKy, "t1");
+    const tUpd = await getTask(updaterKy, "t1");
     expect(tDel).toBeDefined();
     expect(tUpd).toBeDefined();
     expect(tDel!.status).toBe("done");

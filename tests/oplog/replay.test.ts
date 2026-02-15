@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
-import { createTestDb } from "../helpers/test-db.js";
+import type { Kysely } from "kysely";
+import type { DB } from "../../src/db/kysely.js";
+import { createTestDb, createTestKysely } from "../helpers/test-db.js";
 import { replayOps } from "../../src/oplog/replay.js";
 import type { OplogEntry } from "../../src/oplog/types.js";
 import { getTask } from "../../src/tasks/repository.js";
@@ -18,12 +20,14 @@ function makeOp(overrides: Partial<OplogEntry> & { id: string; task_id: string }
 
 describe("oplog replay", () => {
   let db: Database.Database;
+  let ky: Kysely<DB>;
 
   beforeEach(() => {
     db = createTestDb();
+    ky = createTestKysely(db);
   });
 
-  it("replays a create op", () => {
+  it("replays a create op", async () => {
     const ops: OplogEntry[] = [
       makeOp({
         id: "op-1",
@@ -41,13 +45,13 @@ describe("oplog replay", () => {
       }),
     ];
     replayOps(db, ops);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task).toBeDefined();
     expect(task!.title).toBe("Buy milk");
     expect(task!.status).toBe("todo");
   });
 
-  it("replays an update op", () => {
+  it("replays an update op", async () => {
     // First create the task
     replayOps(db, [
       makeOp({
@@ -77,11 +81,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.status).toBe("done");
   });
 
-  it("replays a delete op", () => {
+  it("replays a delete op", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -109,11 +113,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task).toBeNull();
   });
 
-  it("last-write-wins: later update wins", () => {
+  it("last-write-wins: later update wins", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -149,11 +153,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:02:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.status).toBe("done");
   });
 
-  it("last-write-wins: earlier update does not override later", () => {
+  it("last-write-wins: earlier update does not override later", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -193,11 +197,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.status).toBe("done");
   });
 
-  it("updates beat deletes: update after delete restores task", () => {
+  it("updates beat deletes: update after delete restores task", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -231,13 +235,13 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:02:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task).toBeDefined();
     expect(task!.status).toBe("done");
     expect(task!.deleted_at).toBeNull();
   });
 
-  it("notes are append-only and accumulate", () => {
+  it("notes are append-only and accumulate", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -271,11 +275,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:02:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.notes).toEqual(["Note A", "Note B"]);
   });
 
-  it("notes are deduped", () => {
+  it("notes are deduped", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -309,11 +313,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:02:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.notes).toEqual(["Same note"]);
   });
 
-  it("per-field resolution: different fields from different devices both kept", () => {
+  it("per-field resolution: different fields from different devices both kept", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -349,12 +353,12 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.status).toBe("done");
     expect(task!.priority).toBe("urgent");
   });
 
-  it("idempotent replay — applying same ops twice has no extra effect", () => {
+  it("idempotent replay — applying same ops twice has no extra effect", async () => {
     const ops: OplogEntry[] = [
       makeOp({
         id: "op-1",
@@ -382,12 +386,12 @@ describe("oplog replay", () => {
     ];
     replayOps(db, ops);
     replayOps(db, ops);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.status).toBe("done");
   });
 
   // GAP-2: Same-timestamp conflict resolution uses id as deterministic tiebreaker
-  it("same-timestamp updates resolve deterministically by id", () => {
+  it("same-timestamp updates resolve deterministically by id", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -423,12 +427,12 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     // "op-2b" > "op-2a" lexicographically, so "done" wins
     expect(task!.status).toBe("done");
   });
 
-  it("same-timestamp delete vs update: update wins", () => {
+  it("same-timestamp delete vs update: update wins", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -462,14 +466,14 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     // Update at same timestamp as delete should restore the task
     expect(task).toBeDefined();
     expect(task!.deleted_at).toBeNull();
     expect(task!.status).toBe("done");
   });
 
-  it("handles out-of-order ops correctly", () => {
+  it("handles out-of-order ops correctly", async () => {
     // Deliver ops in reverse order
     replayOps(db, [
       makeOp({
@@ -504,12 +508,12 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.title).toBe("Task");
     expect(task!.status).toBe("done");
   });
 
-  it("caps notes at 1000 per task", () => {
+  it("caps notes at 1000 per task", async () => {
     const ops: OplogEntry[] = [
       makeOp({
         id: "op-0",
@@ -540,11 +544,11 @@ describe("oplog replay", () => {
       );
     }
     replayOps(db, ops);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.notes).toHaveLength(1000);
   });
 
-  it("filters non-string labels from create ops", () => {
+  it("filters non-string labels from create ops", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -562,11 +566,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:00:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.labels).toEqual(["valid", "also-valid"]);
   });
 
-  it("filters non-string labels from update ops", () => {
+  it("filters non-string labels from update ops", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -592,11 +596,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:01:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.labels).toEqual(["good", "fine"]);
   });
 
-  it("trims notes before dedup comparison", () => {
+  it("trims notes before dedup comparison", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -630,11 +634,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:02:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.notes).toEqual(["Hello"]);
   });
 
-  it("rejects whitespace-only notes", () => {
+  it("rejects whitespace-only notes", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -668,11 +672,11 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:02:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task!.notes).toEqual([]);
   });
 
-  it("skips create ops with null value", () => {
+  it("skips create ops with null value", async () => {
     replayOps(db, [
       makeOp({
         id: "op-1",
@@ -683,7 +687,7 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:00:00.000Z",
       }),
     ]);
-    const task = getTask(db, "t1");
+    const task = await getTask(ky, "t1");
     expect(task).toBeNull();
   });
 });
