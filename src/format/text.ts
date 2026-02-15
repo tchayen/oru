@@ -20,7 +20,10 @@ export function formatTasksText(tasks: Task[]): string {
   if (tasks.length === 0) {
     return "No tasks found.";
   }
-  return tasks
-    .map((t) => `${t.id.slice(0, 8)}  [${t.status}]  ${t.priority.padEnd(6)}  ${t.title}`)
-    .join("\n");
+  const header = `${"ID".padEnd(8)}  ${"STATUS".padEnd(11)}  ${"PRI".padEnd(6)}  TITLE`;
+  const rows = tasks.map(
+    (t) =>
+      `${t.id.slice(0, 8)}  ${t.status.padEnd(11)}  ${t.priority.padEnd(6)}  ${t.title}`,
+  );
+  return [header, ...rows].join("\n");
 }

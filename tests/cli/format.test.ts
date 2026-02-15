@@ -25,11 +25,15 @@ describe("text formatter", () => {
     expect(output).toContain("medium");
   });
 
-  it("formats a list of tasks", () => {
+  it("formats a list of tasks with header", () => {
     const output = formatTasksText([
       sampleTask,
       { ...sampleTask, id: "def-456", title: "Buy eggs" },
     ]);
+    const lines = output.split("\n");
+    expect(lines[0]).toContain("ID");
+    expect(lines[0]).toContain("STATUS");
+    expect(lines[0]).toContain("TITLE");
     expect(output).toContain("Buy milk");
     expect(output).toContain("Buy eggs");
   });
