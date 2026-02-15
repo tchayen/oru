@@ -16,52 +16,19 @@ import Terminal from "./ui/Terminal.astro";
     </div>
     <div class="max-w-[720px] mx-auto reveal" data-delay="160" data-terminal-typing>
       <Terminal title="~/.oru">
-        <span class="line"
-          ><span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">add</span>
-          <span class="str">"Refactor auth middleware"</span>
-          <span class="flag">--priority</span>
-          <span class="val">high</span>
-          <span class="flag">--due</span>
-          <span class="val">friday</span></span
-        >
-        <span class="line"
-          ><span class="output">Created task 019414a2</span></span
-        >
+        <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Refactor auth middleware"</span> <span class="flag">--priority</span> <span class="val">high</span> <span class="flag">--due</span> <span class="val">friday</span></span>
+        <span class="line"><span class="output">zj9rESjT  </span><span class="cmd">Refactor auth middleware</span></span>
+        <span class="line"><span class="output">  Status: todo  Priority: </span><span class="val">high</span><span class="output">  Due: 2026-02-20</span></span>
         <span class="blank"></span>
-        <span class="line"
-          ><span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">list</span></span
-        >
-        <span class="line"
-          ><span class="output"> # Title Priority Due Status</span></span
-        >
-        <span class="line"
-          ><span class="output"> 1 Refactor auth middleware </span><span
-            class="val">high</span
-          ><span class="output"> Fri Feb 20 todo</span></span
-        >
-        <span class="line"
-          ><span class="output"> 2 Write migration tests </span><span
-            class="val">medium</span
-          ><span class="output"> — in-progress</span></span
-        >
-        <span class="line"
-          ><span class="output"> 3 Update API docs </span><span class="val"
-            >low</span
-          ><span class="output"> — todo</span></span
-        >
+        <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span></span>
+        <span class="line"><span class="output">     ID        PRI     DUE         TITLE</span></span>
+        <span class="line"><span class="output">[ ]  zj9rESjT  </span><span class="val">high  </span><span class="output">  2026-02-20  </span><span class="cmd">Refactor auth middleware</span></span>
+        <span class="line"><span class="val">[~]</span><span class="output">  fj6EmFhu  medium              </span><span class="cmd">Write migration tests</span></span>
+        <span class="line"><span class="output">[ ]  yX9K9UbF  low                 </span><span class="cmd">Update API docs</span></span>
         <span class="blank"></span>
-        <span class="line"
-          ><span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">update</span>
-          <span class="val">019414a2</span>
-          <span class="flag">--status</span>
-          <span class="val">done</span></span
-        >
-        <span class="line"
-          ><span class="output">Updated task 019414a2</span></span
-        >
+        <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">zj9rESjT</span> <span class="flag">--status</span> <span class="val">done</span></span>
+        <span class="line"><span class="output">zj9rESjT  </span><span class="cmd">Refactor auth middleware</span></span>
+        <span class="line"><span class="output">  Status: </span><span class="str">done</span><span class="output">  Priority: </span><span class="val">high</span><span class="output">  Due: 2026-02-20</span></span>
       </Terminal>
     </div>
   </div>
