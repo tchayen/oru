@@ -15,9 +15,11 @@
 - [ ] Explore converting code in `site/` to TS.
 - [ ] Figure out installation. I guess npm package and an install script like bun/claude code. We want auto update.
 - [ ] Verify claims from the homepage:
+
   > Requires Node 22+. That is the only dependency.
 
   uhm not sure lol?
+
 - [ ] Phone on the homepage needs to be replaced with proper iPhone frame and proper app screenshot.
 - [ ] Add colors to CLI help output.
 - [ ] Make orange theme color in the CLI - like the website one.
