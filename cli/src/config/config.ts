@@ -46,6 +46,9 @@ export function getConfigPath(): string {
   if (process.env.AO_CONFIG_PATH) {
     return process.env.AO_CONFIG_PATH;
   }
+  if (process.env.AO_CONFIG_DIR) {
+    return path.join(process.env.AO_CONFIG_DIR, "config.toml");
+  }
   return path.join(os.homedir(), ".ao", "config.toml");
 }
 
