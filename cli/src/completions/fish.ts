@@ -50,6 +50,7 @@ complete -c oru -n __oru_needs_command -a sync -d 'Sync with a filesystem remote
 complete -c oru -n __oru_needs_command -a config -d 'Manage configuration'
 complete -c oru -n __oru_needs_command -a server -d 'Manage the HTTP server'
 complete -c oru -n __oru_needs_command -a completions -d 'Generate shell completions'
+complete -c oru -n __oru_needs_command -a self-update -d 'Update oru to the latest version'
 
 # config subcommands
 complete -c oru -n '__oru_using_command config' -a init -d 'Create a default config file'
@@ -135,5 +136,8 @@ complete -c oru -n '__oru_using_command log' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command log' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command sync' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command sync' -l plaintext -d 'Output as plain text'
+
+# self-update flags
+complete -c oru -n '__oru_using_command self-update' -l check -d 'Only check if an update is available'
 `;
 }

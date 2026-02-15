@@ -24,6 +24,7 @@ describe("config", () => {
       first_day_of_week: "monday",
       output_format: "text",
       next_month: "same_day",
+      auto_update_check: true,
     });
   });
 
@@ -35,6 +36,7 @@ describe("config", () => {
       first_day_of_week: "monday",
       output_format: "text",
       next_month: "same_day",
+      auto_update_check: true,
     });
   });
 
@@ -106,6 +108,7 @@ output_format = "json"
       first_day_of_week: "wednesday",
       output_format: "json",
       next_month: "same_day",
+      auto_update_check: true,
     });
   });
 
@@ -147,6 +150,7 @@ unknown_key = "whatever"
       first_day_of_week: "monday",
       output_format: "json",
       next_month: "same_day",
+      auto_update_check: true,
     });
   });
 });

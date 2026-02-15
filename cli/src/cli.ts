@@ -47,6 +47,7 @@ import {
 import { dim, yellow, orange } from "./format/colors.js";
 
 declare const __GIT_COMMIT__: string;
+declare const __VERSION__: string;
 
 const MAX_TITLE_LENGTH = 1000;
 const MAX_NOTE_LENGTH = 10000;
@@ -145,7 +146,7 @@ export function createProgram(
     .description(
       `${orange("oru")} — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file.`,
     )
-    .version(`0.1.0 (${__GIT_COMMIT__})`);
+    .version(`${__VERSION__} (${__GIT_COMMIT__})`);
 
   program.configureOutput({
     writeOut: write,
@@ -1288,6 +1289,16 @@ export function createProgram(
       write(generateFishCompletions());
     });
 
+  // self-update
+  program
+    .command("self-update")
+    .description("Update oru to the latest version")
+    .option("--check", "Only check if an update is available")
+    .action(async (opts: { check?: boolean }) => {
+      const { performUpdate } = await import("./update/perform.js");
+      await performUpdate(!!opts.check);
+    });
+
   // hidden _complete command for dynamic completions
   program
     .command("_complete <type> [prefix]", { hidden: true })
@@ -1310,6 +1321,15 @@ async function main() {
   const config = loadConfig();
   const program = createProgram(db, undefined, config);
 
+  // Start non-blocking update check
+  let updateCheckPromise: Promise<string | null> | undefined;
+  try {
+    const { checkForUpdate } = await import("./update/check.js");
+    updateCheckPromise = checkForUpdate(config);
+  } catch {
+    // Silently ignore if update check fails to load
+  }
+
   try {
     await program.parseAsync(process.argv);
   } catch (err: unknown) {
@@ -1320,6 +1340,19 @@ async function main() {
     throw err;
   } finally {
     db.close();
+  }
+
+  // Print update notice after command completes
+  if (updateCheckPromise) {
+    try {
+      const latestVersion = await updateCheckPromise;
+      if (latestVersion) {
+        const { printUpdateNotice } = await import("./update/check.js");
+        printUpdateNotice(latestVersion);
+      }
+    } catch {
+      // Never let update check errors affect CLI
+    }
   }
 }
 

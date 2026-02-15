@@ -27,6 +27,7 @@ _oru() {
     'config:Manage configuration'
     'server:Manage the HTTP server'
     'completions:Generate shell completions'
+    'self-update:Update oru to the latest version'
   )
 
   local -a status_values
@@ -181,6 +182,10 @@ _oru() {
           local -a shells
           shells=(bash zsh fish)
           _describe -t shells 'shell' shells
+          ;;
+        self-update)
+          _arguments \\
+            '--check[Only check if an update is available]'
           ;;
       esac
 

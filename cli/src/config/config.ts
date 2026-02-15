@@ -20,6 +20,7 @@ export interface Config {
   first_day_of_week: Weekday;
   output_format: OutputFormat;
   next_month: NextMonthBehavior;
+  auto_update_check: boolean;
 }
 
 const DEFAULTS: Config = {
@@ -27,6 +28,7 @@ const DEFAULTS: Config = {
   first_day_of_week: "monday",
   output_format: "text",
   next_month: "same_day",
+  auto_update_check: true,
 };
 
 const VALID_DATE_FORMATS = new Set<string>(["dmy", "mdy"]);
@@ -73,6 +75,10 @@ output_format = "text"
 # "same_day" = same day number next month (Feb 15 -> Mar 15, Jan 31 -> Feb 28)
 # "first"    = first day of next month (Feb 15 -> Mar 1)
 next_month = "same_day"
+
+# Check for new versions on startup (once per 24h)
+# Set to false to disable
+auto_update_check = true
 `;
 
 export function loadConfig(configPath?: string): Config {
@@ -103,6 +109,10 @@ export function loadConfig(configPath?: string): Config {
 
   if (typeof parsed.next_month === "string" && VALID_NEXT_MONTH.has(parsed.next_month)) {
     config.next_month = parsed.next_month as NextMonthBehavior;
+  }
+
+  if (typeof parsed.auto_update_check === "boolean") {
+    config.auto_update_check = parsed.auto_update_check;
   }
 
   return config;

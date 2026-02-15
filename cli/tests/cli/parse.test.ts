@@ -1516,6 +1516,13 @@ describe("CLI parse", () => {
     expect(parsed.error).toBe("ambiguous_prefix");
   });
 
+  it("self-update command exists", async () => {
+    const program = createProgram(db, capture());
+    const cmd = program.commands.find((c) => c.name() === "self-update");
+    expect(cmd).toBeDefined();
+    expect(cmd!.description()).toContain("Update oru");
+  });
+
   it("delete shows ambiguous prefix error", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync([

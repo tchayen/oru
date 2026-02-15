@@ -2,10 +2,24 @@
   "name": "oru",
   "version": "0.1.0",
   "description": "oru — agent-friendly todo CLI with offline sync",
+  "homepage": "https://oru.dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tchayen/oru"
+  },
   "bin": {
     "oru": "./dist/cli.js"
   },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

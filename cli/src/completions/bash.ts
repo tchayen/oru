@@ -9,7 +9,7 @@ _oru_completions() {
   local cur prev words cword
   _init_completion || return
 
-  local commands="add list labels get update delete done start review context log sync config server completions"
+  local commands="add list labels get update edit delete done start review context log sync config server completions self-update"
   local config_subcommands="init path"
   local server_subcommands="start"
   local completion_shells="bash zsh fish"
@@ -22,7 +22,7 @@ _oru_completions() {
   local i
   for ((i = 1; i < cword; i++)); do
     case "\${words[i]}" in
-      add|list|labels|get|update|delete|done|start|review|context|log|sync|config|server|completions)
+      add|list|labels|get|update|edit|delete|done|start|review|context|log|sync|config|server|completions|self-update)
         subcmd="\${words[i]}"
         break
         ;;
@@ -83,7 +83,7 @@ _oru_completions() {
         COMPREPLY=($(compgen -W "--id -s --status -p --priority -d --due --assign -l --label -b --blocked-by -n --note --meta --json --plaintext" -- "$cur"))
       fi
       ;;
-    update)
+    update|edit)
       if [[ "$cur" != -* ]]; then
         local tasks
         tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
@@ -102,6 +102,11 @@ _oru_completions() {
         local tasks
         tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
         COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
+      fi
+      ;;
+    self-update)
+      if [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "--check" -- "$cur"))
       fi
       ;;
     sync)
