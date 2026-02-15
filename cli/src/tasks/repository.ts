@@ -102,8 +102,8 @@ export async function createTask(
 }
 
 export interface ListFilters {
-  status?: Status;
-  priority?: Priority;
+  status?: Status | Status[];
+  priority?: Priority | Priority[];
   label?: string;
   search?: string;
   sort?: SortField;
@@ -116,10 +116,18 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
   let query = db.selectFrom("tasks").selectAll().where("deleted_at", "is", null);
 
   if (filters?.status) {
-    query = query.where("status", "=", filters.status);
+    if (Array.isArray(filters.status)) {
+      query = query.where("status", "in", filters.status);
+    } else {
+      query = query.where("status", "=", filters.status);
+    }
   }
   if (filters?.priority) {
-    query = query.where("priority", "=", filters.priority);
+    if (Array.isArray(filters.priority)) {
+      query = query.where("priority", "in", filters.priority);
+    } else {
+      query = query.where("priority", "=", filters.priority);
+    }
   }
   if (filters?.label) {
     const label = filters.label;
