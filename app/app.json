@@ -16,7 +16,11 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "ao needs camera access to scan QR codes for server connection."
+        "NSCameraUsageDescription": "ao needs camera access to scan QR codes for server connection.",
+        "NSLocalNetworkUsageDescription": "ao connects to a server on your local network.",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
       },
       "bundleIdentifier": "com.tomekexpo.ao"
     },
