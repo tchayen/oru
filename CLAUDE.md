@@ -2,7 +2,12 @@
 
 Agent-friendly todo CLI with offline-first sync via oplog.
 
-## Stack
+## Monorepo structure
+
+- `cli/` — CLI package (TypeScript, Node 22+, ESM)
+- `app/` — Mobile app (Expo, React Native)
+
+## Stack (CLI)
 
 - TypeScript, Node 22+, ESM
 - `better-sqlite3` for storage (sync API)
@@ -14,28 +19,29 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 ## Architecture
 
 - **Tasks table** is a materialized view. **Oplog is the source of truth** for sync.
-- Service layer (`main.ts`) wraps repo + oplog writes in single transactions.
+- Service layer (`cli/src/main.ts`) wraps repo + oplog writes in single transactions.
 - Conflict resolution: last-write-wins per field, updates beat deletes, notes append-only with dedup.
 - Sync uses sequence-based cursoring (not timestamps) to avoid same-millisecond bugs.
 
 ## Key directories
 
-- `src/db/` — connection, schema, migrations
-- `src/tasks/` — CRUD repository, types
-- `src/oplog/` — writer, reader, replay (conflict resolution)
-- `src/sync/` — engine, remote interface, filesystem remote backend
-- `src/format/` — text and JSON output formatters
-- `src/cli.ts` — Commander setup, `src/main.ts` — service layer
-- `tests/` — mirrors src structure, all integration tests using real SQLite (in-memory)
+- `cli/src/db/` — connection, schema, migrations
+- `cli/src/tasks/` — CRUD repository, types
+- `cli/src/oplog/` — writer, reader, replay (conflict resolution)
+- `cli/src/sync/` — engine, remote interface, filesystem remote backend
+- `cli/src/format/` — text and JSON output formatters
+- `cli/src/server/` — HTTP server (Hono) for mobile clients
+- `cli/src/cli.ts` — Commander setup, `cli/src/main.ts` — service layer
+- `cli/tests/` — mirrors src structure, all integration tests using real SQLite (in-memory)
 
 ## Commands
 
 ```bash
-npm test          # run all tests
+npm test          # run all tests (delegates to cli workspace)
 npm run lint      # oxlint
 npm run fmt       # oxfmt (fix)
 npm run fmt:check # oxfmt (check only)
-npm run build     # tsup → dist/cli.js
+npm run build     # tsup → cli/dist/cli.js
 ```
 
 ## DB location
