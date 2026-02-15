@@ -94,14 +94,23 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
   if (tasks.length === 0) {
     return dim("No tasks found.");
   }
+
+  const idW = Math.max(2, ...tasks.map((t) => t.id.length));
+  const priW = Math.max(3, ...tasks.map((t) => t.priority.length));
+  const dueW = Math.max(3, ...tasks.map((t) => (t.due_at ? formatDue(t.due_at, now) : "").length));
+  const labelsW = Math.max(
+    6,
+    ...tasks.map((t) => (t.labels.length > 0 ? t.labels.join(", ") : "").length),
+  );
+
   const header = dim(
-    `     ${"ID".padEnd(8)}  ${"PRI".padEnd(6)}  ${"DUE".padEnd(16)}  ${"LABELS".padEnd(12)}  TITLE`,
+    `     ${"ID".padEnd(idW)}  ${"PRI".padEnd(priW)}  ${"DUE".padEnd(dueW)}  ${"LABELS".padEnd(labelsW)}  TITLE`,
   );
   const rows = tasks.map((t) => {
     const check = colorCheck(t.status);
     const due = t.due_at ? formatDue(t.due_at, now) : "";
     const labels = t.labels.length > 0 ? t.labels.join(", ") : "";
-    return `${check}  ${dim(t.id.padEnd(8))}  ${colorPriority(t.priority.padEnd(6))}  ${due.padEnd(16)}  ${cyan(labels.padEnd(12))}  ${bold(t.title)}`;
+    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${due.padEnd(dueW)}  ${cyan(labels.padEnd(labelsW))}  ${bold(t.title)}`;
   });
   return [header, ...rows].join("\n");
 }
