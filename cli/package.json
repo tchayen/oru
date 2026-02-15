@@ -1,9 +1,9 @@
 {
-  "name": "ao",
+  "name": "oru",
   "version": "0.1.0",
-  "description": "ao — agent-friendly todo CLI with offline sync",
+  "description": "oru — agent-friendly todo CLI with offline sync",
   "bin": {
-    "ao": "./dist/cli.js"
+    "oru": "./dist/cli.js"
   },
   "type": "module",
   "scripts": {

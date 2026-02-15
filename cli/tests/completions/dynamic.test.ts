@@ -25,34 +25,34 @@ describe("_complete command", () => {
 
   it("returns task IDs with titles", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "ao", "add", "Buy milk", "--id", "task-001"]);
+    await p1.parseAsync(["node", "oru", "add", "Buy milk", "--id", "task-001"]);
 
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "ao", "_complete", "tasks"]);
+    await p2.parseAsync(["node", "oru", "_complete", "tasks"]);
     expect(output).toContain("task-001");
     expect(output).toContain("Buy milk");
   });
 
   it("filters tasks by prefix", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "ao", "add", "First", "--id", "abc-001"]);
+    await p1.parseAsync(["node", "oru", "add", "First", "--id", "abc-001"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "ao", "add", "Second", "--id", "xyz-002"]);
+    await p2.parseAsync(["node", "oru", "add", "Second", "--id", "xyz-002"]);
 
     const p3 = createProgram(db, capture());
-    await p3.parseAsync(["node", "ao", "_complete", "tasks", "abc"]);
+    await p3.parseAsync(["node", "oru", "_complete", "tasks", "abc"]);
     expect(output).toContain("abc-001");
     expect(output).not.toContain("xyz-002");
   });
 
   it("returns unique labels", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "ao", "add", "Task A", "--label", "work"]);
+    await p1.parseAsync(["node", "oru", "add", "Task A", "--label", "work"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "ao", "add", "Task B", "--label", "work", "home"]);
+    await p2.parseAsync(["node", "oru", "add", "Task B", "--label", "work", "home"]);
 
     const p3 = createProgram(db, capture());
-    await p3.parseAsync(["node", "ao", "_complete", "labels"]);
+    await p3.parseAsync(["node", "oru", "_complete", "labels"]);
     const lines = output.trim().split("\n");
     expect(lines).toContain("home");
     expect(lines).toContain("work");
@@ -62,29 +62,29 @@ describe("_complete command", () => {
 
   it("filters labels by prefix", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "ao", "add", "Task", "--label", "work", "personal"]);
+    await p1.parseAsync(["node", "oru", "add", "Task", "--label", "work", "personal"]);
 
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "ao", "_complete", "labels", "wo"]);
+    await p2.parseAsync(["node", "oru", "_complete", "labels", "wo"]);
     expect(output).toContain("work");
     expect(output).not.toContain("personal");
   });
 
   it("excludes deleted tasks", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "ao", "add", "Deleted task", "--id", "del-001", "--json"]);
+    await p1.parseAsync(["node", "oru", "add", "Deleted task", "--id", "del-001", "--json"]);
 
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "ao", "delete", "del-001"]);
+    await p2.parseAsync(["node", "oru", "delete", "del-001"]);
 
     const p3 = createProgram(db, capture());
-    await p3.parseAsync(["node", "ao", "_complete", "tasks"]);
+    await p3.parseAsync(["node", "oru", "_complete", "tasks"]);
     expect(output).not.toContain("del-001");
   });
 
   it("returns empty for unknown type", async () => {
     const p = createProgram(db, capture());
-    await p.parseAsync(["node", "ao", "_complete", "unknown"]);
+    await p.parseAsync(["node", "oru", "_complete", "unknown"]);
     expect(output.trim()).toBe("");
   });
 
@@ -92,7 +92,7 @@ describe("_complete command", () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync([
       "node",
-      "ao",
+      "oru",
       "add",
       "Done task",
       "--status",
@@ -102,7 +102,7 @@ describe("_complete command", () => {
     ]);
 
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "ao", "_complete", "labels"]);
+    await p2.parseAsync(["node", "oru", "_complete", "labels"]);
     expect(output).toContain("archived");
   });
 });

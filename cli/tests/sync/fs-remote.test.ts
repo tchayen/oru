@@ -10,7 +10,7 @@ describe("FsRemote", () => {
   let remote: FsRemote;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ao-sync-test-"));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-sync-test-"));
     remote = new FsRemote(path.join(tmpDir, "remote-oplog.db"));
   });
 

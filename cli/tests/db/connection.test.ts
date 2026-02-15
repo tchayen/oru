@@ -10,7 +10,7 @@ describe("connection", () => {
   function tmpDbPath(): string {
     const p = path.join(
       os.tmpdir(),
-      `ao-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`,
+      `oru-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`,
     );
     tmpFiles.push(p);
     return p;
@@ -29,7 +29,7 @@ describe("connection", () => {
       } catch {}
     }
     tmpFiles.length = 0;
-    delete process.env.AO_DB_PATH;
+    delete process.env.ORU_DB_PATH;
   });
 
   it("creates a new database file", () => {
@@ -53,15 +53,15 @@ describe("connection", () => {
     db2.close();
   });
 
-  it("respects AO_DB_PATH env var", () => {
+  it("respects ORU_DB_PATH env var", () => {
     const dbPath = tmpDbPath();
-    process.env.AO_DB_PATH = dbPath;
+    process.env.ORU_DB_PATH = dbPath;
     expect(getDbPath()).toBe(dbPath);
   });
 
-  it("defaults path to ~/.ao/ao.db", () => {
-    delete process.env.AO_DB_PATH;
-    const expected = path.join(os.homedir(), ".ao", "ao.db");
+  it("defaults path to ~/.oru/oru.db", () => {
+    delete process.env.ORU_DB_PATH;
+    const expected = path.join(os.homedir(), ".oru", "oru.db");
     expect(getDbPath()).toBe(expected);
   });
 

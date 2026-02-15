@@ -35,7 +35,7 @@ export default function ConnectScreen() {
       }
     } catch {
       setValidating(false);
-      setError("Could not reach the server. Make sure ao server is running.");
+      setError("Could not reach the server. Make sure oru server is running.");
       if (process.env.EXPO_OS === "ios") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
@@ -77,7 +77,7 @@ export default function ConnectScreen() {
           Camera Access
         </Text>
         <Text style={{ fontSize: 15, color: "#AEAEB2", textAlign: "center" }}>
-          ao needs camera access to scan the QR code from your terminal.
+          oru needs camera access to scan the QR code from your terminal.
         </Text>
         <Pressable
           onPress={requestPermission}
@@ -162,7 +162,7 @@ export default function ConnectScreen() {
         ) : (
           <Text style={{ color: "#fff", fontSize: 17, textAlign: "center" }}>
             Scan the QR code from{"\n"}
-            <Text style={{ fontWeight: "600" }}>ao server start</Text>
+            <Text style={{ fontWeight: "600" }}>oru server start</Text>
           </Text>
         )}
       </View>

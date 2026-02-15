@@ -19,7 +19,7 @@ describe("SyncEngine", () => {
   let ky: Kysely<DB>;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ao-engine-test-"));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-engine-test-"));
     remote = new FsRemote(path.join(tmpDir, "remote-oplog.db"));
     db = createTestDb();
     ky = createTestKysely(db);

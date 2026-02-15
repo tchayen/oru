@@ -12,7 +12,7 @@ let dbPath: string;
 function cli(args: string[], env?: Record<string, string>): string {
   const CLI_PATH = path.resolve(__dirname, "../../dist/cli.js");
   const result = execFileSync("node", [CLI_PATH, ...args], {
-    env: { ...process.env, AO_DB_PATH: dbPath, ...env },
+    env: { ...process.env, ORU_DB_PATH: dbPath, ...env },
     encoding: "utf-8",
     timeout: 5000,
   });
@@ -38,8 +38,8 @@ async function waitForServer(port: number, timeoutMs = 5000): Promise<void> {
 }
 
 beforeEach(() => {
-  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ao-server-e2e-"));
-  dbPath = path.join(tmpDir, "ao.db");
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-server-e2e-"));
+  dbPath = path.join(tmpDir, "oru.db");
 });
 
 afterEach(() => {
@@ -52,7 +52,7 @@ describe("server process e2e", () => {
 
     // Start server directly (not via CLI, to have more control)
     const serverProc = spawn("node", [SERVER_PATH], {
-      env: { ...process.env, AO_DB_PATH: dbPath, AO_PORT: String(port) },
+      env: { ...process.env, ORU_DB_PATH: dbPath, ORU_PORT: String(port) },
       stdio: "pipe",
     });
 
@@ -124,7 +124,7 @@ describe("server process e2e", () => {
 
     // Start server pointing at same DB
     const serverProc = spawn("node", [SERVER_PATH], {
-      env: { ...process.env, AO_DB_PATH: dbPath, AO_PORT: String(port) },
+      env: { ...process.env, ORU_DB_PATH: dbPath, ORU_PORT: String(port) },
       stdio: "pipe",
     });
 
