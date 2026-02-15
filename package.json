@@ -11,7 +11,7 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "tsgo": "pnpm --filter ao tsgo"
+    "tsgo": "pnpm -r tsgo"
   },
   "devDependencies": {
     "oxfmt": "^0.32.0",
