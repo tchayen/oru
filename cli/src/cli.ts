@@ -1080,8 +1080,8 @@ export function createProgram(
           continue;
         }
 
-        // Actionable: todo with high/urgent priority, not blocked
-        if (t.status === "todo" && (t.priority === "high" || t.priority === "urgent")) {
+        // Actionable: all todo tasks that aren't blocked
+        if (t.status === "todo") {
           sections.actionable.push(t);
           continue;
         }

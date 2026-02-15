@@ -1642,7 +1642,7 @@ describe("CLI parse", () => {
     expect(output).toContain("High item");
   });
 
-  it("context does not show medium/low todo tasks in Actionable", async () => {
+  it("context shows medium/low todo tasks in Actionable", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Medium item", "--priority", "medium"]);
     const p2 = createProgram(db, capture());
@@ -1650,7 +1650,21 @@ describe("CLI parse", () => {
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "context"]);
-    expect(output).not.toContain("Actionable");
+    expect(output).toContain("Actionable");
+    expect(output).toContain("Medium item");
+    expect(output).toContain("Low item");
+  });
+
+  it("context with a single medium todo does not report nothing", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Only medium task", "--priority", "medium"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.actionable).toBeDefined();
+    expect(parsed.actionable.length).toBe(1);
+    expect(parsed.actionable[0].title).toBe("Only medium task");
   });
 
   it("context shows blocked tasks in Blocked section", async () => {
