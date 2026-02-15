@@ -7,21 +7,12 @@ interface Props {
 const { class: className = "", ...rest } = Astro.props;
 ---
 
-<span class:list={["badge", className]} {...rest}>
+<span
+  class:list={[
+    "inline-block bg-accent-subtle border border-accent-border text-accent font-mono text-xs font-medium leading-none px-3 py-1.5 rounded-full",
+    className,
+  ]}
+  {...rest}
+>
   <slot />
 </span>
-
-<style>
-  .badge {
-    display: inline-block;
-    background: var(--accent-subtle);
-    border: 1px solid var(--accent-border);
-    color: var(--accent);
-    font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1;
-    padding: 6px 12px;
-    border-radius: 999px;
-  }
-</style>

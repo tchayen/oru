@@ -3,18 +3,20 @@ import FeatureCard from "./ui/FeatureCard.astro";
 import MiniCode from "./ui/MiniCode.astro";
 ---
 
-<section class="dev-experience">
+<section class="py-24 bg-bg-base">
   <div class="container">
-    <div class="dx-header reveal">
+    <div class="text-center mb-16 reveal">
       <p class="section-label">Developer experience</p>
-      <h2>Details matter.</h2>
-      <p class="body-lg dx-body">
+      <h2 class="mb-4">Details matter.</h2>
+      <p class="body-lg max-w-[480px] mx-auto text-text-secondary">
         A tool you use dozens of times a day earns the right to be opinionated
         about small things.
       </p>
     </div>
 
-    <div class="dx-grid">
+    <div
+      class="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1"
+    >
       <FeatureCard title="Natural language dates" class="reveal" data-delay="0">
         <MiniCode slot="code">
           <span class="prompt">$ </span><span class="cmd">ao</span>
@@ -84,43 +86,3 @@ import MiniCode from "./ui/MiniCode.astro";
     </div>
   </div>
 </section>
-
-<style>
-  .dev-experience {
-    padding: 96px 0;
-    background: var(--bg-base);
-  }
-
-  .dx-header {
-    text-align: center;
-    margin-bottom: 64px;
-  }
-
-  .dx-header h2 {
-    margin-bottom: 16px;
-  }
-
-  .dx-body {
-    max-width: 480px;
-    margin: 0 auto;
-    color: var(--text-secondary);
-  }
-
-  .dx-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-
-  @media (max-width: 1023px) {
-    .dx-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 639px) {
-    .dx-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

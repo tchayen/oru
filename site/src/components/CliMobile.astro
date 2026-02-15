@@ -2,26 +2,30 @@
 import Terminal from "./ui/Terminal.astro";
 ---
 
-<section class="cli-mobile">
+<section class="py-24 bg-bg-base">
   <div class="container">
-    <div class="cli-header reveal">
+    <div class="text-center mb-16 reveal">
       <p class="section-label">CLI + Mobile</p>
-      <h2>Terminal-first. Phone when you need it.</h2>
-      <p class="body-lg cli-body">
+      <h2 class="mb-4">Terminal-first. Phone when you need it.</h2>
+      <p class="body-lg max-w-[560px] mx-auto text-text-secondary">
         ao is a CLI tool. That is its primary interface and it always will be.
         But tasks follow you. The native iOS app exists for those moments.
       </p>
     </div>
 
-    <div class="cli-grid">
-      <div class="cli-terminal reveal" data-delay="80">
-        <h3>Pair with a QR code. No accounts required.</h3>
-        <p class="body cli-desc">
-          Run <code>ao server start</code>. A QR code appears in your terminal.
-          Scan it with the iOS app. You are connected over your local network.
-          That is the entire pairing flow.
+    <div class="grid grid-cols-2 gap-12 items-start max-md:grid-cols-1">
+      <div class="min-w-0 reveal" data-delay="80">
+        <h3 class="text-[22px] mb-3">
+          Pair with a QR code. No accounts required.
+        </h3>
+        <p class="body text-text-secondary mb-3">
+          Run <code
+            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
+            >ao server start</code
+          >. A QR code appears in your terminal. Scan it with the iOS app. You
+          are connected over your local network. That is the entire pairing flow.
         </p>
-        <p class="body-sm cli-desc-secondary">
+        <p class="body-sm text-text-tertiary mb-6">
           No cloud relay. No account creation. No sync service to configure. The
           phone talks directly to your machine.
         </p>
@@ -76,52 +80,92 @@ import Terminal from "./ui/Terminal.astro";
         </Terminal>
       </div>
 
-      <div class="cli-phone reveal" data-delay="240">
-        <h3>Native iOS, not a web view.</h3>
-        <p class="body cli-desc">
+      <div class="reveal" data-delay="240">
+        <h3 class="text-[22px] mb-3">Native iOS, not a web view.</h3>
+        <p class="body text-text-secondary mb-3">
           SwiftUI components. SF Symbols. System colors. Haptic feedback. The
           app is built with Expo and React Native but renders native controls.
         </p>
-        <div class="phone-frame">
-          <div class="phone-notch"></div>
-          <div class="phone-screen">
-            <div class="phone-header">
-              <span class="phone-title">Tasks</span>
-              <span class="phone-count">3 items</span>
+        <div
+          class="mt-6 bg-black border-2 border-border-default rounded-[40px] p-3 max-w-[320px] mx-auto shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_40px_rgba(0,0,0,0.5)]"
+        >
+          <div
+            class="w-[120px] h-7 bg-black rounded-b-2xl mx-auto mb-2 relative z-1"
+          ></div>
+          <div
+            class="bg-bg-base rounded-[28px] overflow-hidden min-h-[480px] flex flex-col"
+          >
+            <div
+              class="flex justify-between items-baseline pt-4 pb-3 px-5"
+            >
+              <span class="text-[28px] font-bold text-text-primary"
+                >Tasks</span
+              >
+              <span class="text-[13px] text-text-tertiary">3 items</span>
             </div>
-            <div class="phone-list">
-              <div class="phone-task">
-                <div class="phone-task-check done"></div>
-                <div class="phone-task-content">
-                  <span class="phone-task-title strikethrough"
+            <div class="flex-1 px-3">
+              <div
+                class="flex items-start gap-3 py-3.5 px-2 border-b border-border-subtle"
+              >
+                <div
+                  class="w-[22px] h-[22px] rounded-full bg-accent border-2 border-accent shrink-0 mt-px"
+                ></div>
+                <div class="flex flex-col gap-[3px] min-w-0">
+                  <span
+                    class="text-[15px] text-text-tertiary font-medium line-through"
                     >Refactor auth middleware</span
                   >
-                  <span class="phone-task-meta"
-                    ><span class="priority-high"></span> high &middot; Fri Feb 20</span
+                  <span
+                    class="text-xs text-text-tertiary flex items-center gap-1"
+                    ><span
+                      class="w-1.5 h-1.5 rounded-full bg-[#ef4444] inline-block"
+                    ></span> high &middot; Fri Feb 20</span
                   >
                 </div>
               </div>
-              <div class="phone-task">
-                <div class="phone-task-check in-progress"></div>
-                <div class="phone-task-content">
-                  <span class="phone-task-title">Write migration tests</span>
-                  <span class="phone-task-meta"
-                    ><span class="priority-medium"></span> medium</span
+              <div
+                class="flex items-start gap-3 py-3.5 px-2 border-b border-border-subtle"
+              >
+                <div
+                  class="w-[22px] h-[22px] rounded-full border-2 border-syn-command bg-[rgba(96,165,250,0.15)] shrink-0 mt-px"
+                ></div>
+                <div class="flex flex-col gap-[3px] min-w-0">
+                  <span class="text-[15px] text-text-primary font-medium"
+                    >Write migration tests</span
+                  >
+                  <span
+                    class="text-xs text-text-tertiary flex items-center gap-1"
+                    ><span
+                      class="w-1.5 h-1.5 rounded-full bg-accent inline-block"
+                    ></span> medium</span
                   >
                 </div>
               </div>
-              <div class="phone-task">
-                <div class="phone-task-check"></div>
-                <div class="phone-task-content">
-                  <span class="phone-task-title">Update API docs</span>
-                  <span class="phone-task-meta"
-                    ><span class="priority-low"></span> low</span
+              <div
+                class="flex items-start gap-3 py-3.5 px-2 border-b border-border-subtle"
+              >
+                <div
+                  class="w-[22px] h-[22px] rounded-full border-2 border-border-default shrink-0 mt-px"
+                ></div>
+                <div class="flex flex-col gap-[3px] min-w-0">
+                  <span class="text-[15px] text-text-primary font-medium"
+                    >Update API docs</span
+                  >
+                  <span
+                    class="text-xs text-text-tertiary flex items-center gap-1"
+                    ><span
+                      class="w-1.5 h-1.5 rounded-full bg-syn-command inline-block"
+                    ></span> low</span
                   >
                 </div>
               </div>
             </div>
-            <div class="phone-tab-bar">
-              <div class="phone-tab active">
+            <div
+              class="flex border-t border-border-subtle pt-2 pb-5"
+            >
+              <div
+                class="flex-1 flex flex-col items-center gap-1 text-accent text-[10px]"
+              >
                 <svg
                   width="18"
                   height="18"
@@ -135,7 +179,9 @@ import Terminal from "./ui/Terminal.astro";
                 >
                 <span>Tasks</span>
               </div>
-              <div class="phone-tab">
+              <div
+                class="flex-1 flex flex-col items-center gap-1 text-text-muted text-[10px]"
+              >
                 <svg
                   width="18"
                   height="18"
@@ -158,220 +204,9 @@ import Terminal from "./ui/Terminal.astro";
 </section>
 
 <style>
-  .cli-mobile {
-    padding: 96px 0;
-    background: var(--bg-base);
-  }
-
-  .cli-header {
-    text-align: center;
-    margin-bottom: 64px;
-  }
-
-  .cli-header h2 {
-    margin-bottom: 16px;
-  }
-
-  .cli-body {
-    max-width: 560px;
-    margin: 0 auto;
-    color: var(--text-secondary);
-  }
-
-  .cli-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 48px;
-    align-items: start;
-  }
-
-  .cli-terminal {
-    min-width: 0;
-  }
-
-  .cli-terminal h3,
-  .cli-phone h3 {
-    font-size: 22px;
-    margin-bottom: 12px;
-  }
-
-  .cli-desc {
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-  }
-
-  .cli-desc code {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 13px;
-    background: var(--bg-surface);
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: var(--accent);
-  }
-
-  .cli-desc-secondary {
-    color: var(--text-tertiary);
-    margin-bottom: 24px;
-  }
-
-  /* Phone frame */
-  .phone-frame {
-    margin-top: 24px;
-    background: #000;
-    border: 2px solid var(--border-default);
-    border-radius: 40px;
-    padding: 12px;
-    max-width: 320px;
-    margin-left: auto;
-    margin-right: auto;
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.05),
-      0 8px 40px rgba(0, 0, 0, 0.5);
-  }
-
-  .phone-notch {
-    width: 120px;
-    height: 28px;
-    background: #000;
-    border-radius: 0 0 16px 16px;
-    margin: 0 auto 8px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .phone-screen {
-    background: var(--bg-base);
-    border-radius: 28px;
-    overflow: hidden;
-    min-height: 480px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .phone-header {
-    padding: 16px 20px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-
-  .phone-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-
-  .phone-count {
-    font-size: 13px;
-    color: var(--text-tertiary);
-  }
-
-  .phone-list {
-    flex: 1;
-    padding: 0 12px;
-  }
-
-  .phone-task {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 8px;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .phone-task-check {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 2px solid var(--border-default);
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .phone-task-check.done {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
-
-  .phone-task-check.in-progress {
-    border-color: var(--syn-command);
-    background: rgba(96, 165, 250, 0.15);
-  }
-
-  .phone-task-content {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-  }
-
-  .phone-task-title {
-    font-size: 15px;
-    color: var(--text-primary);
-    font-weight: 500;
-  }
-
-  .phone-task-title.strikethrough {
-    text-decoration: line-through;
-    color: var(--text-tertiary);
-  }
-
-  .phone-task-meta {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .priority-high,
-  .priority-medium,
-  .priority-low {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  .priority-high {
-    background: #ef4444;
-  }
-  .priority-medium {
-    background: var(--accent);
-  }
-  .priority-low {
-    background: var(--syn-command);
-  }
-
-  .phone-tab-bar {
-    display: flex;
-    border-top: 1px solid var(--border-subtle);
-    padding: 8px 0 20px;
-  }
-
-  .phone-tab {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: var(--text-muted);
-    font-size: 10px;
-  }
-
-  .phone-tab.active {
-    color: var(--accent);
-  }
-
   .qr-art {
     font-size: 8px !important;
     line-height: 1.2 !important;
     letter-spacing: 0.05em;
-  }
-
-  @media (max-width: 767px) {
-    .cli-grid {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

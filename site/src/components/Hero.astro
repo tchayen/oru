@@ -4,21 +4,29 @@ import InstallBlock from "./ui/InstallBlock.astro";
 import Button from "./ui/Button.astro";
 ---
 
-<section class="hero">
-  <div class="hero-glow"></div>
-  <div class="container hero-inner">
+<section class="hero relative pt-32 pb-24 bg-bg-base overflow-hidden max-sm:pt-20 max-sm:pb-16">
+  <div
+    class="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(245,158,11,0.06)_0%,rgba(245,158,11,0.02)_40%,transparent_70%)] pointer-events-none"
+  ></div>
+  <div class="container flex flex-col items-center text-center relative z-1">
     <Badge class="reveal hero-badge">agent-friendly task manager</Badge>
-    <h1 class="display hero-headline reveal" data-delay="80">
+    <h1
+      class="display max-w-[800px] mt-6 mb-6 reveal"
+      data-delay="80"
+    >
       The task manager for developers and their <span class="hero-shimmer"
         >agents</span
       >.
     </h1>
-    <p class="body-lg hero-sub reveal" data-delay="160">
+    <p class="body-lg max-w-[640px] text-text-secondary mb-12 reveal" data-delay="160">
       Local-first CLI with a native iOS companion. JSON output everywhere. No
       accounts. No cloud. Just a SQLite database on your machine and an oplog
       that syncs.
     </p>
-    <div class="hero-cta reveal" data-delay="240">
+    <div
+      class="hero-cta flex items-center gap-4 flex-wrap justify-center reveal max-sm:flex-col max-sm:w-full"
+      data-delay="240"
+    >
       <InstallBlock />
       <Button variant="secondary" href="https://github.com/AO_REPO">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -33,66 +41,13 @@ import Button from "./ui/Button.astro";
 </section>
 
 <style>
-  .hero {
-    position: relative;
-    padding: 128px 0 96px;
-    background: var(--bg-base);
-    overflow: hidden;
-  }
-
-  .hero-glow {
-    position: absolute;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 800px;
-    height: 600px;
-    background: radial-gradient(
-      ellipse at center,
-      rgba(245, 158, 11, 0.06) 0%,
-      rgba(245, 158, 11, 0.02) 40%,
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  .hero-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .hero-headline {
-    max-width: 800px;
-    margin-top: 24px;
-    margin-bottom: 24px;
-  }
-
-  .hero-sub {
-    max-width: 640px;
-    color: var(--text-secondary);
-    margin-bottom: 48px;
-  }
-
-  .hero-cta {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  /* Amber gradient shimmer on "agents" */
   .hero-shimmer {
     background: linear-gradient(
       90deg,
-      var(--accent) 0%,
-      var(--accent-hover) 40%,
+      var(--color-accent) 0%,
+      var(--color-accent-hover) 40%,
       #fde68a 60%,
-      var(--accent) 100%
+      var(--color-accent) 100%
     );
     background-size: 200% 100%;
     -webkit-background-clip: text;
@@ -101,29 +56,8 @@ import Button from "./ui/Button.astro";
     animation: shimmer 3s ease-in-out infinite;
   }
 
-  @keyframes shimmer {
-    0%,
-    100% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-  }
-
-  /* Badge pulse glow */
   :global(.hero-badge) {
     animation: badge-pulse 2s ease-in-out 0.4s 3;
-  }
-
-  @keyframes badge-pulse {
-    0%,
-    100% {
-      box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-    }
-    50% {
-      box-shadow: 0 0 16px 2px rgba(245, 158, 11, 0.15);
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -138,15 +72,6 @@ import Button from "./ui/Button.astro";
   }
 
   @media (max-width: 639px) {
-    .hero {
-      padding: 80px 0 64px;
-    }
-
-    .hero-cta {
-      flex-direction: column;
-      width: 100%;
-    }
-
     .hero-cta :global(.install-block) {
       width: 100%;
       justify-content: space-between;
