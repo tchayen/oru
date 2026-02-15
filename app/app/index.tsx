@@ -44,12 +44,20 @@ export default function TaskListScreen() {
           title: "Tasks",
           headerLeft: () => (
             <Pressable onPress={handleDisconnect} hitSlop={8}>
-              <Image source="sf:wifi.slash" style={{ width: 22, height: 22 }} tintColor="#FF3B30" />
+              <Image
+                source="sf:wifi.slash"
+                style={{ width: 22, height: 22 }}
+                tintColor={PlatformColor("systemRed") as unknown as string}
+              />
             </Pressable>
           ),
           headerRight: () => (
             <Pressable onPress={() => router.push("/add")} hitSlop={8}>
-              <Image source="sf:plus" style={{ width: 22, height: 22 }} tintColor="#007AFF" />
+              <Image
+                source="sf:plus"
+                style={{ width: 22, height: 22 }}
+                tintColor={PlatformColor("label") as unknown as string}
+              />
             </Pressable>
           ),
         }}
@@ -72,7 +80,7 @@ export default function TaskListScreen() {
           <Image
             source="sf:wifi.exclamationmark"
             style={{ width: 48, height: 48, marginBottom: 8 }}
-            tintColor="#FF3B30"
+            tintColor={PlatformColor("systemRed") as unknown as string}
           />
           <Text style={{ fontSize: 20, fontWeight: "600", color: PlatformColor("label") }}>
             Server Unreachable
@@ -90,26 +98,26 @@ export default function TaskListScreen() {
             <Pressable
               onPress={refresh}
               style={{
-                backgroundColor: "#007AFF",
+                backgroundColor: PlatformColor("link"),
                 paddingHorizontal: 20,
                 paddingVertical: 10,
                 borderRadius: 10,
                 borderCurve: "continuous",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>Retry</Text>
+              <Text style={{ color: "white", fontSize: 15, fontWeight: "600" }}>Retry</Text>
             </Pressable>
             <Pressable
               onPress={disconnect}
               style={{
-                backgroundColor: "#FF3B30",
+                backgroundColor: PlatformColor("systemRed"),
                 paddingHorizontal: 20,
                 paddingVertical: 10,
                 borderRadius: 10,
                 borderCurve: "continuous",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 15, fontWeight: "600" }}>Disconnect</Text>
+              <Text style={{ color: "white", fontSize: 15, fontWeight: "600" }}>Disconnect</Text>
             </Pressable>
           </View>
         </View>
@@ -126,7 +134,7 @@ export default function TaskListScreen() {
           <Image
             source="sf:checkmark.circle"
             style={{ width: 48, height: 48, marginBottom: 8 }}
-            tintColor="#34C759"
+            tintColor={PlatformColor("systemGreen") as unknown as string}
           />
           <Text style={{ fontSize: 20, fontWeight: "600", color: PlatformColor("label") }}>
             All done!

@@ -88,4 +88,4 @@ Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 
 - Keep commit messages concise — focus on the "why", not the "what"
 - Do not add `Co-Authored-By` lines to commits
-- Run `pnpm lint && pnpm fmt:check && pnpm test && cd app && pnpm tsgo` before pushing
+- Run `pnpm ci` before pushing

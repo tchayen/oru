@@ -100,9 +100,9 @@ export default function TaskDetailScreen() {
               <ContextMenu activationMethod="singlePress">
                 <ContextMenu.Trigger>
                   <Image
-                    source="sf:ellipsis.circle"
+                    source="sf:ellipsis"
                     style={{ width: 22, height: 22 }}
-                    tintColor={PlatformColor("link") as unknown as string}
+                    tintColor={PlatformColor("label") as unknown as string}
                   />
                 </ContextMenu.Trigger>
                 <ContextMenu.Items>

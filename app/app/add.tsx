@@ -47,11 +47,15 @@ export default function AddTaskScreen() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable onPress={handleSave} disabled={isSaving} hitSlop={8}>
+            <Pressable onPress={handleSave} disabled={isSaving || !title.trim()} hitSlop={8}>
               <Image
                 source="sf:checkmark"
                 style={{ width: 22, height: 22 }}
-                tintColor={(isSaving ? PlatformColor("tertiaryLabel") : PlatformColor("link")) as unknown as string}
+                tintColor={
+                  (isSaving || !title.trim()
+                    ? PlatformColor("tertiaryLabel")
+                    : PlatformColor("link")) as unknown as string
+                }
               />
             </Pressable>
           ),

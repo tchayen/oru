@@ -49,7 +49,11 @@ export function TaskRow({ task, onToggleStatus }: TaskRowProps) {
           <Image
             source={`sf:${statusIcon}`}
             style={{ width: 24, height: 24 }}
-            tintColor={task.status === "done" ? "#34C759" : "#8E8E93"}
+            tintColor={
+              (task.status === "done"
+                ? PlatformColor("systemGreen")
+                : PlatformColor("systemGray")) as unknown as string
+            }
           />
         </Pressable>
 

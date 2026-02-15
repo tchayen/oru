@@ -31,7 +31,14 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: PlatformColor("systemBackground") },
         }}
       >
-        <Stack.Screen name="index" options={{ title: "Tasks" }} />
+        <Stack.Screen
+          name="index"
+          options={{
+            title: "Tasks",
+            headerLargeTitle: true,
+            headerTintColor: PlatformColor("label") as unknown as string,
+          }}
+        />
         <Stack.Screen
           name="connect"
           options={{
