@@ -761,6 +761,62 @@ describe("CLI parse", () => {
     expect(output).toContain("Text start");
   });
 
+  // Review command
+  it("review command marks task as in_review", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Review me", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "review", id, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.status).toBe("in_review");
+  });
+
+  it("review --json returns error for non-existent task", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "review", "no-such-id", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("not_found");
+  });
+
+  it("review accepts multiple IDs", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task R1", "--json"]);
+    const id1 = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task R2", "--json"]);
+    const id2 = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "review", id1, id2, "--json"]);
+    const objects = output.trim().split(/\n(?=\{)/);
+    expect(objects).toHaveLength(2);
+    expect(JSON.parse(objects[0]).status).toBe("in_review");
+    expect(JSON.parse(objects[1]).status).toBe("in_review");
+  });
+
+  it("review command shows text output by default", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Text review", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "review", id]);
+    expect(output).toContain("in_review");
+    expect(output).toContain("Text review");
+  });
+
+  it("in_review tasks show in list by default", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Review task", "--status", "in_review"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "list"]);
+    expect(output).toContain("Review task");
+  });
+
   // Due date filtering
   it("list --due today filters to tasks due today", async () => {
     const p1 = createProgram(db, capture());

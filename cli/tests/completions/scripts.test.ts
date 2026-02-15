@@ -35,6 +35,7 @@ describe("bash completions script", () => {
   it("contains status values", () => {
     expect(script).toContain("todo");
     expect(script).toContain("in_progress");
+    expect(script).toContain("in_review");
     expect(script).toContain("done");
   });
 
@@ -43,6 +44,10 @@ describe("bash completions script", () => {
     expect(script).toContain("medium");
     expect(script).toContain("high");
     expect(script).toContain("urgent");
+  });
+
+  it("contains review command", () => {
+    expect(script).toContain("review");
   });
 
   it("calls ao _complete for dynamic values", () => {
@@ -98,8 +103,13 @@ describe("zsh completions script", () => {
   it("contains status and priority values", () => {
     expect(script).toContain("todo");
     expect(script).toContain("in_progress");
+    expect(script).toContain("in_review");
     expect(script).toContain("low");
     expect(script).toContain("urgent");
+  });
+
+  it("contains review command", () => {
+    expect(script).toContain("review");
   });
 
   it("calls ao _complete for dynamic values", () => {
@@ -163,8 +173,12 @@ describe("fish completions script", () => {
   });
 
   it("contains status and priority values", () => {
-    expect(script).toContain("todo in_progress done");
+    expect(script).toContain("todo in_progress in_review done");
     expect(script).toContain("low medium high urgent");
+  });
+
+  it("contains review command", () => {
+    expect(script).toContain("review");
   });
 
   it("defines helper functions for dynamic completions", () => {

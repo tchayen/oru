@@ -14,6 +14,7 @@ const PRIORITY_ICONS: Record<Priority, string> = {
 const STATUS_ICONS: Record<Status, string> = {
   todo: "circle;weight=thin",
   in_progress: "circle.lefthalf.filled;weight=thin",
+  in_review: "eye.circle;weight=thin",
   done: "checkmark.circle.fill;weight=thin",
 };
 

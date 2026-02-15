@@ -893,6 +893,40 @@ export function createProgram(
         }
       }
     });
+  // review (shortcut for update --status in_review)
+  program
+    .command("review <id...>")
+    .description("Mark one or more tasks as in_review (shortcut for update -s in_review)")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
+      for (const id of ids) {
+        try {
+          const task = await service.update(id, { status: "in_review" });
+          if (!task) {
+            if (useJson(opts)) {
+              write(JSON.stringify({ error: "not_found", id }));
+            } else {
+              write(`Task ${id} not found.`);
+            }
+            process.exitCode = 1;
+            continue;
+          }
+          if (useJson(opts)) {
+            write(formatTaskJson(task));
+          } else {
+            write(formatTaskText(task));
+          }
+        } catch (err) {
+          if (err instanceof AmbiguousPrefixError) {
+            handleAmbiguousPrefix(err, useJson(opts));
+            continue;
+          }
+          throw err;
+        }
+      }
+    });
+
   // delete
   program
     .command("delete <id...>")
