@@ -10,6 +10,7 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 ## Stack (CLI)
 
 - TypeScript, Node 22+, ESM
+- `pnpm` workspaces for monorepo
 - `better-sqlite3` for storage (sync API)
 - `commander` for CLI
 - `uuid` v7 for IDs
@@ -37,11 +38,11 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 ## Commands
 
 ```bash
-npm test          # run all tests (delegates to cli workspace)
-npm run lint      # oxlint
-npm run fmt       # oxfmt (fix)
-npm run fmt:check # oxfmt (check only)
-npm run build     # tsup → cli/dist/cli.js
+pnpm test          # run all tests (delegates to cli workspace)
+pnpm lint          # oxlint
+pnpm fmt           # oxfmt (fix)
+pnpm fmt:check     # oxfmt (check only)
+pnpm build         # tsup → cli/dist/cli.js
 ```
 
 ## DB location
@@ -69,4 +70,4 @@ Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 
 - Keep commit messages concise — focus on the "why", not the "what"
 - Do not add `Co-Authored-By` lines to commits
-- Run `npm run lint && npm run fmt:check && npm test` before pushing
+- Run `pnpm lint && pnpm fmt:check && pnpm test` before pushing

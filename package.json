@@ -2,20 +2,16 @@
   "name": "ao-root",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "cli",
-    "app"
-  ],
   "type": "module",
   "scripts": {
-    "test": "npm test --workspace=cli",
-    "build": "npm run build --workspace=cli",
-    "dev": "npm run dev --workspace=cli",
+    "test": "pnpm --filter ao test",
+    "build": "pnpm --filter ao build",
+    "dev": "pnpm --filter ao dev",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "tsgo": "npm run tsgo --workspace=cli"
+    "tsgo": "pnpm --filter ao tsgo"
   },
   "devDependencies": {
     "oxfmt": "^0.32.0",
@@ -23,5 +19,12 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "packageManager": "pnpm@10.29.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
   }
 }
