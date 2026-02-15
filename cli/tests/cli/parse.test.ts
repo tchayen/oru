@@ -813,6 +813,109 @@ describe("CLI parse", () => {
     expect(JSON.parse(objects[0]).error).toBe("not_found");
     expect(JSON.parse(objects[1]).status).toBe("done");
   });
+
+  // Label management
+  it("labels command lists unique labels", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task A", "--label", "work", "bug"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task B", "--label", "work", "feature"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "labels"]);
+    expect(output).toContain("bug");
+    expect(output).toContain("feature");
+    expect(output).toContain("work");
+  });
+
+  it("labels --json returns sorted array", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Task A", "--label", "work", "bug"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Task B", "--label", "work", "feature"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "labels", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toEqual(["bug", "feature", "work"]);
+  });
+
+  it("labels with no labels shows empty message", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "labels"]);
+    expect(output).toContain("No labels");
+  });
+
+  it("labels --json with no labels returns empty array", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "labels", "--json"]);
+    expect(JSON.parse(output.trim())).toEqual([]);
+  });
+
+  it("update --unlabel removes a label", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Unlabel task", "--label", "work", "bug", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--unlabel", "bug", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toEqual(["work"]);
+  });
+
+  it("update --unlabel removes multiple labels", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Multi unlabel",
+      "--label",
+      "work",
+      "bug",
+      "feature",
+      "--json",
+    ]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--unlabel", "bug", "feature", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toEqual(["work"]);
+  });
+
+  it("update --unlabel with non-existent label is a no-op", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Noop unlabel", "--label", "work", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--unlabel", "nonexistent", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toEqual(["work"]);
+  });
+
+  it("update --label and --unlabel in same command", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Both ops", "--label", "old", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "update",
+      id,
+      "--label",
+      "new",
+      "--unlabel",
+      "old",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toEqual(["new"]);
+  });
+
   it("list outputs JSON when config sets output_format = json", async () => {
     const config = {
       date_format: "mdy" as const,

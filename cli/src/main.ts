@@ -146,6 +146,17 @@ export class TaskService {
     });
   }
 
+  async listLabels(): Promise<string[]> {
+    const tasks = await listTasks(this.db);
+    const labels = new Set<string>();
+    for (const task of tasks) {
+      for (const label of task.labels) {
+        labels.add(label);
+      }
+    }
+    return [...labels].sort();
+  }
+
   async delete(id: string): Promise<boolean> {
     return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();

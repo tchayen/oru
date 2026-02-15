@@ -34,6 +34,7 @@ complete -c ao -f
 # Top-level commands
 complete -c ao -n __ao_needs_command -a add -d 'Add a new task'
 complete -c ao -n __ao_needs_command -a list -d 'List tasks'
+complete -c ao -n __ao_needs_command -a labels -d 'List all labels in use'
 complete -c ao -n __ao_needs_command -a get -d 'Get a task by ID'
 complete -c ao -n __ao_needs_command -a update -d 'Update a task'
 complete -c ao -n __ao_needs_command -a delete -d 'Delete one or more tasks'
@@ -80,8 +81,11 @@ complete -c ao -n '__ao_using_command update' -s p -l priority -a 'low medium hi
 complete -c ao -n '__ao_using_command add' -s l -l label -a '(__ao_labels)' -d 'Label' -r
 complete -c ao -n '__ao_using_command list' -s l -l label -a '(__ao_labels)' -d 'Label' -r
 complete -c ao -n '__ao_using_command update' -s l -l label -a '(__ao_labels)' -d 'Label' -r
+complete -c ao -n '__ao_using_command update' -l unlabel -a '(__ao_labels)' -d 'Remove label' -r
 
 # Common flags
+complete -c ao -n '__ao_using_command labels' -l json -d 'Output as JSON'
+complete -c ao -n '__ao_using_command labels' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command add' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command add' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command add' -s d -l due -d 'Due date' -r
