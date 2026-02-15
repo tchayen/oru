@@ -1314,4 +1314,47 @@ describe("CLI parse", () => {
     const parsed = JSON.parse(output.trim());
     expect(parsed.error).toBe("ambiguous_prefix");
   });
+
+  // Multi-value filter tests
+  it("list -s with comma-separated statuses filters correctly", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Todo task"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "In progress", "--status", "in_progress"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Done task", "--status", "done"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "-s", "todo,in_progress", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+    const titles = parsed.map((t: { title: string }) => t.title).sort();
+    expect(titles).toEqual(["In progress", "Todo task"]);
+  });
+
+  it("list -p with comma-separated priorities filters correctly", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Low task", "--priority", "low"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "High task", "--priority", "high"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Urgent task", "--priority", "urgent"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "-p", "high,urgent", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+    const titles = parsed.map((t: { title: string }) => t.title).sort();
+    expect(titles).toEqual(["High task", "Urgent task"]);
+  });
+
+  it("list -s with invalid comma-separated status rejects", async () => {
+    const p = createProgram(db, capture());
+    await expect(p.parseAsync(["node", "ao", "list", "-s", "todo,invalid"])).rejects.toThrow();
+  });
+
+  it("list -p with invalid comma-separated priority rejects", async () => {
+    const p = createProgram(db, capture());
+    await expect(p.parseAsync(["node", "ao", "list", "-p", "high,nope"])).rejects.toThrow();
+  });
 });
