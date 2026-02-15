@@ -3,6 +3,7 @@
 - [ ] Write a skill for using the playwright to inspect page.
 - [ ] Figure out a skill to see the app in iOS simulator (Radon?).
 - [ ] Set up landing page with CloudFlare.
+- [ ] Maybe consider a rename so that we can find both a domain and npm package that are available?
 - [ ] Find domain for the landing page (what TLD or combination of words with `ao` will do the trick).
 - [ ] Ask agent for security review: let's do threat modelling exercise.
 - [ ] Use tailwind on the landing page.
@@ -12,6 +13,16 @@
 - [ ] QR code example in terminal does not look good.
 - [ ] Add shipped JS bundle and HTML size (maybe?) of the landing page to the performance github comment.
 - [ ] Explore converting code in `site/` to TS.
+- [ ] Figure out installation. I guess npm package and an install script like bun/claude code. We want auto update.
+- [ ] Verify claims from the homepage:
+  > Requires Node 22+. That is the only dependency.
+
+  uhm not sure lol?
+- [ ] Phone on the homepage needs to be replaced with proper iPhone frame and proper app screenshot.
+- [ ] Add colors to CLI help output.
+- [ ] Make orange theme color in the CLI - like the website one.
+- [ ] Completions is not entirely useful - doesn't explain how to use/install the script.
+- [ ] 'Sync that actually works offline.' got some vertical drift.
 
 # Bugs
 

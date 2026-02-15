@@ -18,6 +18,7 @@
     "allow": [
       "Bash(pnpm install*)",
       "Bash(pnpm add*)",
+      "Bash(pnpm check*)",
       "Bash(pnpm run*)",
       "Bash(pnpm test*)",
       "Bash(pnpm lint*)",
@@ -27,7 +28,7 @@
       "Bash(pnpm --filter*)",
       "Bash(pnpm approve-builds*)",
 
-      "Bash(gh *)",
+      "Bash(gh pr*)",
       "Bash(git add*)",
       "Bash(git branch*)",
       "Bash(git checkout*)",
