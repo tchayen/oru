@@ -2,7 +2,7 @@ import { fileURLToPath } from "url";
 import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
-import { Command, Option } from "commander";
+import { Command, Option, Help } from "commander";
 import type Database from "better-sqlite3";
 import { TaskService } from "./main.js";
 import { createKysely } from "./db/kysely.js";
@@ -31,6 +31,7 @@ import {
   generateZshCompletions,
   generateFishCompletions,
 } from "./completions/index.js";
+import { bold, dim, yellow } from "./format/colors.js";
 
 declare const __GIT_COMMIT__: string;
 
@@ -59,6 +60,63 @@ function parseMetadata(pairs: string[]): Record<string, string | null> {
     }
   }
   return meta;
+}
+
+function highlightInlineCommands(text: string): string {
+  // Highlight command examples like "update -s done" in descriptions
+  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => yellow(cmd));
+}
+
+function colorizeHelp(text: string): string {
+  let section = "";
+  return text
+    .split("\n")
+    .map((line) => {
+      // Section headers: "Options:", "Commands:", "Arguments:"
+      if (/^(Options|Commands|Arguments):$/.test(line)) {
+        section = line.slice(0, -1).toLowerCase();
+        return bold(line);
+      }
+      // Usage line: "Usage: ao [options] [command]"
+      if (line.startsWith("Usage: ")) {
+        section = "";
+        return bold("Usage:") + " " + line.slice(7);
+      }
+      // Non-indented non-empty lines reset section (e.g. description text)
+      if (line.trim() !== "" && !line.startsWith(" ")) {
+        section = "";
+        return line;
+      }
+      // Indented entries with descriptions (commands or options)
+      const entryMatch = line.match(/^(\s{2})(\S.*?)(\s{2,})(.*)/);
+      if (entryMatch) {
+        const [, indent, term, pad, desc] = entryMatch;
+        if (term.startsWith("-")) {
+          return indent + yellow(term) + pad + desc;
+        }
+        return indent + bold(term) + pad + dim(highlightInlineCommands(desc));
+      }
+      // Continuation lines (deeply indented) in the commands section
+      if (section === "commands" && line.match(/^\s{4,}\S/)) {
+        return dim(highlightInlineCommands(line));
+      }
+      return line;
+    })
+    .join("\n");
+}
+
+const helpConfig = {
+  formatHelp(cmd: Command, helper: Help) {
+    const text = Help.prototype.formatHelp.call(helper, cmd, helper);
+    return colorizeHelp(text);
+  },
+};
+
+function applyHelpColors(cmd: Command): void {
+  cmd.configureHelp(helpConfig);
+  for (const sub of cmd.commands) {
+    applyHelpColors(sub);
+  }
 }
 
 export function createProgram(
@@ -1124,6 +1182,8 @@ export function createProgram(
         write(results.join("\n"));
       }
     });
+
+  applyHelpColors(program);
 
   return program;
 }
