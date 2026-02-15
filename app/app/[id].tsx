@@ -9,7 +9,7 @@ import {
   Pressable,
   PlatformColor,
 } from "react-native";
-import { Picker, Host, ContextMenu, Button } from "@expo/ui/swift-ui";
+import { Picker, Host, ContextMenu, Button, DateTimePicker } from "@expo/ui/swift-ui";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ConnectionContext } from "@/hooks/use-connection";
@@ -134,6 +134,26 @@ export default function TaskDetailScreen() {
     },
     [task, serverUrl],
   );
+
+  const handleDueDateChange = useCallback(
+    async (date: Date) => {
+      if (!task) {
+        return;
+      }
+      const due_at = date.toISOString().split("T")[0] + "T00:00:00";
+      const updated = await updateTask(serverUrl, task.id, { due_at });
+      setTask(updated);
+    },
+    [task, serverUrl],
+  );
+
+  const handleClearDueDate = useCallback(async () => {
+    if (!task) {
+      return;
+    }
+    const updated = await updateTask(serverUrl, task.id, { due_at: null });
+    setTask(updated);
+  }, [task, serverUrl]);
 
   const handleDelete = useCallback(() => {
     if (!task) {
@@ -279,6 +299,31 @@ export default function TaskDetailScreen() {
               </ContextMenu.Items>
             </ContextMenu>
           </Host>
+        </View>
+
+        <View style={{ gap: 8 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            DUE DATE
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Host matchContents>
+              <DateTimePicker
+                initialDate={task.due_at}
+                onDateSelected={handleDueDateChange}
+                variant="compact"
+                displayedComponents="date"
+              />
+            </Host>
+            {task.due_at && (
+              <Pressable onPress={handleClearDueDate} hitSlop={8}>
+                <Image
+                  source="sf:xmark.circle.fill"
+                  style={{ width: 20, height: 20 }}
+                  tintColor={PlatformColor("secondaryLabel") as unknown as string}
+                />
+              </Pressable>
+            )}
+          </View>
         </View>
 
         <View style={{ gap: 8 }}>

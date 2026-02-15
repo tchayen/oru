@@ -8,6 +8,7 @@ export interface Task {
   priority: Priority;
   labels: string[];
   notes: string[];
+  due_at: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -18,6 +19,7 @@ export interface CreateTaskInput {
   title: string;
   status?: Status;
   priority?: Priority;
+  due_at?: string | null;
 }
 
 export interface UpdateTaskInput {
@@ -26,6 +28,7 @@ export interface UpdateTaskInput {
   priority?: Priority;
   labels?: string[];
   note?: string;
+  due_at?: string | null;
 }
 
 const PRIORITY_ORDER: Record<Priority, number> = {
@@ -49,6 +52,7 @@ let mockTasks: Task[] = [
     priority: "urgent",
     labels: ["mobile", "design"],
     notes: ["Started with Figma mockups"],
+    due_at: "2026-02-18T00:00:00",
     metadata: {},
     created_at: "2026-02-13T09:00:00Z",
     updated_at: "2026-02-15T08:00:00Z",
@@ -61,6 +65,7 @@ let mockTasks: Task[] = [
     priority: "high",
     labels: ["infra"],
     notes: [],
+    due_at: "2026-02-10T00:00:00",
     metadata: {},
     created_at: "2026-02-14T10:00:00Z",
     updated_at: "2026-02-14T10:00:00Z",
@@ -73,6 +78,7 @@ let mockTasks: Task[] = [
     priority: "high",
     labels: ["bug"],
     notes: ["Happens when two clients sync simultaneously"],
+    due_at: "2026-02-20T00:00:00",
     metadata: {},
     created_at: "2026-02-10T11:00:00Z",
     updated_at: "2026-02-14T15:00:00Z",
@@ -85,6 +91,7 @@ let mockTasks: Task[] = [
     priority: "medium",
     labels: ["testing"],
     notes: [],
+    due_at: null,
     metadata: {},
     created_at: "2026-02-12T14:00:00Z",
     updated_at: "2026-02-12T14:00:00Z",
@@ -97,6 +104,7 @@ let mockTasks: Task[] = [
     priority: "low",
     labels: ["docs"],
     notes: [],
+    due_at: null,
     metadata: {},
     created_at: "2026-02-11T16:00:00Z",
     updated_at: "2026-02-11T16:00:00Z",
@@ -109,6 +117,7 @@ let mockTasks: Task[] = [
     priority: "high",
     labels: ["sync"],
     notes: ["Completed and tested"],
+    due_at: "2026-02-13T00:00:00",
     metadata: {},
     created_at: "2026-02-09T10:00:00Z",
     updated_at: "2026-02-13T12:00:00Z",
@@ -156,6 +165,7 @@ export async function createTask(serverUrl: string | null, input: CreateTaskInpu
       priority: input.priority ?? "medium",
       labels: [],
       notes: [],
+      due_at: input.due_at ?? null,
       metadata: {},
       created_at: now,
       updated_at: now,
