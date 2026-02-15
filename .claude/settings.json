@@ -1,13 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install*)",
-      "Bash(npm run*)",
-      "Bash(npm test*)",
-      "Bash(npx oxfmt*)",
-      "Bash(npx oxlint*)",
-      "Bash(npx tsup*)",
-      "Bash(npx vitest*)",
+      "Bash(pnpm install*)",
+      "Bash(pnpm add*)",
+      "Bash(pnpm run*)",
+      "Bash(pnpm test*)",
+      "Bash(pnpm lint*)",
+      "Bash(pnpm fmt*)",
+      "Bash(pnpm build*)",
+      "Bash(pnpm tsgo*)",
+      "Bash(pnpm --filter*)",
+      "Bash(pnpm approve-builds*)",
 
       "Bash(gh *)",
       "Bash(git add*)",
