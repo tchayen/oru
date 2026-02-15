@@ -44,6 +44,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: pnpm/action-setup@v4
 
@@ -54,7 +56,22 @@ jobs:
 
       - run: pnpm install
 
-      - name: Build
+      - name: Build main
+        run: pnpm build
+
+      - name: Save main bundle sizes
+        id: main-size
+        run: |
+          echo "cli=$(stat -c%s cli/dist/cli.js)" >> "$GITHUB_OUTPUT"
+          echo "server=$(stat -c%s cli/dist/server/index.js)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - run: pnpm install
+
+      - name: Build PR
         run: pnpm build
 
       - name: Report bundle size
@@ -62,9 +79,32 @@ jobs:
         with:
           script: |
             const fs = require("fs");
-            const { size } = fs.statSync("cli/dist/cli.js");
-            const kb = (size / 1024).toFixed(2);
-            const body = `## Bundle size\n\n\`dist/cli.js\` — **${kb} KB** (${size} bytes)`;
+
+            const mainCli = Number("${{ steps.main-size.outputs.cli }}");
+            const mainServer = Number("${{ steps.main-size.outputs.server }}");
+            const prCli = fs.statSync("cli/dist/cli.js").size;
+            const prServer = fs.statSync("cli/dist/server/index.js").size;
+
+            function fmt(bytes) {
+              return (bytes / 1024).toFixed(2);
+            }
+
+            function delta(main, pr) {
+              const diff = pr - main;
+              if (diff === 0) return "0 B";
+              const sign = diff > 0 ? "+" : "";
+              const pct = ((diff / main) * 100).toFixed(1);
+              return `${sign}${diff} B (${sign}${pct}%)`;
+            }
+
+            const body = [
+              "## Bundle size",
+              "",
+              "| File | main | PR | Delta |",
+              "| --- | ---: | ---: | ---: |",
+              `| \`cli.js\` | ${fmt(mainCli)} KB | ${fmt(prCli)} KB | ${delta(mainCli, prCli)} |`,
+              `| \`server/index.js\` | ${fmt(mainServer)} KB | ${fmt(prServer)} KB | ${delta(mainServer, prServer)} |`,
+            ].join("\n");
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
