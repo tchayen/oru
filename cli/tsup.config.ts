@@ -24,6 +24,6 @@ export default defineConfig([
     outDir: "dist/server",
     clean: false,
     minify: true,
-    external: ["better-sqlite3"],
+    external: ["better-sqlite3", "cloudflared"],
   },
 ]);
