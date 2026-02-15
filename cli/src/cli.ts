@@ -64,7 +64,7 @@ function parseMetadata(pairs: string[]): Record<string, string | null> {
 
 function highlightInlineCommands(text: string): string {
   // Highlight command examples like "update -s done" in descriptions
-  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => bold(cmd));
+  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => yellow(cmd));
 }
 
 function colorizeHelp(text: string): string {
