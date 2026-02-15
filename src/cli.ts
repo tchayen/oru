@@ -12,6 +12,8 @@ import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
 import type { Status, Priority } from "./tasks/types.js";
 
+declare const __GIT_COMMIT__: string;
+
 const MAX_TITLE_LENGTH = 1000;
 const MAX_NOTE_LENGTH = 10000;
 const MAX_LABEL_LENGTH = 200;
@@ -41,7 +43,7 @@ export function createProgram(
   const service = new TaskService(ky, deviceId);
   const program = new Command("ao")
     .description("agentodo — agent-friendly todo CLI with offline sync")
-    .version("0.1.0");
+    .version(`0.1.0 (${__GIT_COMMIT__})`);
 
   program.configureOutput({
     writeOut: write,
