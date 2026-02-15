@@ -1,6 +1,6 @@
 import { use, useEffect, useState, useCallback } from "react";
-import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator } from "react-native";
-import { Picker, Host } from "@expo/ui/swift-ui";
+import { ScrollView, Text, View, Alert, ActivityIndicator, PlatformColor } from "react-native";
+import { Picker, Host, ContextMenu, Button } from "@expo/ui/swift-ui";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ConnectionContext } from "@/hooks/use-connection";
@@ -14,7 +14,6 @@ import {
 } from "@/utils/api";
 
 const STATUSES: Status[] = ["todo", "in_progress", "done"];
-const PRIORITIES: Priority[] = ["urgent", "high", "medium", "low"];
 
 const STATUS_LABELS: Record<Status, string> = {
   todo: "To Do",
@@ -56,12 +55,11 @@ export default function TaskDetailScreen() {
   );
 
   const handlePriorityChange = useCallback(
-    async (event: { nativeEvent: { index: number; label: string } }) => {
+    async (newPriority: Priority) => {
       if (!task) {
         return;
       }
-      const priority = PRIORITIES[event.nativeEvent.index];
-      const updated = await updateTask(serverUrl, task.id, { priority });
+      const updated = await updateTask(serverUrl, task.id, { priority: newPriority });
       setTask(updated);
     },
     [task, serverUrl],
@@ -98,9 +96,22 @@ export default function TaskDetailScreen() {
         options={{
           title: "Task",
           headerRight: () => (
-            <Pressable onPress={handleDelete} hitSlop={8}>
-              <Image source="sf:trash" style={{ width: 20, height: 20 }} tintColor="#FF3B30" />
-            </Pressable>
+            <Host matchContents>
+              <ContextMenu activationMethod="singlePress">
+                <ContextMenu.Trigger>
+                  <Image
+                    source="sf:ellipsis.circle"
+                    style={{ width: 22, height: 22 }}
+                    tintColor={PlatformColor("link") as unknown as string}
+                  />
+                </ContextMenu.Trigger>
+                <ContextMenu.Items>
+                  <Button systemImage="trash" role="destructive" onPress={handleDelete}>
+                    Delete Task
+                  </Button>
+                </ContextMenu.Items>
+              </ContextMenu>
+            </Host>
           ),
         }}
       />
@@ -109,12 +120,14 @@ export default function TaskDetailScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ padding: 16, gap: 24 }}
       >
-        <Text selectable style={{ fontSize: 28, fontWeight: "700" }}>
+        <Text selectable style={{ fontSize: 28, fontWeight: "700", color: PlatformColor("label") }}>
           {task.title}
         </Text>
 
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>STATUS</Text>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            STATUS
+          </Text>
           <Host matchContents>
             <Picker
               options={STATUSES.map((s) => STATUS_LABELS[s])}
@@ -126,33 +139,79 @@ export default function TaskDetailScreen() {
         </View>
 
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>PRIORITY</Text>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}>
+            PRIORITY
+          </Text>
           <Host matchContents>
-            <Picker
-              options={PRIORITIES.map((p) => PRIORITY_LABELS[p])}
-              selectedIndex={PRIORITIES.indexOf(task.priority)}
-              onOptionSelected={handlePriorityChange}
-              variant="segmented"
-            />
+            <ContextMenu activationMethod="singlePress">
+              <ContextMenu.Trigger>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    backgroundColor: PlatformColor("tertiarySystemFill"),
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    borderRadius: 8,
+                    borderCurve: "continuous",
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  <Text style={{ fontSize: 15, fontWeight: "500", color: PlatformColor("label") }}>
+                    {PRIORITY_LABELS[task.priority]}
+                  </Text>
+                  <Image
+                    source="sf:chevron.up.chevron.down"
+                    style={{ width: 12, height: 12 }}
+                    tintColor={PlatformColor("secondaryLabel") as unknown as string}
+                  />
+                </View>
+              </ContextMenu.Trigger>
+              <ContextMenu.Items>
+                <Button
+                  systemImage="exclamationmark.3"
+                  onPress={() => handlePriorityChange("urgent")}
+                >
+                  Urgent
+                </Button>
+                <Button
+                  systemImage="exclamationmark.2"
+                  onPress={() => handlePriorityChange("high")}
+                >
+                  High
+                </Button>
+                <Button systemImage="minus" onPress={() => handlePriorityChange("medium")}>
+                  Medium
+                </Button>
+                <Button systemImage="arrow.down" onPress={() => handlePriorityChange("low")}>
+                  Low
+                </Button>
+              </ContextMenu.Items>
+            </ContextMenu>
           </Host>
         </View>
 
         {task.labels.length > 0 && (
           <View style={{ gap: 8 }}>
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>LABELS</Text>
+            <Text
+              style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}
+            >
+              LABELS
+            </Text>
             <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
               {task.labels.map((label) => (
                 <View
                   key={label}
                   style={{
-                    backgroundColor: "#F2F2F7",
+                    backgroundColor: PlatformColor("tertiarySystemFill"),
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                     borderRadius: 6,
                     borderCurve: "continuous",
                   }}
                 >
-                  <Text style={{ fontSize: 14, color: "#3C3C43" }}>{label}</Text>
+                  <Text style={{ fontSize: 14, color: PlatformColor("label") }}>{label}</Text>
                 </View>
               ))}
             </View>
@@ -161,9 +220,17 @@ export default function TaskDetailScreen() {
 
         {task.notes.length > 0 && (
           <View style={{ gap: 8 }}>
-            <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>NOTES</Text>
+            <Text
+              style={{ fontSize: 13, fontWeight: "600", color: PlatformColor("secondaryLabel") }}
+            >
+              NOTES
+            </Text>
             {task.notes.map((note, i) => (
-              <Text key={i} selectable style={{ fontSize: 15, color: "#3C3C43", lineHeight: 22 }}>
+              <Text
+                key={i}
+                selectable
+                style={{ fontSize: 15, color: PlatformColor("label"), lineHeight: 22 }}
+              >
                 {note}
               </Text>
             ))}
@@ -171,10 +238,10 @@ export default function TaskDetailScreen() {
         )}
 
         <View style={{ gap: 4 }}>
-          <Text selectable style={{ fontSize: 13, color: "#C7C7CC" }}>
+          <Text selectable style={{ fontSize: 13, color: PlatformColor("tertiaryLabel") }}>
             Created {new Date(task.created_at).toLocaleDateString()}
           </Text>
-          <Text selectable style={{ fontSize: 13, color: "#C7C7CC" }}>
+          <Text selectable style={{ fontSize: 13, color: PlatformColor("tertiaryLabel") }}>
             Updated {new Date(task.updated_at).toLocaleDateString()}
           </Text>
         </View>

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { PlatformColor } from "react-native";
 import { Stack } from "expo-router/stack";
 import { useRouter, useSegments } from "expo-router";
 import { ConnectionContext, useConnectionProvider } from "@/hooks/use-connection";
@@ -27,6 +28,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerBackButtonDisplayMode: "minimal",
+          contentStyle: { backgroundColor: PlatformColor("systemBackground") },
         }}
       >
         <Stack.Screen name="index" options={{ title: "Tasks" }} />

@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, PlatformColor } from "react-native";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { Link } from "expo-router";
@@ -57,7 +57,7 @@ export function TaskRow({ task, onToggleStatus }: TaskRowProps) {
           style={{
             flex: 1,
             fontSize: 17,
-            color: task.status === "done" ? "#8E8E93" : "#000",
+            color: task.status === "done" ? PlatformColor("tertiaryLabel") : PlatformColor("label"),
             textDecorationLine: task.status === "done" ? "line-through" : "none",
           }}
           numberOfLines={1}
