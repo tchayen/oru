@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { TaskService } from "../main.js";
 import { STATUSES, PRIORITIES, type Status, type Priority } from "../tasks/types.js";
+import { AmbiguousPrefixError } from "../tasks/repository.js";
 
 const validStatuses = new Set<string>(STATUSES);
 const validPriorities = new Set<string>(PRIORITIES);
@@ -30,11 +31,18 @@ export function createApp(service: TaskService): Hono {
   });
 
   app.get("/tasks/:id", async (c) => {
-    const task = await service.get(c.req.param("id"));
-    if (!task) {
-      return c.json({ error: "not_found", id: c.req.param("id") }, 404);
+    try {
+      const task = await service.get(c.req.param("id"));
+      if (!task) {
+        return c.json({ error: "not_found", id: c.req.param("id") }, 404);
+      }
+      return c.json(task);
+    } catch (err) {
+      if (err instanceof AmbiguousPrefixError) {
+        return c.json({ error: "ambiguous_prefix", id: err.prefix, matches: err.matches }, 409);
+      }
+      throw err;
     }
-    return c.json(task);
   });
 
   app.post("/tasks", async (c) => {
@@ -91,52 +99,66 @@ export function createApp(service: TaskService): Hono {
       return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
     }
 
-    const updateFields: Record<string, unknown> = {};
-    if (title) {
-      updateFields.title = title;
-    }
-    if (status) {
-      updateFields.status = status;
-    }
-    if (priority) {
-      updateFields.priority = priority;
-    }
-    if (labels) {
-      updateFields.labels = labels;
-    }
-    if (due_at !== undefined) {
-      updateFields.due_at = due_at;
-    }
-    if (metadata) {
-      updateFields.metadata = metadata;
-    }
+    try {
+      const updateFields: Record<string, unknown> = {};
+      if (title) {
+        updateFields.title = title;
+      }
+      if (status) {
+        updateFields.status = status;
+      }
+      if (priority) {
+        updateFields.priority = priority;
+      }
+      if (labels) {
+        updateFields.labels = labels;
+      }
+      if (due_at !== undefined) {
+        updateFields.due_at = due_at;
+      }
+      if (metadata) {
+        updateFields.metadata = metadata;
+      }
 
-    const hasFields = Object.keys(updateFields).length > 0;
-    let task;
+      const hasFields = Object.keys(updateFields).length > 0;
+      let task;
 
-    if (note && hasFields) {
-      task = await service.updateWithNote(id, updateFields, note);
-    } else if (note) {
-      task = await service.addNote(id, note);
-    } else if (hasFields) {
-      task = await service.update(id, updateFields);
-    } else {
-      task = await service.get(id);
-    }
+      if (note && hasFields) {
+        task = await service.updateWithNote(id, updateFields, note);
+      } else if (note) {
+        task = await service.addNote(id, note);
+      } else if (hasFields) {
+        task = await service.update(id, updateFields);
+      } else {
+        task = await service.get(id);
+      }
 
-    if (!task) {
-      return c.json({ error: "not_found", id }, 404);
+      if (!task) {
+        return c.json({ error: "not_found", id }, 404);
+      }
+      return c.json(task);
+    } catch (err) {
+      if (err instanceof AmbiguousPrefixError) {
+        return c.json({ error: "ambiguous_prefix", id: err.prefix, matches: err.matches }, 409);
+      }
+      throw err;
     }
-    return c.json(task);
   });
 
   app.delete("/tasks/:id", async (c) => {
     const id = c.req.param("id");
-    const result = await service.delete(id);
-    if (!result) {
-      return c.json({ error: "not_found", id }, 404);
+    try {
+      const result = await service.delete(id);
+      if (!result) {
+        return c.json({ error: "not_found", id }, 404);
+      }
+      return c.json({ id, deleted: true });
+    } catch (err) {
+      if (err instanceof AmbiguousPrefixError) {
+        return c.json({ error: "ambiguous_prefix", id: err.prefix, matches: err.matches }, 409);
+      }
+      throw err;
     }
-    return c.json({ id, deleted: true });
   });
 
   return app;
