@@ -2,8 +2,8 @@
 
 - [~] Set up landing page with CloudFlare.
 - [~] Maybe consider a rename so that we can find both a domain and npm package that are available?
-- [~] Figure out installation. I guess npm package and an install script like bun/claude code. We want auto update.
-- [ ] Add colors to CLI help output.
+- [~] Figure out installation. I guess npm package and an install script like bun/claude code. We want auto update. (PR #65 open)
+- [x] Add colors to CLI help output. (PR #67)
 - [ ] Make orange theme color in the CLI - like the website one.
 - [ ] Write a skill for using the playwright to inspect page.
 - [ ] Figure out a skill to see the app in iOS simulator (Radon?).
@@ -13,15 +13,15 @@
 
 ## Landing page
 
-- [~] Use tailwind on the landing page.
-- [ ] Use text balanced CSS instruction more on the landing page.
+- [x] Use tailwind on the landing page. (PR #66)
 - [ ] Update command formatting and colors on the landing page - check real command output.
+- [x] Use text balanced CSS instruction more on the landing page.
 - [ ] Formatting of text like JSON is broken in terminals components on the landing page.
 - [ ] Verify claims from the homepage:
   > Requires Node 22+. That is the only dependency.
 - [ ] QR code example in terminal does not look good.
 - [ ] Explore converting code in `site/` to TS.
-- [ ] Add shipped JS bundle and HTML size (maybe?) of the landing page to the performance github comment.
+- [x] Add shipped JS bundle and HTML size (maybe?) of the landing page to the performance github comment. (PR #68 open)
 - [ ] 'Sync that actually works offline.' got some vertical drift.
 - [ ] Phone on the homepage needs to be replaced with proper iPhone frame and proper app screenshot.
 
@@ -42,10 +42,10 @@
 
 # Features — agent & collaboration improvements
 
-- [ ] Multi-value filters on `list` — Allow comma-separated values like `ao list -s todo,in_progress` or `ao list -p high,urgent` to reduce round trips. Every extra command is latency and tokens for agents.
-- [ ] `ao list --actionable` — Show tasks that are not blocked, not done, sorted by priority. The "what should I work on next?" query in a single flag. Builds on the `blocked_by` feature from PR #39.
-- [ ] Oplog viewer — `ao log <id>` to show the change history of a task. Useful for understanding context when picking up a task someone else worked on ("why was this reopened? what was tried before?").
-- [ ] Owner/assignee field — `ao update <id> --assign agent` / `--assign human`. Foundation for `ao list --mine`, "what did the agent do while I was away", and dividing work between human and agent.
-- [ ] Handoff signal — A way to signal task transitions between human and agent. Could be a new status like `in_review`, or a dedicated `ao review <id>` command. Supports the ping-pong workflow where agent marks work done and human reviews.
-- [ ] `ao context` — Agent briefing command. Prints a structured summary: actionable tasks by priority, recently completed tasks, overdue items, blocked chains. One command for full situational awareness. Different from `ao list` — opinionated and curated, not a raw listing. The standup meeting for your agent.
+- [x] Multi-value filters on `list` — Allow comma-separated values like `ao list -s todo,in_progress` or `ao list -p high,urgent` to reduce round trips. Every extra command is latency and tokens for agents. (PR #61)
+- [x] `ao list --actionable` — Show tasks that are not blocked, not done, sorted by priority. The "what should I work on next?" query in a single flag. Builds on the `blocked_by` feature from PR #39. (PR #60)
+- [x] Oplog viewer — `ao log <id>` to show the change history of a task. Useful for understanding context when picking up a task someone else worked on ("why was this reopened? what was tried before?"). (PR #62)
+- [x] Owner/assignee field — `ao update <id> --assign agent` / `--assign human`. Foundation for `ao list --mine`, "what did the agent do while I was away", and dividing work between human and agent. (PR #64)
+- [x] Handoff signal — A way to signal task transitions between human and agent. Could be a new status like `in_review`, or a dedicated `ao review <id>` command. Supports the ping-pong workflow where agent marks work done and human reviews. (PR #63)
+- [x] `ao context` — Agent briefing command. Prints a structured summary: actionable tasks by priority, recently completed tasks, overdue items, blocked chains. One command for full situational awareness. Different from `ao list` — opinionated and curated, not a raw listing. The standup meeting for your agent.
 - [ ] Auto-backup via config — Add `backup_path` option to `ao config` (e.g. `backup_path = "~/Dropbox/ao-backup"`). On every CLI invocation, if >N minutes since last backup, copy the DB file to the backup path with a timestamp. Zero-effort safety net. Also add an explicit `ao backup [path]` command for manual one-off snapshots.
