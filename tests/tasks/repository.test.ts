@@ -174,6 +174,25 @@ describe("task repository", () => {
     expect(found).toBeNull();
   });
 
+  it("lists tasks sorted by priority (urgent first)", async () => {
+    await createTask(ky, { title: "Low task", priority: "low" });
+    await createTask(ky, { title: "Urgent task", priority: "urgent" });
+    await createTask(ky, { title: "Medium task", priority: "medium" });
+    await createTask(ky, { title: "High task", priority: "high" });
+
+    const tasks = await listTasks(ky);
+    expect(tasks.map((t) => t.priority)).toEqual(["urgent", "high", "medium", "low"]);
+  });
+
+  it("sorts by priority then by creation time", async () => {
+    await createTask(ky, { title: "First high" }, "2024-01-01T00:00:00.000Z");
+    await createTask(ky, { title: "Second high" }, "2024-01-02T00:00:00.000Z");
+    await createTask(ky, { title: "Urgent task", priority: "urgent" });
+
+    const tasks = await listTasks(ky);
+    expect(tasks.map((t) => t.title)).toEqual(["Urgent task", "First high", "Second high"]);
+  });
+
   it("filters by search term (case-insensitive)", async () => {
     await createTask(ky, { title: "Buy milk" });
     await createTask(ky, { title: "Buy eggs" });

@@ -107,7 +107,11 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
     );
   }
 
-  query = query.orderBy("created_at", "asc");
+  query = query
+    .orderBy(
+      sql`CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 END`,
+    )
+    .orderBy("created_at", "asc");
   const rows = await query.execute();
   return rows.map(rowToTask);
 }
