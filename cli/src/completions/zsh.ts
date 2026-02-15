@@ -20,6 +20,7 @@ _ao() {
     'delete:Delete one or more tasks'
     'done:Mark one or more tasks as done'
     'start:Start one or more tasks'
+    'log:Show change history of a task'
     'sync:Sync with a filesystem remote'
     'config:Manage configuration'
     'server:Manage the HTTP server'
@@ -68,6 +69,7 @@ _ao() {
             '--sort[Sort order]:sort:('"$sort_values"')' \\
             '--search[Search by title]:query:' \\
             '(-a --all)'{-a,--all}'[Include done tasks]' \\
+            '--actionable[Show only actionable tasks]' \\
             '--limit[Maximum number of tasks to return]:number:' \\
             '--offset[Number of tasks to skip]:number:' \\
             '--json[Output as JSON]' \\
@@ -117,6 +119,12 @@ _ao() {
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\
             '*:task:->tasks'
+          ;;
+        log)
+          _arguments \\
+            '--json[Output as JSON]' \\
+            '--plaintext[Output as plain text]' \\
+            '1:task:->tasks'
           ;;
         sync)
           _arguments \\

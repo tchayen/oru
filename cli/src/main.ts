@@ -2,6 +2,7 @@ import type { Kysely } from "kysely";
 import type { DB } from "./db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types.js";
 import type { ListFilters } from "./tasks/repository.js";
+import type { OplogEntry } from "./oplog/types.js";
 import {
   createTask,
   listTasks,
@@ -231,6 +232,21 @@ export class TaskService {
       }
     }
     return [...labels].sort();
+  }
+
+  async log(id: string): Promise<OplogEntry[] | null> {
+    const task = await getTask(this.db, id);
+    if (!task) {
+      return null;
+    }
+    const rows = await this.db
+      .selectFrom("oplog")
+      .selectAll()
+      .where("task_id", "=", task.id)
+      .orderBy("timestamp", "asc")
+      .orderBy("id", "asc")
+      .execute();
+    return rows as OplogEntry[];
   }
 
   async delete(id: string): Promise<boolean> {

@@ -182,6 +182,42 @@ describe("GET /tasks", () => {
     expect(res.status).toBe(400);
   });
 
+  it("filters by comma-separated statuses", async () => {
+    await service.add({ title: "Todo" });
+    await service.add({ title: "In Progress", status: "in_progress" });
+    await service.add({ title: "Done", status: "done" });
+    const res = await req("GET", "/tasks?status=todo,in_progress");
+    const tasks = await res.json();
+    expect(tasks).toHaveLength(2);
+    const titles = tasks.map((t: { title: string }) => t.title).sort();
+    expect(titles).toEqual(["In Progress", "Todo"]);
+  });
+
+  it("filters by comma-separated priorities", async () => {
+    await service.add({ title: "Low", priority: "low" });
+    await service.add({ title: "High", priority: "high" });
+    await service.add({ title: "Urgent", priority: "urgent" });
+    const res = await req("GET", "/tasks?priority=high,urgent");
+    const tasks = await res.json();
+    expect(tasks).toHaveLength(2);
+    const titles = tasks.map((t: { title: string }) => t.title).sort();
+    expect(titles).toEqual(["High", "Urgent"]);
+  });
+
+  it("returns 400 for partially invalid comma-separated status", async () => {
+    const res = await req("GET", "/tasks?status=todo,invalid");
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.message).toContain("Invalid status: invalid");
+  });
+
+  it("returns 400 for partially invalid comma-separated priority", async () => {
+    const res = await req("GET", "/tasks?priority=high,nope");
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.message).toContain("Invalid priority: nope");
+  });
+
   it("supports limit param", async () => {
     await service.add({ title: "Task 1" });
     await service.add({ title: "Task 2" });
@@ -220,6 +256,32 @@ describe("GET /tasks", () => {
   it("returns 400 for negative offset", async () => {
     const res = await req("GET", "/tasks?offset=-1");
     expect(res.status).toBe(400);
+  });
+
+  it("actionable filter excludes blocked and done tasks", async () => {
+    const blocker = await service.add({ title: "Blocker" });
+    await service.add({ title: "Blocked", blocked_by: [blocker.id] });
+    await service.add({ title: "Done task", status: "done" });
+    await service.add({ title: "Free task" });
+
+    const res = await req("GET", "/tasks?actionable=1");
+    const tasks = await res.json();
+    const titles = tasks.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Blocker");
+    expect(titles).toContain("Free task");
+    expect(titles).not.toContain("Blocked");
+    expect(titles).not.toContain("Done task");
+  });
+
+  it("actionable with all=true still excludes done tasks", async () => {
+    await service.add({ title: "Active" });
+    await service.add({ title: "Completed", status: "done" });
+
+    const res = await req("GET", "/tasks?actionable=1&all=true");
+    const tasks = await res.json();
+    const titles = tasks.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Active");
+    expect(titles).not.toContain("Completed");
   });
 });
 

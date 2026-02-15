@@ -19,6 +19,10 @@ describe("bash completions script", () => {
     expect(script).toContain("completions");
   });
 
+  it("contains log command", () => {
+    expect(script).toContain("log");
+  });
+
   it("contains --unlabel completion", () => {
     expect(script).toContain("--unlabel");
   });
@@ -59,6 +63,10 @@ describe("bash completions script", () => {
     expect(script).toContain("sort_values");
   });
 
+  it("contains --actionable for list", () => {
+    expect(script).toContain("--actionable");
+  });
+
   it("registers the completion function", () => {
     expect(script).toContain("complete -F");
   });
@@ -76,6 +84,10 @@ describe("zsh completions script", () => {
     expect(script).toContain("list:List tasks");
     expect(script).toContain("labels:List all labels in use");
     expect(script).toContain("get:Get a task by ID");
+  });
+
+  it("contains log command with description", () => {
+    expect(script).toContain("log:Show change history of a task");
   });
 
   it("contains --unlabel completion", () => {
@@ -123,6 +135,10 @@ describe("zsh completions script", () => {
     expect(script).toContain("--sort");
     expect(script).toContain("sort_values");
   });
+
+  it("contains --actionable for list", () => {
+    expect(script).toContain("--actionable");
+  });
 });
 
 describe("fish completions script", () => {
@@ -143,6 +159,10 @@ describe("fish completions script", () => {
     expect(script).toContain("config");
     expect(script).toContain("server");
     expect(script).toContain("completions");
+  });
+
+  it("contains log command", () => {
+    expect(script).toContain("log");
   });
 
   it("contains --unlabel completion", () => {
@@ -185,5 +205,9 @@ describe("fish completions script", () => {
   it("contains --sort completion with values", () => {
     expect(script).toContain("-l sort");
     expect(script).toContain("priority due title created");
+  });
+
+  it("contains --actionable for list", () => {
+    expect(script).toContain("actionable");
   });
 });

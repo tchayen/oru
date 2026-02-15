@@ -87,14 +87,19 @@ describe("text formatter", () => {
     expect(output).toContain("Get organic");
   });
 
-  it("shows metadata when present", () => {
-    const output = formatTaskText({ ...sampleTask, metadata: { sprint: "5", team: "backend" } });
-    expect(output).toContain("Metadata: sprint=5, team=backend");
+  it("shows metadata in single task view", () => {
+    const task: Task = { ...sampleTask, metadata: { env: "prod", region: "us-east" } };
+    const output = formatTaskText(task);
+    expect(output).toContain("Metadata:");
+    expect(output).toContain("env:");
+    expect(output).toContain("prod");
+    expect(output).toContain("region:");
+    expect(output).toContain("us-east");
   });
 
-  it("omits metadata line when empty", () => {
+  it("hides metadata section when metadata is empty", () => {
     const output = formatTaskText(sampleTask);
-    expect(output).not.toContain("Metadata");
+    expect(output).not.toContain("Metadata:");
   });
 
   it("shows metadata column in list view", () => {
