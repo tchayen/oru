@@ -62,17 +62,30 @@ function parseMetadata(pairs: string[]): Record<string, string | null> {
   return meta;
 }
 
+function highlightInlineCommands(text: string): string {
+  // Highlight command examples like "update -s done" in descriptions
+  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => bold(cmd));
+}
+
 function colorizeHelp(text: string): string {
+  let section = "";
   return text
     .split("\n")
     .map((line) => {
       // Section headers: "Options:", "Commands:", "Arguments:"
       if (/^(Options|Commands|Arguments):$/.test(line)) {
+        section = line.slice(0, -1).toLowerCase();
         return bold(line);
       }
       // Usage line: "Usage: ao [options] [command]"
       if (line.startsWith("Usage: ")) {
+        section = "";
         return bold("Usage:") + " " + line.slice(7);
+      }
+      // Non-indented non-empty lines reset section (e.g. description text)
+      if (line.trim() !== "" && !line.startsWith(" ")) {
+        section = "";
+        return line;
       }
       // Indented entries with descriptions (commands or options)
       const entryMatch = line.match(/^(\s{2})(\S.*?)(\s{2,})(.*)/);
@@ -81,7 +94,11 @@ function colorizeHelp(text: string): string {
         if (term.startsWith("-")) {
           return indent + yellow(term) + pad + desc;
         }
-        return indent + bold(term) + pad + dim(desc);
+        return indent + bold(term) + pad + dim(highlightInlineCommands(desc));
+      }
+      // Continuation lines (deeply indented) in the commands section
+      if (section === "commands" && line.match(/^\s{4,}\S/)) {
+        return dim(highlightInlineCommands(line));
       }
       return line;
     })
