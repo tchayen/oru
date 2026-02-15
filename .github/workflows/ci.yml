@@ -30,6 +30,9 @@ jobs:
       - name: Typecheck
         run: pnpm tsgo
 
+      - name: Build
+        run: pnpm build
+
       - name: Test
         run: pnpm test
 
