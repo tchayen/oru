@@ -14,8 +14,10 @@
     "tsgo": "tsgo --noEmit"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.9",
     "better-sqlite3": "^11.7.0",
     "commander": "^13.1.0",
+    "hono": "^4.11.9",
     "kysely": "^0.28.11",
     "nanoid": "^5.1.6",
     "uuid": "^11.1.0"

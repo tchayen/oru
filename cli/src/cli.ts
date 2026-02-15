@@ -1,9 +1,12 @@
 import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+import { spawn } from "child_process";
 import { Command, Option } from "commander";
 import type Database from "better-sqlite3";
 import { TaskService } from "./main.js";
 import { createKysely } from "./db/kysely.js";
-import { openDb } from "./db/connection.js";
+import { openDb, getDbPath } from "./db/connection.js";
 import { initSchema } from "./db/schema.js";
 import { formatTaskText, formatTasksText } from "./format/text.js";
 import { formatTaskJson, formatTasksJson } from "./format/json.js";
@@ -459,6 +462,99 @@ export function createProgram(
         }
       } finally {
         remote.close();
+      }
+    });
+
+  // server
+  const pidPath = path.join(path.dirname(getDbPath()), "server.pid");
+  const server = program.command("server").description("Manage the HTTP server for mobile clients");
+
+  server
+    .command("start")
+    .description("Start the server in the background")
+    .option("--port <port>", "Port to listen on", "2358")
+    .action((opts: { port: string }) => {
+      // Check for stale PID file
+      if (fs.existsSync(pidPath)) {
+        const oldPid = parseInt(fs.readFileSync(pidPath, "utf-8").trim(), 10);
+        try {
+          process.kill(oldPid, 0);
+          write(`Server already running (PID ${oldPid}).`);
+          return;
+        } catch {
+          // Stale PID file, remove it
+          fs.unlinkSync(pidPath);
+        }
+      }
+
+      const serverScript = path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "server",
+        "index.js",
+      );
+
+      const child = spawn("node", [serverScript], {
+        detached: true,
+        stdio: "ignore",
+        env: { ...process.env, AO_PORT: opts.port },
+      });
+      child.unref();
+
+      if (child.pid) {
+        fs.writeFileSync(pidPath, String(child.pid), { mode: 0o600 });
+        write(`Server started on port ${opts.port} (PID ${child.pid}).`);
+      }
+    });
+
+  server
+    .command("stop")
+    .description("Stop the running server")
+    .action(() => {
+      if (!fs.existsSync(pidPath)) {
+        write("No server running.");
+        return;
+      }
+
+      const pid = parseInt(fs.readFileSync(pidPath, "utf-8").trim(), 10);
+      try {
+        process.kill(pid, "SIGTERM");
+        write(`Server stopped (PID ${pid}).`);
+      } catch {
+        write("Server process not found, cleaning up PID file.");
+      }
+      fs.unlinkSync(pidPath);
+    });
+
+  server
+    .command("status")
+    .description("Check if the server is running")
+    .option("--json", "Output as JSON")
+    .action((opts: { json?: boolean }) => {
+      if (!fs.existsSync(pidPath)) {
+        if (useJson(opts)) {
+          write(JSON.stringify({ running: false }));
+        } else {
+          write("Server is not running.");
+        }
+        return;
+      }
+
+      const pid = parseInt(fs.readFileSync(pidPath, "utf-8").trim(), 10);
+      let running = false;
+      try {
+        process.kill(pid, 0);
+        running = true;
+      } catch {
+        // Process not found
+      }
+
+      if (useJson(opts)) {
+        write(JSON.stringify({ running, pid: running ? pid : undefined }));
+      } else if (running) {
+        write(`Server is running (PID ${pid}).`);
+      } else {
+        write("Server is not running (stale PID file).");
+        fs.unlinkSync(pidPath);
       }
     });
 
