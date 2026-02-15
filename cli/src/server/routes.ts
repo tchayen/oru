@@ -39,9 +39,14 @@ export function createApp(service: TaskService): Hono {
 
   app.post("/tasks", async (c) => {
     const body = await c.req.json();
-    const { title, status, priority, due_at, labels, notes, metadata, id } = body;
+    let { title } = body;
+    const { status, priority, due_at, labels, notes, metadata, id } = body;
 
-    if (!title || typeof title !== "string" || title.trim().length === 0) {
+    if (!title || typeof title !== "string") {
+      return c.json({ error: "validation", message: "Title is required" }, 400);
+    }
+    title = title.replace(/[\r\n]+/g, " ").trim();
+    if (title.length === 0) {
       return c.json({ error: "validation", message: "Title is required" }, 400);
     }
     if (title.length > 1000) {
@@ -73,10 +78,17 @@ export function createApp(service: TaskService): Hono {
   app.patch("/tasks/:id", async (c) => {
     const id = c.req.param("id");
     const body = await c.req.json();
-    const { title, status, priority, due_at, labels, note, metadata } = body;
+    let { title } = body;
+    const { status, priority, due_at, labels, note, metadata } = body;
 
-    if (title !== undefined && (typeof title !== "string" || title.trim().length === 0)) {
-      return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
+    if (title !== undefined) {
+      if (typeof title !== "string") {
+        return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
+      }
+      title = title.replace(/[\r\n]+/g, " ").trim();
+      if (title.length === 0) {
+        return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
+      }
     }
     if (title && title.length > 1000) {
       return c.json(

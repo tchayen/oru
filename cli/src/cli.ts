@@ -36,6 +36,10 @@ const MAX_TITLE_LENGTH = 1000;
 const MAX_NOTE_LENGTH = 10000;
 const MAX_LABEL_LENGTH = 200;
 
+function sanitizeTitle(title: string): string {
+  return title.replace(/[\r\n]+/g, " ").trim();
+}
+
 function parseMetadata(pairs: string[]): Record<string, string> {
   const meta: Record<string, string> = {};
   for (const pair of pairs) {
@@ -120,7 +124,8 @@ export function createProgram(
           plaintext?: boolean;
         },
       ) => {
-        if (title.trim().length === 0) {
+        title = sanitizeTitle(title);
+        if (title.length === 0) {
           if (useJson(opts)) {
             write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
           } else {
@@ -355,7 +360,10 @@ export function createProgram(
           plaintext?: boolean;
         },
       ) => {
-        if (opts.title !== undefined && opts.title.trim().length === 0) {
+        if (opts.title !== undefined) {
+          opts.title = sanitizeTitle(opts.title);
+        }
+        if (opts.title !== undefined && opts.title.length === 0) {
           if (useJson(opts)) {
             write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
           } else {
@@ -574,7 +582,10 @@ export function createProgram(
       }
 
       // Validate
-      if (fields.title !== undefined && fields.title.trim().length === 0) {
+      if (fields.title !== undefined) {
+        fields.title = sanitizeTitle(fields.title);
+      }
+      if (fields.title !== undefined && fields.title.length === 0) {
         if (useJson(opts)) {
           write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
         } else {

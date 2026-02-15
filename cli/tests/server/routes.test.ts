@@ -47,6 +47,18 @@ describe("POST /tasks", () => {
     expect(res.status).toBe(400);
   });
 
+  it("strips newlines from title", async () => {
+    const res = await req("POST", "/tasks", { title: "Title with\nnewline" });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.title).toBe("Title with newline");
+  });
+
+  it("returns 400 for title that is only newlines", async () => {
+    const res = await req("POST", "/tasks", { title: "\n\n" });
+    expect(res.status).toBe(400);
+  });
+
   it("returns 400 for invalid status", async () => {
     const res = await req("POST", "/tasks", { title: "Test", status: "nope" });
     expect(res.status).toBe(400);
@@ -217,6 +229,14 @@ describe("PATCH /tasks/:id", () => {
     const task = await service.add({ title: "Test" });
     const res = await req("PATCH", `/tasks/${task.id}`, { title: "" });
     expect(res.status).toBe(400);
+  });
+
+  it("strips newlines from title", async () => {
+    const task = await service.add({ title: "Original" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { title: "New\ntitle" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.title).toBe("New title");
   });
 
   it("returns current task when no updates provided", async () => {
