@@ -4,7 +4,7 @@ import { formatTasksJson, formatTaskJson } from "../../src/format/json.js";
 import type { Task } from "../../src/tasks/types.js";
 
 const sampleTask: Task = {
-  id: "abc-123",
+  id: "abc12345",
   title: "Buy milk",
   status: "todo",
   priority: "medium",
@@ -19,7 +19,7 @@ const sampleTask: Task = {
 describe("text formatter", () => {
   it("formats a single task", () => {
     const output = formatTaskText(sampleTask);
-    expect(output).toContain("abc-123");
+    expect(output).toContain("abc12345");
     expect(output).toContain("Buy milk");
     expect(output).toContain("todo");
     expect(output).toContain("medium");
@@ -28,14 +28,28 @@ describe("text formatter", () => {
   it("formats a list of tasks with header", () => {
     const output = formatTasksText([
       sampleTask,
-      { ...sampleTask, id: "def-456", title: "Buy eggs" },
+      { ...sampleTask, id: "def45678", title: "Buy eggs" },
     ]);
     const lines = output.split("\n");
     expect(lines[0]).toContain("ID");
-    expect(lines[0]).toContain("STATUS");
     expect(lines[0]).toContain("TITLE");
     expect(output).toContain("Buy milk");
     expect(output).toContain("Buy eggs");
+  });
+
+  it("shows checkbox [ ] for incomplete tasks", () => {
+    const output = formatTasksText([sampleTask]);
+    expect(output).toContain("[ ]");
+  });
+
+  it("shows checkbox [x] for done tasks", () => {
+    const output = formatTasksText([{ ...sampleTask, status: "done" }]);
+    expect(output).toContain("[x]");
+  });
+
+  it("shows labels in list output", () => {
+    const output = formatTasksText([sampleTask]);
+    expect(output).toContain("groceries");
   });
 
   it("shows empty state message for no tasks", () => {
@@ -58,7 +72,7 @@ describe("json formatter", () => {
   it("formats a single task as valid JSON", () => {
     const output = formatTaskJson(sampleTask);
     const parsed = JSON.parse(output);
-    expect(parsed.id).toBe("abc-123");
+    expect(parsed.id).toBe("abc12345");
     expect(parsed.title).toBe("Buy milk");
   });
 

@@ -83,6 +83,32 @@ describe("CLI parse", () => {
     expect(output).not.toContain("Todo task");
   });
 
+  it("list hides done tasks by default", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Open task"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Finished task", "--status", "done"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list"]);
+    expect(output).toContain("Open task");
+    expect(output).not.toContain("Finished task");
+  });
+
+  it("list --all shows done tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Open task"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Finished task", "--status", "done"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--all"]);
+    expect(output).toContain("Open task");
+    expect(output).toContain("Finished task");
+  });
+
   it("list --json outputs valid JSON", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "ao", "add", "JSON task"]);
