@@ -1,4 +1,4 @@
-export const STATUSES = ["todo", "in_progress", "done"] as const;
+export const STATUSES = ["todo", "in_progress", "in_review", "done"] as const;
 export type Status = (typeof STATUSES)[number];
 
 export const PRIORITIES = ["low", "medium", "high", "urgent"] as const;

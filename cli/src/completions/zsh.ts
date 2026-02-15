@@ -20,6 +20,7 @@ _ao() {
     'delete:Delete one or more tasks'
     'done:Mark one or more tasks as done'
     'start:Start one or more tasks'
+    'review:Mark one or more tasks as in_review'
     'log:Show change history of a task'
     'sync:Sync with a filesystem remote'
     'config:Manage configuration'
@@ -115,6 +116,12 @@ _ao() {
             '*:task:->tasks'
           ;;
         start)
+          _arguments \\
+            '--json[Output as JSON]' \\
+            '--plaintext[Output as plain text]' \\
+            '*:task:->tasks'
+          ;;
+        review)
           _arguments \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\
