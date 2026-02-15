@@ -444,6 +444,37 @@ describe("CLI parse", () => {
     expect(output).toContain("cannot be empty");
   });
 
+  it("add strips newlines from title", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "ao", "add", "Title with\nnewline", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Title with newline");
+  });
+
+  it("add strips \\r\\n from title", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "ao", "add", "Title with\r\nnewline", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Title with newline");
+  });
+
+  it("add rejects title that is only newlines", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "ao", "add", "\n\n\n"]);
+    expect(output).toContain("cannot be empty");
+  });
+
+  it("update strips newlines from title", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Old title", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--title", "New\ntitle", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("New title");
+  });
+
   it("add rejects title exceeding max length", async () => {
     const longTitle = "a".repeat(1001);
     const p = createProgram(db, capture());

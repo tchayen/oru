@@ -37,6 +37,10 @@ const MAX_TITLE_LENGTH = 1000;
 const MAX_NOTE_LENGTH = 10000;
 const MAX_LABEL_LENGTH = 200;
 
+function sanitizeTitle(title: string): string {
+  return title.replace(/[\r\n]+/g, " ").trim();
+}
+
 function parseMetadata(pairs: string[]): Record<string, string> {
   const meta: Record<string, string> = {};
   for (const pair of pairs) {
@@ -136,7 +140,8 @@ export function createProgram(
           plaintext?: boolean;
         },
       ) => {
-        if (title.trim().length === 0) {
+        title = sanitizeTitle(title);
+        if (title.length === 0) {
           if (useJson(opts)) {
             write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
           } else {
@@ -379,7 +384,10 @@ export function createProgram(
           plaintext?: boolean;
         },
       ) => {
-        if (opts.title !== undefined && opts.title.trim().length === 0) {
+        if (opts.title !== undefined) {
+          opts.title = sanitizeTitle(opts.title);
+        }
+        if (opts.title !== undefined && opts.title.length === 0) {
           if (useJson(opts)) {
             write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
           } else {
@@ -592,7 +600,21 @@ export function createProgram(
 
         const document = serializeTask(task);
         const edited = await openInEditor(document);
-        const { fields, newNotes } = parseDocument(edited, task);
+
+        let fields: ReturnType<typeof parseDocument>["fields"];
+        let newNotes: ReturnType<typeof parseDocument>["newNotes"];
+        try {
+          ({ fields, newNotes } = parseDocument(edited, task));
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "validation", message }));
+          } else {
+            write(message);
+          }
+          process.exitCode = 1;
+          return;
+        }
 
         const hasFields = Object.keys(fields).length > 0;
         const hasNotes = newNotes.length > 0;
@@ -607,7 +629,10 @@ export function createProgram(
         }
 
         // Validate
-        if (fields.title !== undefined && fields.title.trim().length === 0) {
+        if (fields.title !== undefined) {
+          fields.title = sanitizeTitle(fields.title);
+        }
+        if (fields.title !== undefined && fields.title.length === 0) {
           if (useJson(opts)) {
             write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
           } else {
