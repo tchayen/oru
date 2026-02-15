@@ -473,4 +473,61 @@ describe("CLI parse", () => {
     expect(parsed.error).toBe("validation");
     expect(parsed.message).toContain("Title");
   });
+
+  // Config-based output format
+  it("outputs JSON when config sets output_format = json", async () => {
+    const config = {
+      date_format: "mdy" as const,
+      first_day_of_week: "monday" as const,
+      output_format: "json" as const,
+    };
+    const p = createProgram(db, capture(), config);
+    await p.parseAsync(["node", "ao", "add", "Config json task"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Config json task");
+  });
+
+  it("--plaintext overrides config output_format = json", async () => {
+    const config = {
+      date_format: "mdy" as const,
+      first_day_of_week: "monday" as const,
+      output_format: "json" as const,
+    };
+    const p = createProgram(db, capture(), config);
+    await p.parseAsync(["node", "ao", "add", "Plaintext task", "--plaintext"]);
+    expect(() => JSON.parse(output.trim())).toThrow();
+    expect(output).toContain("Plaintext task");
+    expect(output).toContain("Status:");
+  });
+
+  it("--plaintext overrides config for list command", async () => {
+    const config = {
+      date_format: "mdy" as const,
+      first_day_of_week: "monday" as const,
+      output_format: "json" as const,
+    };
+    const p1 = createProgram(db, capture(), config);
+    await p1.parseAsync(["node", "ao", "add", "Task for list"]);
+
+    const p2 = createProgram(db, capture(), config);
+    await p2.parseAsync(["node", "ao", "list", "--plaintext"]);
+    expect(() => JSON.parse(output.trim())).toThrow();
+    expect(output).toContain("Task for list");
+  });
+
+  it("list outputs JSON when config sets output_format = json", async () => {
+    const config = {
+      date_format: "mdy" as const,
+      first_day_of_week: "monday" as const,
+      output_format: "json" as const,
+    };
+    const p1 = createProgram(db, capture(), config);
+    await p1.parseAsync(["node", "ao", "add", "Json list task"]);
+
+    const p2 = createProgram(db, capture(), config);
+    await p2.parseAsync(["node", "ao", "list"]);
+    const parsed = JSON.parse(output.trim());
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed[0].title).toBe("Json list task");
+  });
 });
