@@ -10,6 +10,7 @@ import {
   updateTask,
   appendNote,
   deleteTask,
+  AmbiguousPrefixError,
 } from "../../src/tasks/repository.js";
 
 describe("task repository", () => {
@@ -128,6 +129,30 @@ describe("task repository", () => {
     expect(found!.notes).toEqual(["First note", "Second note"]);
   });
 
+  it("deduplicates notes with same text", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Same note");
+    await appendNote(ky, task.id, "Same note");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Same note"]);
+  });
+
+  it("deduplicates notes after trimming whitespace", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Hello");
+    await appendNote(ky, task.id, "  Hello  ");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Hello"]);
+  });
+
+  it("skips empty and whitespace-only notes", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "");
+    await appendNote(ky, task.id, "   ");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual([]);
+  });
+
   it("soft deletes a task", async () => {
     const task = await createTask(ky, { title: "Delete me" });
     await deleteTask(ky, task.id);
@@ -165,13 +190,22 @@ describe("task repository", () => {
     expect(found!.id).toBe(task.id);
   });
 
-  it("getTask returns null for ambiguous prefix", async () => {
+  it("getTask throws AmbiguousPrefixError for ambiguous prefix", async () => {
     // Create two tasks whose IDs share the same first character
     await createTask(ky, { id: "aaaa-1111-test-task-aaaa-aaaaaaaaaaaa", title: "A" });
     await createTask(ky, { id: "aaaa-2222-test-task-aaaa-aaaaaaaaaaaa", title: "B" });
-    // Prefix "aaaa" matches both, should return null
-    const found = await getTask(ky, "aaaa");
-    expect(found).toBeNull();
+    // Prefix "aaaa" matches both, should throw
+    await expect(getTask(ky, "aaaa")).rejects.toThrow(AmbiguousPrefixError);
+    try {
+      await getTask(ky, "aaaa");
+    } catch (err) {
+      expect(err).toBeInstanceOf(AmbiguousPrefixError);
+      const ambErr = err as AmbiguousPrefixError;
+      expect(ambErr.prefix).toBe("aaaa");
+      expect(ambErr.matches).toHaveLength(2);
+      expect(ambErr.matches).toContain("aaaa-1111-test-task-aaaa-aaaaaaaaaaaa");
+      expect(ambErr.matches).toContain("aaaa-2222-test-task-aaaa-aaaaaaaaaaaa");
+    }
   });
 
   it("lists tasks sorted by priority (urgent first)", async () => {

@@ -3,6 +3,18 @@ import { generateId } from "../id.js";
 import type { DB } from "../db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types.js";
 
+export class AmbiguousPrefixError extends Error {
+  readonly prefix: string;
+  readonly matches: string[];
+
+  constructor(prefix: string, matches: string[]) {
+    super(`Prefix '${prefix}' is ambiguous, matches: ${matches.join(", ")}`);
+    this.name = "AmbiguousPrefixError";
+    this.prefix = prefix;
+    this.matches = matches;
+  }
+}
+
 function safeParseJson<T>(raw: string, fallback: T): T {
   try {
     return JSON.parse(raw) as T;
@@ -144,6 +156,13 @@ export async function getTask(db: Kysely<DB>, id: string): Promise<Task | null> 
     return rowToTask(rows[0]);
   }
 
+  if (rows.length > 1) {
+    throw new AmbiguousPrefixError(
+      id,
+      rows.map((r) => r.id),
+    );
+  }
+
   return null;
 }
 
@@ -194,6 +213,11 @@ export async function appendNote(
   const existing = await getTask(db, id);
   if (!existing) {
     return null;
+  }
+
+  const trimmed = note.trim();
+  if (trimmed.length === 0 || existing.notes.some((n) => n.trim() === trimmed)) {
+    return existing;
   }
 
   const notes = [...existing.notes, note];

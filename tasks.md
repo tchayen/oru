@@ -15,9 +15,11 @@
 - [ ] Explore converting code in `site/` to TS.
 - [ ] Figure out installation. I guess npm package and an install script like bun/claude code. We want auto update.
 - [ ] Verify claims from the homepage:
+
   > Requires Node 22+. That is the only dependency.
 
   uhm not sure lol?
+
 - [ ] Phone on the homepage needs to be replaced with proper iPhone frame and proper app screenshot.
 - [ ] Add colors to CLI help output.
 - [ ] Make orange theme color in the CLI - like the website one.
@@ -26,11 +28,11 @@
 
 # Bugs
 
-- [ ] Newlines accepted in titles — ao add $'Title with\nnewline' creates a task whose title breaks the list table formatting. Titles should reject or strip newlines.
-- [ ] Stack traces on edit validation errors — edit with invalid status/priority shows raw Error: Invalid status: ... with a full stack trace instead of a clean user-facing message like the CLI flags give.
-- [ ] Ambiguous prefix ID gives "not found" — When a prefix matches multiple tasks (e.g. AB matching AB123 and `AB456`), the error is "Task AB not found" instead of something like "Prefix 'AB' is ambiguous, matches: AB123, AB456".
-- [ ] Duplicate notes not deduplicated — Adding the same note text twice results in duplicates. CLAUDE.md claims "notes append-only with dedup" but dedup doesn't work at the CLI/service layer (may only apply during oplog replay?).
-- [ ] Table misalignment with long IDs — custom-id-123 (13 chars) pushes columns out of alignment since the ID column width is fixed at 8 chars. The table should dynamically size columns.
+- [x] Newlines accepted in titles — ao add $'Title with\nnewline' creates a task whose title breaks the list table formatting. Titles should reject or strip newlines. (PR #46)
+- [x] Stack traces on edit validation errors — edit with invalid status/priority shows raw Error: Invalid status: ... with a full stack trace instead of a clean user-facing message like the CLI flags give. (PR #44)
+- [x] Ambiguous prefix ID gives "not found" — When a prefix matches multiple tasks (e.g. AB matching AB123 and `AB456`), the error is "Task AB not found" instead of something like "Prefix 'AB' is ambiguous, matches: AB123, AB456". (PR #48)
+- [x] Duplicate notes not deduplicated — Adding the same note text twice results in duplicates. CLAUDE.md claims "notes append-only with dedup" but dedup doesn't work at the CLI/service layer (may only apply during oplog replay?). (PR #47)
+- [x] Table misalignment with long IDs — custom-id-123 (13 chars) pushes columns out of alignment since the ID column width is fixed at 8 chars. The table should dynamically size columns. (PR #45)
 - [ ] Metadata invisible in text output — --meta key=value pairs are stored correctly but only visible in --json output. The get text view and list view don't show metadata at all.
 - [ ] No way to delete metadata keys — --meta key= sets value to empty string. There's no way to actually remove a key (e.g. --meta key without = is silently ignored).
 - [ ] `--meta` without `=` silently ignored — --meta broken (no equals sign) succeeds silently without any warning. Should either warn or error.

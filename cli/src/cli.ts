@@ -23,6 +23,7 @@ import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./c
 import { parseDate } from "./dates/parse.js";
 import { serializeTask, parseDocument, openInEditor } from "./edit.js";
 import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
+import { AmbiguousPrefixError } from "./tasks/repository.js";
 import {
   resolveDynamic,
   generateBashCompletions,
@@ -35,6 +36,10 @@ declare const __GIT_COMMIT__: string;
 const MAX_TITLE_LENGTH = 1000;
 const MAX_NOTE_LENGTH = 10000;
 const MAX_LABEL_LENGTH = 200;
+
+function sanitizeTitle(title: string): string {
+  return title.replace(/[\r\n]+/g, " ").trim();
+}
 
 function parseMetadata(pairs: string[]): Record<string, string | null> {
   const meta: Record<string, string | null> = {};
@@ -89,6 +94,21 @@ export function createProgram(
     );
   }
 
+  function handleAmbiguousPrefix(err: AmbiguousPrefixError, json: boolean): void {
+    if (json) {
+      write(
+        JSON.stringify({
+          error: "ambiguous_prefix",
+          id: err.prefix,
+          matches: err.matches,
+        }),
+      );
+    } else {
+      write(`Prefix '${err.prefix}' is ambiguous, matches: ${err.matches.join(", ")}`);
+    }
+    process.exitCode = 1;
+  }
+
   // add
   program
     .command("add <title>")
@@ -123,7 +143,8 @@ export function createProgram(
           plaintext?: boolean;
         },
       ) => {
-        if (title.trim().length === 0) {
+        title = sanitizeTitle(title);
+        if (title.length === 0) {
           if (useJson(opts)) {
             write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
           } else {
@@ -308,20 +329,28 @@ export function createProgram(
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
-      const task = await service.get(id);
-      if (!task) {
-        if (useJson(opts)) {
-          write(JSON.stringify({ error: "not_found", id }));
-        } else {
-          write(`Task ${id} not found.`);
+      try {
+        const task = await service.get(id);
+        if (!task) {
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "not_found", id }));
+          } else {
+            write(`Task ${id} not found.`);
+          }
+          process.exitCode = 1;
+          return;
         }
-        process.exitCode = 1;
-        return;
-      }
-      if (useJson(opts)) {
-        write(formatTaskJson(task));
-      } else {
-        write(formatTaskText(task));
+        if (useJson(opts)) {
+          write(formatTaskJson(task));
+        } else {
+          write(formatTaskText(task));
+        }
+      } catch (err) {
+        if (err instanceof AmbiguousPrefixError) {
+          handleAmbiguousPrefix(err, useJson(opts));
+          return;
+        }
+        throw err;
       }
     });
 
@@ -358,7 +387,10 @@ export function createProgram(
           plaintext?: boolean;
         },
       ) => {
-        if (opts.title !== undefined && opts.title.trim().length === 0) {
+        if (opts.title !== undefined) {
+          opts.title = sanitizeTitle(opts.title);
+        }
+        if (opts.title !== undefined && opts.title.length === 0) {
           if (useJson(opts)) {
             write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
           } else {
@@ -415,71 +447,125 @@ export function createProgram(
           }
         }
 
-        const updateFields: Record<string, unknown> = {};
-        if (opts.title) {
-          updateFields.title = opts.title;
-        }
-        if (opts.status) {
-          updateFields.status = opts.status;
-        }
-        if (opts.priority) {
-          updateFields.priority = opts.priority;
-        }
-        if (opts.due !== undefined) {
-          if (opts.due.toLowerCase() === "none") {
-            updateFields.due_at = null;
-          } else {
-            const parsed = parseDate(
-              opts.due,
-              resolvedConfig.date_format,
-              resolvedConfig.first_day_of_week,
-            );
-            if (!parsed) {
+        try {
+          const updateFields: Record<string, unknown> = {};
+          if (opts.title) {
+            updateFields.title = opts.title;
+          }
+          if (opts.status) {
+            updateFields.status = opts.status;
+          }
+          if (opts.priority) {
+            updateFields.priority = opts.priority;
+          }
+          if (opts.due !== undefined) {
+            if (opts.due.toLowerCase() === "none") {
+              updateFields.due_at = null;
+            } else {
+              const parsed = parseDate(
+                opts.due,
+                resolvedConfig.date_format,
+                resolvedConfig.first_day_of_week,
+              );
+              if (!parsed) {
+                if (useJson(opts)) {
+                  write(
+                    JSON.stringify({
+                      error: "validation",
+                      message: `Could not parse due date: ${opts.due}`,
+                    }),
+                  );
+                } else {
+                  write(`Could not parse due date: ${opts.due}`);
+                }
+                process.exitCode = 1;
+                return;
+              }
+              updateFields.due_at = parsed;
+            }
+          }
+
+          if (opts.label || opts.unlabel) {
+            const existing = await service.get(id);
+            if (!existing) {
               if (useJson(opts)) {
-                write(
-                  JSON.stringify({
-                    error: "validation",
-                    message: `Could not parse due date: ${opts.due}`,
-                  }),
-                );
+                write(JSON.stringify({ error: "not_found", id }));
               } else {
-                write(`Could not parse due date: ${opts.due}`);
+                write(`Task ${id} not found.`);
               }
               process.exitCode = 1;
               return;
             }
-            updateFields.due_at = parsed;
-          }
-        }
-
-        if (opts.label || opts.unlabel) {
-          const existing = await service.get(id);
-          if (!existing) {
-            if (useJson(opts)) {
-              write(JSON.stringify({ error: "not_found", id }));
-            } else {
-              write(`Task ${id} not found.`);
-            }
-            process.exitCode = 1;
-            return;
-          }
-          let labels = [...existing.labels];
-          if (opts.label) {
-            for (const l of opts.label) {
-              if (!labels.includes(l)) {
-                labels.push(l);
+            let labels = [...existing.labels];
+            if (opts.label) {
+              for (const l of opts.label) {
+                if (!labels.includes(l)) {
+                  labels.push(l);
+                }
               }
             }
+            if (opts.unlabel) {
+              labels = labels.filter((l) => !opts.unlabel!.includes(l));
+            }
+            updateFields.labels = labels;
           }
-          if (opts.unlabel) {
-            labels = labels.filter((l) => !opts.unlabel!.includes(l));
-          }
-          updateFields.labels = labels;
-        }
 
-        if (opts.meta) {
-          const existing = await service.get(id);
-          if (!existing) {
+          if (opts.meta) {
+            const existing = await service.get(id);
+            if (!existing) {
+              if (useJson(opts)) {
+                write(JSON.stringify({ error: "not_found", id }));
+              } else {
+                write(`Task ${id} not found.`);
+              }
+              process.exitCode = 1;
+              return;
+            }
+            const parsed = parseMetadata(opts.meta);
+            const merged = { ...existing.metadata };
+            for (const [key, value] of Object.entries(parsed)) {
+              if (value === null) {
+                delete merged[key];
+              } else {
+                merged[key] = value;
+              }
+            }
+            updateFields.metadata = merged;
+          }
+
+          const hasFields = Object.keys(updateFields).length > 0;
+          let task;
+
+          if (opts.note && hasFields) {
+            task = await service.updateWithNote(
+              id,
+              updateFields as {
+                title?: string;
+                status?: Status;
+                priority?: Priority;
+                labels?: string[];
+                metadata?: Record<string, unknown>;
+              },
+              opts.note,
+            );
+          } else if (opts.note) {
+            task = await service.addNote(id, opts.note);
+          } else if (hasFields) {
+            task = await service.update(
+              id,
+              updateFields as {
+                title?: string;
+                status?: Status;
+                priority?: Priority;
+                labels?: string[];
+                metadata?: Record<string, unknown>;
+              },
+            );
+          } else {
+            task = await service.get(id);
+          }
+
+          if (!task) {
             if (useJson(opts)) {
               write(JSON.stringify({ error: "not_found", id }));
             } else {
@@ -488,64 +574,17 @@ export function createProgram(
             process.exitCode = 1;
             return;
           }
-          const parsed = parseMetadata(opts.meta);
-          const merged = { ...existing.metadata };
-          for (const [key, value] of Object.entries(parsed)) {
-            if (value === null) {
-              delete merged[key];
-            } else {
-              merged[key] = value;
-            }
-          }
-          updateFields.metadata = merged;
-        }
-
-        const hasFields = Object.keys(updateFields).length > 0;
-        let task;
-
-        if (opts.note && hasFields) {
-          task = await service.updateWithNote(
-            id,
-            updateFields as {
-              title?: string;
-              status?: Status;
-              priority?: Priority;
-              labels?: string[];
-              metadata?: Record<string, unknown>;
-            },
-            opts.note,
-          );
-        } else if (opts.note) {
-          task = await service.addNote(id, opts.note);
-        } else if (hasFields) {
-          task = await service.update(
-            id,
-            updateFields as {
-              title?: string;
-              status?: Status;
-              priority?: Priority;
-              labels?: string[];
-              metadata?: Record<string, unknown>;
-            },
-          );
-        } else {
-          task = await service.get(id);
-        }
-
-        if (!task) {
           if (useJson(opts)) {
-            write(JSON.stringify({ error: "not_found", id }));
+            write(formatTaskJson(task));
           } else {
-            write(`Task ${id} not found.`);
+            write(formatTaskText(task));
           }
-          process.exitCode = 1;
-          return;
-        }
-
-        if (useJson(opts)) {
-          write(formatTaskJson(task));
-        } else {
-          write(formatTaskText(task));
+        } catch (err) {
+          if (err instanceof AmbiguousPrefixError) {
+            handleAmbiguousPrefix(err, useJson(opts));
+            return;
+          }
+          throw err;
         }
       },
     );
@@ -557,115 +596,140 @@ export function createProgram(
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
-      const task = await service.get(id);
-      if (!task) {
-        if (useJson(opts)) {
-          write(JSON.stringify({ error: "not_found", id }));
-        } else {
-          write(`Task ${id} not found.`);
-        }
-        process.exitCode = 1;
-        return;
-      }
-
-      const document = serializeTask(task);
-      const edited = await openInEditor(document);
-      const { fields, newNotes } = parseDocument(edited, task);
-
-      const hasFields = Object.keys(fields).length > 0;
-      const hasNotes = newNotes.length > 0;
-
-      if (!hasFields && !hasNotes) {
-        if (useJson(opts)) {
-          write(formatTaskJson(task));
-        } else {
-          write("No changes.");
-        }
-        return;
-      }
-
-      // Validate
-      if (fields.title !== undefined && fields.title.trim().length === 0) {
-        if (useJson(opts)) {
-          write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
-        } else {
-          write("Title cannot be empty.");
-        }
-        process.exitCode = 1;
-        return;
-      }
-      if (fields.title && fields.title.length > MAX_TITLE_LENGTH) {
-        if (useJson(opts)) {
-          write(
-            JSON.stringify({
-              error: "validation",
-              message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
-            }),
-          );
-        } else {
-          write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
-        }
-        process.exitCode = 1;
-        return;
-      }
-      for (const note of newNotes) {
-        if (note.length > MAX_NOTE_LENGTH) {
+      try {
+        const task = await service.get(id);
+        if (!task) {
           if (useJson(opts)) {
-            write(
-              JSON.stringify({
-                error: "validation",
-                message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
-              }),
-            );
+            write(JSON.stringify({ error: "not_found", id }));
           } else {
-            write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
+            write(`Task ${id} not found.`);
           }
           process.exitCode = 1;
           return;
         }
-      }
-      if (fields.labels) {
-        for (const l of fields.labels) {
-          if (l.length > MAX_LABEL_LENGTH) {
+
+        const document = serializeTask(task);
+        const edited = await openInEditor(document);
+
+        let fields: ReturnType<typeof parseDocument>["fields"];
+        let newNotes: ReturnType<typeof parseDocument>["newNotes"];
+        try {
+          ({ fields, newNotes } = parseDocument(edited, task));
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "validation", message }));
+          } else {
+            write(message);
+          }
+          process.exitCode = 1;
+          return;
+        }
+
+        const hasFields = Object.keys(fields).length > 0;
+        const hasNotes = newNotes.length > 0;
+
+        if (!hasFields && !hasNotes) {
+          if (useJson(opts)) {
+            write(formatTaskJson(task));
+          } else {
+            write("No changes.");
+          }
+          return;
+        }
+
+        // Validate
+        if (fields.title !== undefined) {
+          fields.title = sanitizeTitle(fields.title);
+        }
+        if (fields.title !== undefined && fields.title.length === 0) {
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
+          } else {
+            write("Title cannot be empty.");
+          }
+          process.exitCode = 1;
+          return;
+        }
+        if (fields.title && fields.title.length > MAX_TITLE_LENGTH) {
+          if (useJson(opts)) {
+            write(
+              JSON.stringify({
+                error: "validation",
+                message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
+              }),
+            );
+          } else {
+            write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
+          }
+          process.exitCode = 1;
+          return;
+        }
+        for (const note of newNotes) {
+          if (note.length > MAX_NOTE_LENGTH) {
             if (useJson(opts)) {
               write(
                 JSON.stringify({
                   error: "validation",
-                  message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+                  message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
                 }),
               );
             } else {
-              write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
+              write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
             }
             process.exitCode = 1;
             return;
           }
         }
-      }
-
-      let result;
-      if (hasNotes && newNotes.length === 1 && hasFields) {
-        result = await service.updateWithNote(id, fields, newNotes[0]);
-      } else if (hasNotes && newNotes.length === 1 && !hasFields) {
-        result = await service.addNote(id, newNotes[0]);
-      } else {
-        // Apply field updates first, then notes one by one
-        if (hasFields) {
-          result = await service.update(id, fields);
+        if (fields.labels) {
+          for (const l of fields.labels) {
+            if (l.length > MAX_LABEL_LENGTH) {
+              if (useJson(opts)) {
+                write(
+                  JSON.stringify({
+                    error: "validation",
+                    message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+                  }),
+                );
+              } else {
+                write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
+              }
+              process.exitCode = 1;
+              return;
+            }
+          }
         }
-        for (const note of newNotes) {
-          result = await service.addNote(id, note);
+
+        let result;
+        if (hasNotes && newNotes.length === 1 && hasFields) {
+          result = await service.updateWithNote(id, fields, newNotes[0]);
+        } else if (hasNotes && newNotes.length === 1 && !hasFields) {
+          result = await service.addNote(id, newNotes[0]);
+        } else {
+          // Apply field updates first, then notes one by one
+          if (hasFields) {
+            result = await service.update(id, fields);
+          }
+          for (const note of newNotes) {
+            result = await service.addNote(id, note);
+          }
         }
-      }
 
-      if (!result) {
-        result = await service.get(id);
-      }
+        if (!result) {
+          result = await service.get(id);
+        }
 
-      if (useJson(opts)) {
-        write(formatTaskJson(result!));
-      } else {
-        write(formatTaskText(result!));
+        if (useJson(opts)) {
+          write(formatTaskJson(result!));
+        } else {
+          write(formatTaskText(result!));
+        }
+      } catch (err) {
+        if (err instanceof AmbiguousPrefixError) {
+          handleAmbiguousPrefix(err, useJson(opts));
+          return;
+        }
+        throw err;
       }
     });
 
@@ -677,20 +741,28 @@ export function createProgram(
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
       for (const id of ids) {
-        const task = await service.update(id, { status: "done" });
-        if (!task) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "not_found", id }));
-          } else {
-            write(`Task ${id} not found.`);
+        try {
+          const task = await service.update(id, { status: "done" });
+          if (!task) {
+            if (useJson(opts)) {
+              write(JSON.stringify({ error: "not_found", id }));
+            } else {
+              write(`Task ${id} not found.`);
+            }
+            process.exitCode = 1;
+            continue;
           }
-          process.exitCode = 1;
-          continue;
-        }
-        if (useJson(opts)) {
-          write(formatTaskJson(task));
-        } else {
-          write(formatTaskText(task));
+          if (useJson(opts)) {
+            write(formatTaskJson(task));
+          } else {
+            write(formatTaskText(task));
+          }
+        } catch (err) {
+          if (err instanceof AmbiguousPrefixError) {
+            handleAmbiguousPrefix(err, useJson(opts));
+            continue;
+          }
+          throw err;
         }
       }
     });
@@ -703,20 +775,28 @@ export function createProgram(
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
       for (const id of ids) {
-        const task = await service.update(id, { status: "in_progress" });
-        if (!task) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "not_found", id }));
-          } else {
-            write(`Task ${id} not found.`);
+        try {
+          const task = await service.update(id, { status: "in_progress" });
+          if (!task) {
+            if (useJson(opts)) {
+              write(JSON.stringify({ error: "not_found", id }));
+            } else {
+              write(`Task ${id} not found.`);
+            }
+            process.exitCode = 1;
+            continue;
           }
-          process.exitCode = 1;
-          continue;
-        }
-        if (useJson(opts)) {
-          write(formatTaskJson(task));
-        } else {
-          write(formatTaskText(task));
+          if (useJson(opts)) {
+            write(formatTaskJson(task));
+          } else {
+            write(formatTaskText(task));
+          }
+        } catch (err) {
+          if (err instanceof AmbiguousPrefixError) {
+            handleAmbiguousPrefix(err, useJson(opts));
+            continue;
+          }
+          throw err;
         }
       }
     });
@@ -728,19 +808,27 @@ export function createProgram(
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
       for (const id of ids) {
-        const result = await service.delete(id);
-        if (useJson(opts)) {
-          if (!result) {
-            write(JSON.stringify({ error: "not_found", id }));
-            process.exitCode = 1;
+        try {
+          const result = await service.delete(id);
+          if (useJson(opts)) {
+            if (!result) {
+              write(JSON.stringify({ error: "not_found", id }));
+              process.exitCode = 1;
+            } else {
+              write(JSON.stringify({ id, deleted: true }));
+            }
+          } else if (result) {
+            write(`Deleted ${id}`);
           } else {
-            write(JSON.stringify({ id, deleted: true }));
+            write(`Task ${id} not found.`);
+            process.exitCode = 1;
           }
-        } else if (result) {
-          write(`Deleted ${id}`);
-        } else {
-          write(`Task ${id} not found.`);
-          process.exitCode = 1;
+        } catch (err) {
+          if (err instanceof AmbiguousPrefixError) {
+            handleAmbiguousPrefix(err, useJson(opts));
+            continue;
+          }
+          throw err;
         }
       }
     });
