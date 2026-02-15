@@ -3,6 +3,9 @@ import { generateId } from "../id.js";
 import type { DB } from "../db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types.js";
 
+export const SORT_FIELDS = ["priority", "due", "title", "created"] as const;
+export type SortField = (typeof SORT_FIELDS)[number];
+
 export class AmbiguousPrefixError extends Error {
   readonly prefix: string;
   readonly matches: string[];
@@ -99,6 +102,7 @@ export interface ListFilters {
   priority?: Priority;
   label?: string;
   search?: string;
+  sort?: SortField;
 }
 
 export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<Task[]> {
@@ -123,11 +127,29 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
     );
   }
 
-  query = query
-    .orderBy(
-      sql`CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 END`,
-    )
-    .orderBy("created_at", "asc");
+  const sort = filters?.sort ?? "priority";
+  switch (sort) {
+    case "due":
+      query = query
+        .orderBy(sql`CASE WHEN due_at IS NULL THEN 1 ELSE 0 END`, "asc")
+        .orderBy("due_at", "asc")
+        .orderBy("created_at", "asc");
+      break;
+    case "title":
+      query = query.orderBy(sql`title COLLATE NOCASE`, "asc").orderBy("created_at", "asc");
+      break;
+    case "created":
+      query = query.orderBy("created_at", "asc");
+      break;
+    case "priority":
+    default:
+      query = query
+        .orderBy(
+          sql`CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 END`,
+        )
+        .orderBy("created_at", "asc");
+      break;
+  }
   const rows = await query.execute();
   return rows.map(rowToTask);
 }

@@ -278,6 +278,41 @@ describe("task repository", () => {
     expect(tasks[0].title).toBe("100% done");
   });
 
+  it("sorts by due date with nulls last", async () => {
+    await createTask(ky, { title: "No due", priority: "medium" });
+    await createTask(ky, {
+      title: "Due later",
+      priority: "medium",
+      due_at: "2026-06-01T00:00:00",
+    });
+    await createTask(ky, {
+      title: "Due sooner",
+      priority: "medium",
+      due_at: "2026-03-01T00:00:00",
+    });
+
+    const tasks = await listTasks(ky, { sort: "due" });
+    expect(tasks.map((t) => t.title)).toEqual(["Due sooner", "Due later", "No due"]);
+  });
+
+  it("sorts by title case-insensitively", async () => {
+    await createTask(ky, { title: "banana" });
+    await createTask(ky, { title: "Apple" });
+    await createTask(ky, { title: "cherry" });
+
+    const tasks = await listTasks(ky, { sort: "title" });
+    expect(tasks.map((t) => t.title)).toEqual(["Apple", "banana", "cherry"]);
+  });
+
+  it("sorts by created_at", async () => {
+    await createTask(ky, { title: "Second", priority: "urgent" }, "2024-01-02T00:00:00.000Z");
+    await createTask(ky, { title: "First", priority: "low" }, "2024-01-01T00:00:00.000Z");
+    await createTask(ky, { title: "Third", priority: "high" }, "2024-01-03T00:00:00.000Z");
+
+    const tasks = await listTasks(ky, { sort: "created" });
+    expect(tasks.map((t) => t.title)).toEqual(["First", "Second", "Third"]);
+  });
+
   it("handles corrupt JSON in labels/notes/metadata gracefully", async () => {
     const task = await createTask(ky, { title: "Corrupt" });
     // Directly corrupt the JSON columns
