@@ -15,6 +15,9 @@ export function createApp(service: TaskService): Hono {
     const label = c.req.query("label");
     const search = c.req.query("search");
     const all = c.req.query("all");
+    const actionable = c.req.query("actionable");
+    const limitRaw = c.req.query("limit");
+    const offsetRaw = c.req.query("offset");
 
     if (status && !validStatuses.has(status)) {
       return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
@@ -23,7 +26,25 @@ export function createApp(service: TaskService): Hono {
       return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
     }
 
-    let tasks = await service.list({ status, priority, label, search });
+    const limit = limitRaw ? Number(limitRaw) : undefined;
+    const offset = offsetRaw ? Number(offsetRaw) : undefined;
+
+    if (limit !== undefined && (!Number.isInteger(limit) || limit < 0)) {
+      return c.json({ error: "validation", message: "limit must be a non-negative integer" }, 400);
+    }
+    if (offset !== undefined && (!Number.isInteger(offset) || offset < 0)) {
+      return c.json({ error: "validation", message: "offset must be a non-negative integer" }, 400);
+    }
+
+    let tasks = await service.list({
+      status,
+      priority,
+      label,
+      search,
+      actionable: !!actionable,
+      limit,
+      offset,
+    });
     if (!all && !status) {
       tasks = tasks.filter((t) => t.status !== "done");
     }
@@ -48,7 +69,7 @@ export function createApp(service: TaskService): Hono {
   app.post("/tasks", async (c) => {
     const body = await c.req.json();
     let { title } = body;
-    const { status, priority, due_at, labels, notes, metadata, id } = body;
+    const { status, priority, due_at, blocked_by, labels, notes, metadata, id } = body;
 
     if (!title || typeof title !== "string") {
       return c.json({ error: "validation", message: "Title is required" }, 400);
@@ -76,6 +97,7 @@ export function createApp(service: TaskService): Hono {
       status,
       priority,
       due_at,
+      blocked_by,
       labels,
       notes,
       metadata,
@@ -87,7 +109,7 @@ export function createApp(service: TaskService): Hono {
     const id = c.req.param("id");
     const body = await c.req.json();
     let { title } = body;
-    const { status, priority, due_at, labels, note, metadata } = body;
+    const { status, priority, due_at, blocked_by, labels, note, clear_notes, metadata } = body;
 
     if (title !== undefined) {
       if (typeof title !== "string") {
@@ -122,6 +144,9 @@ export function createApp(service: TaskService): Hono {
       if (priority) {
         updateFields.priority = priority;
       }
+      if (blocked_by) {
+        updateFields.blocked_by = blocked_by;
+      }
       if (labels) {
         updateFields.labels = labels;
       }
@@ -135,7 +160,18 @@ export function createApp(service: TaskService): Hono {
       const hasFields = Object.keys(updateFields).length > 0;
       let task;
 
-      if (note && hasFields) {
+      if (clear_notes) {
+        task = await service.clearNotes(id);
+        if (!task) {
+          return c.json({ error: "not_found", id }, 404);
+        }
+        if (note) {
+          task = await service.addNote(id, note);
+        }
+        if (hasFields) {
+          task = await service.update(id, updateFields);
+        }
+      } else if (note && hasFields) {
         task = await service.updateWithNote(id, updateFields, note);
       } else if (note) {
         task = await service.addNote(id, note);

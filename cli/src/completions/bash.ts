@@ -68,6 +68,11 @@ _ao_completions() {
     completions)
       COMPREPLY=($(compgen -W "$completion_shells" -- "$cur"))
       ;;
+    list)
+      if [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "-s --status -p --priority -l --label --due --overdue --search -a --all --limit --offset --json --plaintext" -- "$cur"))
+      fi
+      ;;
     labels)
       if [[ "$cur" == -* ]]; then
         COMPREPLY=($(compgen -W "--json --plaintext" -- "$cur"))

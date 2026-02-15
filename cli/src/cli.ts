@@ -124,6 +124,7 @@ export function createProgram(
     )
     .option("-d, --due <date>", "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20')")
     .option("-l, --label <labels...>", "Add labels")
+    .option("-b, --blocked-by <ids...>", "IDs of tasks that block this task")
     .option("-n, --note <note>", "Add an initial note")
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
@@ -137,6 +138,7 @@ export function createProgram(
           priority?: Priority;
           due?: string;
           label?: string[];
+          blockedBy?: string[];
           note?: string;
           meta?: string[];
           json?: boolean;
@@ -246,6 +248,7 @@ export function createProgram(
           status: opts.status,
           priority: opts.priority,
           due_at: dueAt,
+          blocked_by: opts.blockedBy,
           labels: opts.label ?? undefined,
           notes: opts.note ? [opts.note] : undefined,
           metadata,
@@ -274,6 +277,9 @@ export function createProgram(
     )
     .option("--search <query>", "Search tasks by title")
     .option("-a, --all", "Include done tasks")
+    .option("--actionable", "Show only tasks with no incomplete blockers")
+    .option("--limit <n>", "Maximum number of tasks to return", Number)
+    .option("--offset <n>", "Number of tasks to skip", Number)
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(
@@ -286,6 +292,9 @@ export function createProgram(
         overdue?: boolean;
         search?: string;
         all?: boolean;
+        actionable?: boolean;
+        limit?: number;
+        offset?: number;
         json?: boolean;
         plaintext?: boolean;
       }) => {
@@ -295,6 +304,9 @@ export function createProgram(
           label: opts.label,
           search: opts.search,
           sort: opts.sort,
+          actionable: opts.actionable,
+          limit: opts.limit,
+          offset: opts.offset,
         });
         // Hide done tasks unless --all or --status is specified
         if (!opts.all && !opts.status) {
@@ -374,7 +386,9 @@ export function createProgram(
     )
     .option("-l, --label <labels...>", "Add labels")
     .option("--unlabel <labels...>", "Remove labels")
+    .option("-b, --blocked-by <ids...>", "Set blocker task IDs (replaces full list)")
     .option("-n, --note <note>", "Append a note")
+    .option("--clear-notes", "Remove all notes")
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
@@ -388,7 +402,9 @@ export function createProgram(
           due?: string;
           label?: string[];
           unlabel?: string[];
+          blockedBy?: string[];
           note?: string;
+          clearNotes?: boolean;
           meta?: string[];
           json?: boolean;
           plaintext?: boolean;
@@ -517,6 +533,10 @@ export function createProgram(
             updateFields.labels = labels;
           }
 
+          if (opts.blockedBy) {
+            updateFields.blocked_by = opts.blockedBy;
+          }
+
           if (opts.meta) {
             const existing = await service.get(id);
             if (!existing) {
@@ -543,13 +563,41 @@ export function createProgram(
           const hasFields = Object.keys(updateFields).length > 0;
           let task;
 
-          if (opts.note && hasFields) {
+          if (opts.clearNotes) {
+            task = await service.clearNotes(id);
+            if (!task) {
+              if (useJson(opts)) {
+                write(JSON.stringify({ error: "not_found", id }));
+              } else {
+                write(`Task ${id} not found.`);
+              }
+              process.exitCode = 1;
+              return;
+            }
+            if (opts.note) {
+              task = await service.addNote(id, opts.note);
+            }
+            if (hasFields) {
+              task = await service.update(
+                id,
+                updateFields as {
+                  title?: string;
+                  status?: Status;
+                  priority?: Priority;
+                  blocked_by?: string[];
+                  labels?: string[];
+                  metadata?: Record<string, unknown>;
+                },
+              );
+            }
+          } else if (opts.note && hasFields) {
             task = await service.updateWithNote(
               id,
               updateFields as {
                 title?: string;
                 status?: Status;
                 priority?: Priority;
+                blocked_by?: string[];
                 labels?: string[];
                 metadata?: Record<string, unknown>;
               },
@@ -564,6 +612,7 @@ export function createProgram(
                 title?: string;
                 status?: Status;
                 priority?: Priority;
+                blocked_by?: string[];
                 labels?: string[];
                 metadata?: Record<string, unknown>;
               },
@@ -620,8 +669,9 @@ export function createProgram(
 
         let fields: ReturnType<typeof parseDocument>["fields"];
         let newNotes: ReturnType<typeof parseDocument>["newNotes"];
+        let removedNotes: ReturnType<typeof parseDocument>["removedNotes"];
         try {
-          ({ fields, newNotes } = parseDocument(edited, task));
+          ({ fields, newNotes, removedNotes } = parseDocument(edited, task));
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           if (useJson(opts)) {
@@ -636,7 +686,7 @@ export function createProgram(
         const hasFields = Object.keys(fields).length > 0;
         const hasNotes = newNotes.length > 0;
 
-        if (!hasFields && !hasNotes) {
+        if (!hasFields && !hasNotes && !removedNotes) {
           if (useJson(opts)) {
             write(formatTaskJson(task));
           } else {
@@ -708,7 +758,22 @@ export function createProgram(
         }
 
         let result;
-        if (hasNotes && newNotes.length === 1 && hasFields) {
+        if (removedNotes) {
+          const afterFrontmatter = edited.slice(edited.indexOf("+++", 3) + 3);
+          const keptNotes = afterFrontmatter
+            .split("\n")
+            .filter((line) => line.startsWith("- "))
+            .map((line) => line.slice(2));
+          const allNotes = [...keptNotes, ...newNotes];
+          if (allNotes.length === 0) {
+            result = await service.clearNotes(id);
+          } else {
+            result = await service.replaceNotes(id, allNotes);
+          }
+          if (hasFields) {
+            result = await service.update(id, fields);
+          }
+        } else if (hasNotes && newNotes.length === 1 && hasFields) {
           result = await service.updateWithNote(id, fields, newNotes[0]);
         } else if (hasNotes && newNotes.length === 1 && !hasFields) {
           result = await service.addNote(id, newNotes[0]);

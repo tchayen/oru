@@ -66,6 +66,8 @@ _ao() {
             '--sort[Sort order]:sort:('"$sort_values"')' \\
             '--search[Search by title]:query:' \\
             '(-a --all)'{-a,--all}'[Include done tasks]' \\
+            '--limit[Maximum number of tasks to return]:number:' \\
+            '--offset[Number of tasks to skip]:number:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]'
           ;;
@@ -89,6 +91,7 @@ _ao() {
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '*--unlabel[Remove labels]:label:->labels' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\
+            '--clear-notes[Remove all notes]' \\
             '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\

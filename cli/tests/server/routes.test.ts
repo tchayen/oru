@@ -165,6 +165,46 @@ describe("GET /tasks", () => {
     const res = await req("GET", "/tasks?priority=invalid");
     expect(res.status).toBe(400);
   });
+
+  it("supports limit param", async () => {
+    await service.add({ title: "Task 1" });
+    await service.add({ title: "Task 2" });
+    await service.add({ title: "Task 3" });
+    const res = await req("GET", "/tasks?limit=2");
+    const tasks = await res.json();
+    expect(tasks).toHaveLength(2);
+  });
+
+  it("supports offset param", async () => {
+    await service.add({ title: "Task 1" });
+    await service.add({ title: "Task 2" });
+    await service.add({ title: "Task 3" });
+    const res = await req("GET", "/tasks?offset=2");
+    const tasks = await res.json();
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("Task 3");
+  });
+
+  it("supports limit and offset together", async () => {
+    for (let i = 1; i <= 5; i++) {
+      await service.add({ title: `Task ${i}` });
+    }
+    const res = await req("GET", "/tasks?limit=2&offset=1");
+    const tasks = await res.json();
+    expect(tasks).toHaveLength(2);
+    expect(tasks[0].title).toBe("Task 2");
+    expect(tasks[1].title).toBe("Task 3");
+  });
+
+  it("returns 400 for invalid limit", async () => {
+    const res = await req("GET", "/tasks?limit=abc");
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 for negative offset", async () => {
+    const res = await req("GET", "/tasks?offset=-1");
+    expect(res.status).toBe(400);
+  });
 });
 
 describe("GET /tasks/:id", () => {
@@ -218,6 +258,25 @@ describe("PATCH /tasks/:id", () => {
     const body = await res.json();
     expect(body.status).toBe("done");
     expect(body.notes).toContain("Completed it");
+  });
+
+  it("clears notes with clear_notes", async () => {
+    const task = await service.add({ title: "Test", notes: ["Note A", "Note B"] });
+    const res = await req("PATCH", `/tasks/${task.id}`, { clear_notes: true });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.notes).toEqual([]);
+  });
+
+  it("clear_notes then adds new note", async () => {
+    const task = await service.add({ title: "Test", notes: ["Old note"] });
+    const res = await req("PATCH", `/tasks/${task.id}`, {
+      clear_notes: true,
+      note: "New note",
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.notes).toEqual(["New note"]);
   });
 
   it("returns 404 for missing task", async () => {

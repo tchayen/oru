@@ -59,4 +59,10 @@ export const appMigrations: Migration[] = [
       d.exec("ALTER TABLE tasks ADD COLUMN due_at TEXT");
     },
   },
+  {
+    version: 5,
+    up: (d) => {
+      d.exec("ALTER TABLE tasks ADD COLUMN blocked_by TEXT NOT NULL DEFAULT '[]'");
+    },
+  },
 ];

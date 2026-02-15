@@ -328,4 +328,58 @@ describe("task repository", () => {
     expect(found!.notes).toEqual([]);
     expect(found!.metadata).toEqual({});
   });
+
+  it("creates a task with blocked_by", async () => {
+    const blocker = await createTask(ky, { title: "Blocker" });
+    const task = await createTask(ky, { title: "Blocked", blocked_by: [blocker.id] });
+    expect(task.blocked_by).toEqual([blocker.id]);
+  });
+
+  it("updates blocked_by", async () => {
+    const a = await createTask(ky, { title: "A" });
+    const b = await createTask(ky, { title: "B" });
+    const task = await createTask(ky, { title: "T", blocked_by: [a.id] });
+    const updated = await updateTask(ky, task.id, { blocked_by: [a.id, b.id] });
+    expect(updated!.blocked_by).toEqual([a.id, b.id]);
+  });
+
+  it("blocked_by defaults to empty array", async () => {
+    const task = await createTask(ky, { title: "No blockers" });
+    expect(task.blocked_by).toEqual([]);
+  });
+
+  it("actionable filter excludes tasks with incomplete blockers", async () => {
+    const blocker = await createTask(ky, { title: "Blocker", status: "todo" });
+    await createTask(ky, { title: "Blocked task", blocked_by: [blocker.id] });
+    await createTask(ky, { title: "Free task" });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Free task");
+    expect(actionable.map((t) => t.title)).toContain("Blocker");
+    expect(actionable.map((t) => t.title)).not.toContain("Blocked task");
+  });
+
+  it("actionable filter includes tasks whose blockers are done", async () => {
+    const blocker = await createTask(ky, { title: "Done blocker", status: "done" });
+    await createTask(ky, { title: "Unblocked", blocked_by: [blocker.id] });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Unblocked");
+  });
+
+  it("actionable filter includes tasks whose blockers are deleted", async () => {
+    const blocker = await createTask(ky, { title: "Deleted blocker" });
+    await deleteTask(ky, blocker.id);
+    await createTask(ky, { title: "Unblocked by delete", blocked_by: [blocker.id] });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Unblocked by delete");
+  });
+
+  it("actionable filter includes tasks with empty blocked_by", async () => {
+    await createTask(ky, { title: "Always actionable", blocked_by: [] });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    expect(actionable.map((t) => t.title)).toContain("Always actionable");
+  });
 });

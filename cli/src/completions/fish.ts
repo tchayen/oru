@@ -100,6 +100,8 @@ complete -c ao -n '__ao_using_command list' -l plaintext -d 'Output as plain tex
 complete -c ao -n '__ao_using_command list' -l search -d 'Search by title' -r
 complete -c ao -n '__ao_using_command list' -l sort -a '${SORT_FIELDS.join(" ")}' -d 'Sort order' -r
 complete -c ao -n '__ao_using_command list' -s a -l all -d 'Include done tasks'
+complete -c ao -n '__ao_using_command list' -l limit -d 'Maximum number of tasks' -r
+complete -c ao -n '__ao_using_command list' -l offset -d 'Number of tasks to skip' -r
 complete -c ao -n '__ao_using_command get' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command get' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command update' -l json -d 'Output as JSON'
@@ -107,6 +109,7 @@ complete -c ao -n '__ao_using_command update' -l plaintext -d 'Output as plain t
 complete -c ao -n '__ao_using_command update' -s t -l title -d 'New title' -r
 complete -c ao -n '__ao_using_command update' -s d -l due -d 'Due date' -r
 complete -c ao -n '__ao_using_command update' -s n -l note -d 'Append a note' -r
+complete -c ao -n '__ao_using_command update' -l clear-notes -d 'Remove all notes'
 complete -c ao -n '__ao_using_command update' -l meta -d 'Metadata key=value' -r
 complete -c ao -n '__ao_using_command delete' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command delete' -l plaintext -d 'Output as plain text'
