@@ -1,3 +1,5 @@
+import { STATUSES, PRIORITIES } from "../tasks/types.js";
+
 export function generateZshCompletions(): string {
   return `#compdef ao
 # ao shell completions for zsh
@@ -24,10 +26,10 @@ _ao() {
   )
 
   local -a status_values
-  status_values=(todo in_progress done)
+  status_values=(${STATUSES.join(" ")})
 
   local -a priority_values
-  priority_values=(low medium high urgent)
+  priority_values=(${PRIORITIES.join(" ")})
 
   _arguments -C \\
     '1:command:->command' \\

@@ -22,7 +22,7 @@ import { getDeviceId } from "./device.js";
 import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./config/config.js";
 import { parseDate } from "./dates/parse.js";
 import { serializeTask, parseDocument, openInEditor } from "./edit.js";
-import type { Status, Priority } from "./tasks/types.js";
+import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
 import {
   resolveDynamic,
   generateBashCompletions,
@@ -75,9 +75,6 @@ export function createProgram(
   // Override exit to not actually exit during tests
   program.exitOverride();
 
-  const statusChoices = ["todo", "in_progress", "done"] as const;
-  const priorityChoices = ["low", "medium", "high", "urgent"] as const;
-
   function useJson(opts: { json?: boolean; plaintext?: boolean }): boolean {
     if (opts.plaintext) {
       return false;
@@ -95,11 +92,11 @@ export function createProgram(
     .description("Add a new task")
     .option("--id <id>", "Task ID (for idempotent creates)")
     .addOption(
-      new Option("-s, --status <status>", "Initial status").choices(statusChoices).default("todo"),
+      new Option("-s, --status <status>", "Initial status").choices(STATUSES).default("todo"),
     )
     .addOption(
       new Option("-p, --priority <priority>", "Priority level")
-        .choices(priorityChoices)
+        .choices(PRIORITIES)
         .default("medium"),
     )
     .option("-d, --due <date>", "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20')")
@@ -241,10 +238,8 @@ export function createProgram(
   program
     .command("list")
     .description("List tasks (hides done tasks by default)")
-    .addOption(new Option("-s, --status <status>", "Filter by status").choices(statusChoices))
-    .addOption(
-      new Option("-p, --priority <priority>", "Filter by priority").choices(priorityChoices),
-    )
+    .addOption(new Option("-s, --status <status>", "Filter by status").choices(STATUSES))
+    .addOption(new Option("-p, --priority <priority>", "Filter by priority").choices(PRIORITIES))
     .option("-l, --label <label>", "Filter by label")
     .addOption(new Option("--due <range>", "Filter by due date").choices(["today", "this-week"]))
     .option("--overdue", "Show only overdue tasks")
@@ -332,8 +327,8 @@ export function createProgram(
     .command("update <id>")
     .description("Update a task")
     .option("-t, --title <title>", "New title")
-    .addOption(new Option("-s, --status <status>", "New status").choices(statusChoices))
-    .addOption(new Option("-p, --priority <priority>", "New priority").choices(priorityChoices))
+    .addOption(new Option("-s, --status <status>", "New status").choices(STATUSES))
+    .addOption(new Option("-p, --priority <priority>", "New priority").choices(PRIORITIES))
     .option(
       "-d, --due <date>",
       "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20', 'none' to clear)",
