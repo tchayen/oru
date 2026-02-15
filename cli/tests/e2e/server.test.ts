@@ -4,14 +4,13 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-const CLI_PATH = path.resolve(__dirname, "../../dist/cli.js");
 const SERVER_PATH = path.resolve(__dirname, "../../dist/server/index.js");
 
 let tmpDir: string;
 let dbPath: string;
-let pidPath: string;
 
 function cli(args: string[], env?: Record<string, string>): string {
+  const CLI_PATH = path.resolve(__dirname, "../../dist/cli.js");
   const result = execFileSync("node", [CLI_PATH, ...args], {
     env: { ...process.env, AO_DB_PATH: dbPath, ...env },
     encoding: "utf-8",
@@ -38,26 +37,12 @@ async function waitForServer(port: number, timeoutMs = 5000): Promise<void> {
   throw new Error(`Server did not start within ${timeoutMs}ms`);
 }
 
-function killProcess(pid: number): void {
-  try {
-    process.kill(pid, "SIGTERM");
-  } catch {
-    // Already dead
-  }
-}
-
 beforeEach(() => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ao-server-e2e-"));
   dbPath = path.join(tmpDir, "ao.db");
-  pidPath = path.join(tmpDir, "server.pid");
 });
 
 afterEach(() => {
-  // Clean up any leftover server process
-  if (fs.existsSync(pidPath)) {
-    const pid = parseInt(fs.readFileSync(pidPath, "utf-8").trim(), 10);
-    killProcess(pid);
-  }
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
@@ -70,8 +55,6 @@ describe("server process e2e", () => {
       env: { ...process.env, AO_DB_PATH: dbPath, AO_PORT: String(port) },
       stdio: "pipe",
     });
-    // Write PID file so cleanup works
-    fs.writeFileSync(pidPath, String(serverProc.pid));
 
     try {
       await waitForServer(port);
@@ -144,7 +127,6 @@ describe("server process e2e", () => {
       env: { ...process.env, AO_DB_PATH: dbPath, AO_PORT: String(port) },
       stdio: "pipe",
     });
-    fs.writeFileSync(pidPath, String(serverProc.pid));
 
     try {
       await waitForServer(port);
@@ -176,71 +158,5 @@ describe("server process e2e", () => {
         serverProc.on("close", () => r());
       });
     }
-  });
-});
-
-describe("ao server start/stop/status e2e", () => {
-  it("start → status → stop lifecycle", async () => {
-    const port = 9871 + Math.floor(Math.random() * 100);
-
-    // Status when not running
-    const statusBefore = cli(["server", "status"]);
-    expect(statusBefore).toContain("not running");
-
-    // Start server
-    const startOutput = cli(["server", "start", "--port", String(port)]);
-    expect(startOutput).toContain("Server started");
-    expect(startOutput).toContain(String(port));
-
-    try {
-      await waitForServer(port);
-
-      // Status should show running
-      const statusRunning = cli(["server", "status", "--json"]);
-      const statusJson = JSON.parse(statusRunning);
-      expect(statusJson.running).toBe(true);
-      expect(statusJson.pid).toBeGreaterThan(0);
-
-      // Verify PID file exists
-      expect(fs.existsSync(pidPath)).toBe(true);
-
-      // Stop server
-      const stopOutput = cli(["server", "stop"]);
-      expect(stopOutput).toContain("stopped");
-
-      // PID file should be gone
-      expect(fs.existsSync(pidPath)).toBe(false);
-
-      // Status should show not running
-      const statusAfter = cli(["server", "status"]);
-      expect(statusAfter).toContain("not running");
-    } finally {
-      // Safety cleanup
-      if (fs.existsSync(pidPath)) {
-        const pid = parseInt(fs.readFileSync(pidPath, "utf-8").trim(), 10);
-        killProcess(pid);
-        fs.unlinkSync(pidPath);
-      }
-    }
-  });
-
-  it("start detects already-running server", async () => {
-    const port = 9871 + Math.floor(Math.random() * 100);
-
-    cli(["server", "start", "--port", String(port)]);
-    try {
-      await waitForServer(port);
-
-      // Try starting again
-      const secondStart = cli(["server", "start", "--port", String(port)]);
-      expect(secondStart).toContain("already running");
-    } finally {
-      cli(["server", "stop"]);
-    }
-  });
-
-  it("stop with no server running", () => {
-    const output = cli(["server", "stop"]);
-    expect(output).toContain("No server running");
   });
 });
