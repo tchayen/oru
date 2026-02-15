@@ -200,8 +200,32 @@ describe("parseDocument", () => {
   it("empty notes section produces no new notes", () => {
     const task = makeTask();
     const doc = serializeTask(task);
-    const { newNotes } = parseDocument(doc, task);
+    const { newNotes, removedNotes } = parseDocument(doc, task);
     expect(newNotes).toHaveLength(0);
+    expect(removedNotes).toBe(false);
+  });
+
+  it("detects removed notes when a note line is deleted", () => {
+    const task = makeTask({ notes: ["Note A", "Note B"] });
+    const doc = serializeTask(task).replace("- Note A\n", "");
+    const { newNotes, removedNotes } = parseDocument(doc, task);
+    expect(removedNotes).toBe(true);
+    expect(newNotes).toHaveLength(0);
+  });
+
+  it("detects all notes removed", () => {
+    const task = makeTask({ notes: ["Note A", "Note B"] });
+    const doc = serializeTask(task).replace("- Note A\n", "").replace("- Note B\n", "");
+    const { newNotes, removedNotes } = parseDocument(doc, task);
+    expect(removedNotes).toBe(true);
+    expect(newNotes).toHaveLength(0);
+  });
+
+  it("removedNotes is false when notes unchanged", () => {
+    const task = makeTask({ notes: ["existing note"] });
+    const doc = serializeTask(task);
+    const { removedNotes } = parseDocument(doc, task);
+    expect(removedNotes).toBe(false);
   });
 
   it("throws on invalid document format", () => {

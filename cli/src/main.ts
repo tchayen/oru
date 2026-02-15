@@ -8,6 +8,7 @@ import {
   getTask,
   updateTask,
   appendNote,
+  setNotes,
   deleteTask,
 } from "./tasks/repository.js";
 import { writeOp } from "./oplog/writer.js";
@@ -140,6 +141,69 @@ export class TaskService {
       if (trimmed.length > 0 && !task.notes.some((n) => n.trim() === trimmed)) {
         task = await appendNote(trx, resolvedId, note, now);
 
+        await writeOp(
+          trx,
+          {
+            task_id: resolvedId,
+            device_id: this.deviceId,
+            op_type: "update",
+            field: "notes",
+            value: note,
+          },
+          now,
+        );
+      }
+
+      return task;
+    });
+  }
+
+  async clearNotes(id: string): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
+      const now = new Date().toISOString();
+      const task = await setNotes(trx, id, [], now);
+      if (!task) {
+        return null;
+      }
+
+      await writeOp(
+        trx,
+        {
+          task_id: task.id,
+          device_id: this.deviceId,
+          op_type: "update",
+          field: "notes_clear",
+          value: "",
+        },
+        now,
+      );
+      return task;
+    });
+  }
+
+  async replaceNotes(id: string, notes: string[]): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
+      const now = new Date().toISOString();
+      const task = await setNotes(trx, id, notes, now);
+      if (!task) {
+        return null;
+      }
+
+      const resolvedId = task.id;
+
+      await writeOp(
+        trx,
+        {
+          task_id: resolvedId,
+          device_id: this.deviceId,
+          op_type: "update",
+          field: "notes_clear",
+          value: "",
+        },
+        now,
+      );
+
+      for (const note of notes) {
         await writeOp(
           trx,
           {

@@ -69,6 +69,10 @@ describe("zsh completions script", () => {
     expect(script).toContain("--unlabel");
   });
 
+  it("contains --clear-notes completion", () => {
+    expect(script).toContain("--clear-notes");
+  });
+
   it("contains --limit and --offset for list", () => {
     expect(script).toContain("--limit");
     expect(script).toContain("--offset");
@@ -117,6 +121,10 @@ describe("fish completions script", () => {
 
   it("contains --unlabel completion", () => {
     expect(script).toContain("unlabel");
+  });
+
+  it("contains --clear-notes completion", () => {
+    expect(script).toContain("clear-notes");
   });
 
   it("contains --limit and --offset for list", () => {

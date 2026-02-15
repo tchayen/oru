@@ -258,6 +258,27 @@ export async function appendNote(
   return getTask(db, existing.id);
 }
 
+export async function setNotes(
+  db: Kysely<DB>,
+  id: string,
+  notes: string[],
+  timestamp?: string,
+): Promise<Task | null> {
+  const existing = await getTask(db, id);
+  if (!existing) {
+    return null;
+  }
+
+  const now = timestamp ?? new Date().toISOString();
+  await db
+    .updateTable("tasks")
+    .set({ notes: JSON.stringify(notes), updated_at: now })
+    .where("id", "=", existing.id)
+    .execute();
+
+  return getTask(db, existing.id);
+}
+
 export async function deleteTask(db: Kysely<DB>, id: string, timestamp?: string): Promise<boolean> {
   const existing = await getTask(db, id);
   if (!existing) {
