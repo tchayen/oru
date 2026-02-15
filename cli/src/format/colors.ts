@@ -19,7 +19,7 @@ function isEnabled(): boolean {
 
 type StyleFn = (text: string) => string;
 
-function make(open: number, close: number): StyleFn {
+function make(open: number | string, close: number): StyleFn {
   const o = `\x1b[${open}m`;
   const c = `\x1b[${close}m`;
   return (t) => (isEnabled() ? `${o}${t}${c}` : t);
@@ -36,3 +36,4 @@ export const green = make(32, 39);
 export const yellow = make(33, 39);
 export const magenta = make(35, 39);
 export const cyan = make(36, 39);
+export const orange = make("38;5;208", 39);

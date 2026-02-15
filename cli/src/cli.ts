@@ -39,8 +39,12 @@ import {
   generateBashCompletions,
   generateZshCompletions,
   generateFishCompletions,
+  detectShell,
+  installCompletions,
+  confirm,
+  formatSuccessMessage,
 } from "./completions/index.js";
-import { bold, dim, yellow } from "./format/colors.js";
+import { dim, yellow, orange } from "./format/colors.js";
 
 declare const __GIT_COMMIT__: string;
 
@@ -84,12 +88,12 @@ function colorizeHelp(text: string): string {
       // Section headers: "Options:", "Commands:", "Arguments:"
       if (/^(Options|Commands|Arguments):$/.test(line)) {
         section = line.slice(0, -1).toLowerCase();
-        return bold(line);
+        return orange(line);
       }
       // Usage line: "Usage: oru [options] [command]"
       if (line.startsWith("Usage: ")) {
         section = "";
-        return bold("Usage:") + " " + line.slice(7);
+        return orange("Usage:") + " " + line.slice(7);
       }
       // Non-indented non-empty lines reset section (e.g. description text)
       if (line.trim() !== "" && !line.startsWith(" ")) {
@@ -103,7 +107,7 @@ function colorizeHelp(text: string): string {
         if (term.startsWith("-")) {
           return indent + yellow(term) + pad + desc;
         }
-        return indent + bold(term) + pad + dim(highlightInlineCommands(desc));
+        return indent + orange(term) + pad + dim(highlightInlineCommands(desc));
       }
       // Continuation lines (deeply indented) in the commands section
       if (section === "commands" && line.match(/^\s{4,}\S/)) {
@@ -139,7 +143,7 @@ export function createProgram(
   const service = new TaskService(ky, deviceId);
   const program = new Command("oru")
     .description(
-      "oru — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file.",
+      `${orange("oru")} — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file.`,
     )
     .version(`0.1.0 (${__GIT_COMMIT__})`);
 
@@ -1238,7 +1242,30 @@ export function createProgram(
   // completions
   const completionsCmd = program
     .command("completions")
-    .description("Generate shell completion scripts");
+    .description("Generate shell completion scripts")
+    .action(async () => {
+      const shell = detectShell();
+      if (!shell) {
+        write("Could not detect shell from $SHELL.\nUse: oru completions bash|zsh|fish");
+        process.exitCode = 1;
+        return;
+      }
+      if (!process.stdin.isTTY) {
+        write(
+          `Detected shell: ${shell}\nUse: oru completions ${shell} > <path>\nOr run interactively: oru completions`,
+        );
+        process.exitCode = 1;
+        return;
+      }
+      write(`Detected shell: ${shell}`);
+      const yes = await confirm(`Install completions for ${shell}? [Y/n] `);
+      if (!yes) {
+        write("Aborted.");
+        return;
+      }
+      const result = installCompletions(shell, write);
+      write(formatSuccessMessage(result));
+    });
 
   completionsCmd
     .command("bash")
