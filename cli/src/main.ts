@@ -33,6 +33,7 @@ export class TaskService {
             title: task.title,
             status: task.status,
             priority: task.priority,
+            due_at: task.due_at,
             labels: task.labels,
             notes: task.notes,
             metadata: task.metadata,

@@ -10,6 +10,7 @@ export interface TaskTable {
   notes: string;
   metadata: string;
   created_at: string;
+  due_at: string | null;
   updated_at: string;
   deleted_at: string | null;
 }
