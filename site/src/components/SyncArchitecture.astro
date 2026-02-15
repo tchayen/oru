@@ -1,0 +1,256 @@
+---
+import Card from "./ui/Card.astro";
+---
+
+<section class="sync">
+  <div class="container">
+    <div class="sync-header reveal">
+      <p class="section-label">Sync</p>
+      <h2>Sync that actually works offline.</h2>
+      <p class="body-lg sync-body">
+        ao does not sync tasks. It syncs operations. Every create, update, and
+        delete is appended to an oplog — an ordered, immutable log of everything
+        that happened.
+      </p>
+    </div>
+
+    <div class="oplog-timeline reveal" data-delay="80">
+      <div class="timeline-track">
+        <div class="timeline-line"></div>
+        <div class="timeline-events">
+          <div class="timeline-event">
+            <div class="timeline-dot dot-cli"></div>
+            <div class="timeline-label">
+              <span class="timeline-action">create</span>
+              <span class="timeline-source">CLI</span>
+            </div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-dot dot-cli"></div>
+            <div class="timeline-label">
+              <span class="timeline-action">update</span>
+              <span class="timeline-source">CLI</span>
+            </div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-dot dot-mobile"></div>
+            <div class="timeline-label">
+              <span class="timeline-action">update</span>
+              <span class="timeline-source">Mobile</span>
+            </div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-dot dot-cli"></div>
+            <div class="timeline-label">
+              <span class="timeline-action">note</span>
+              <span class="timeline-source">CLI</span>
+            </div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-dot dot-mobile"></div>
+            <div class="timeline-label">
+              <span class="timeline-action">note</span>
+              <span class="timeline-source">Mobile</span>
+            </div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-dot dot-cli"></div>
+            <div class="timeline-label">
+              <span class="timeline-action">delete</span>
+              <span class="timeline-source">CLI</span>
+            </div>
+          </div>
+          <div class="timeline-event">
+            <div class="timeline-dot dot-mobile"></div>
+            <div class="timeline-label">
+              <span class="timeline-action">update</span>
+              <span class="timeline-source">Mobile</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-legend">
+        <span class="legend-item"><span class="legend-dot dot-cli"></span> CLI</span>
+        <span class="legend-item"><span class="legend-dot dot-mobile"></span> Mobile</span>
+      </div>
+    </div>
+
+    <div class="sync-rules">
+      <Card class="sync-card reveal" data-delay="80">
+        <h4>Last-write-wins per field</h4>
+        <p class="body-sm">
+          Change the title on your phone and the priority on your laptop. Both
+          edits survive. Conflicts are resolved at the field level, not the task
+          level.
+        </p>
+      </Card>
+      <Card class="sync-card reveal" data-delay="160">
+        <h4>Updates beat deletes</h4>
+        <p class="body-sm">
+          If one device deletes a task and another updates it, the task comes
+          back. Intent to modify is stronger than intent to remove.
+        </p>
+      </Card>
+      <Card class="sync-card reveal" data-delay="240">
+        <h4>Sequence-based cursoring</h4>
+        <p class="body-sm">
+          Sync uses monotonic sequence numbers, not timestamps. No
+          same-millisecond bugs. No clock drift issues. Each device tracks
+          exactly where it left off.
+        </p>
+      </Card>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sync {
+    padding: 96px 0;
+    background: var(--bg-elevated);
+  }
+
+  .sync-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  .sync-header h2 {
+    margin-bottom: 16px;
+  }
+
+  .sync-body {
+    max-width: 640px;
+    margin: 0 auto;
+    color: var(--text-secondary);
+  }
+
+  /* Oplog timeline */
+  .oplog-timeline {
+    margin-bottom: 64px;
+    padding: 0 20px;
+  }
+
+  .timeline-track {
+    position: relative;
+    padding: 32px 0;
+  }
+
+  .timeline-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border-default);
+    transform: translateY(-50%);
+  }
+
+  .timeline-events {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .timeline-event {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .timeline-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid;
+    position: relative;
+    z-index: 1;
+  }
+
+  .dot-cli {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+  }
+
+  .dot-mobile {
+    background: var(--syn-command);
+    border-color: var(--syn-command);
+    box-shadow: 0 0 12px rgba(96, 165, 250, 0.3);
+  }
+
+  .timeline-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .timeline-action {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .timeline-source {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .timeline-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* Sync rule cards */
+  .sync-rules {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .sync-rules :global(.sync-card) h4 {
+    margin-bottom: 12px;
+    font-size: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sync-rules :global(.sync-card) p {
+    color: var(--text-tertiary);
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 767px) {
+    .sync-rules {
+      grid-template-columns: 1fr;
+    }
+
+    .timeline-events {
+      gap: 8px;
+    }
+
+    .timeline-action {
+      font-size: 10px;
+    }
+  }
+</style>

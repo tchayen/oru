@@ -1,0 +1,51 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "ao — the task manager for developers and their agents",
+  description = "Local-first CLI with a native iOS companion. JSON output everywhere. No accounts. No cloud. Just a SQLite database on your machine and an oplog that syncs.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="/og-image.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  </head>
+  <body>
+    <slot />
+    <script src="../scripts/reveal.js"></script>
+    <script src="../scripts/copy.js"></script>
+    <script src="../scripts/terminal-typing.js"></script>
+    <script src="../scripts/nav-scroll.js"></script>
+    <script src="../scripts/card-spotlight.js"></script>
+    <script src="../scripts/diagram-animate.js"></script>
+  </body>
+</html>
