@@ -42,7 +42,9 @@ export function createProgram(
   const deviceId = getDeviceId(db);
   const service = new TaskService(ky, deviceId);
   const program = new Command("ao")
-    .description("agentodo — agent-friendly todo CLI with offline sync")
+    .description(
+      "agentodo — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set AO_FORMAT=json).",
+    )
     .version(`0.1.0 (${__GIT_COMMIT__})`);
 
   program.configureOutput({
@@ -76,6 +78,7 @@ export function createProgram(
     .option("-l, --label <labels...>", "Add labels")
     .option("-n, --note <note>", "Add an initial note")
     .option("--meta <key=value...>", "Add metadata key=value pairs")
+    .option("--json", "Output as JSON")
     .action(
       async (
         title: string,
@@ -86,47 +89,59 @@ export function createProgram(
           label?: string[];
           note?: string;
           meta?: string[];
+          json?: boolean;
         },
       ) => {
         if (title.trim().length === 0) {
-          write(
-            JSON.stringify({
-              error: "validation",
-              message: "Title cannot be empty",
-            }),
-          );
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
+          } else {
+            write("Title cannot be empty.");
+          }
           process.exitCode = 1;
           return;
         }
         if (title.length > MAX_TITLE_LENGTH) {
-          write(
-            JSON.stringify({
-              error: "validation",
-              message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
-            }),
-          );
+          if (useJson(opts)) {
+            write(
+              JSON.stringify({
+                error: "validation",
+                message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
+              }),
+            );
+          } else {
+            write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
+          }
           process.exitCode = 1;
           return;
         }
         if (opts.note && opts.note.length > MAX_NOTE_LENGTH) {
-          write(
-            JSON.stringify({
-              error: "validation",
-              message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
-            }),
-          );
+          if (useJson(opts)) {
+            write(
+              JSON.stringify({
+                error: "validation",
+                message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
+              }),
+            );
+          } else {
+            write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
+          }
           process.exitCode = 1;
           return;
         }
         if (opts.label) {
           for (const l of opts.label) {
             if (l.length > MAX_LABEL_LENGTH) {
-              write(
-                JSON.stringify({
-                  error: "validation",
-                  message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
-                }),
-              );
+              if (useJson(opts)) {
+                write(
+                  JSON.stringify({
+                    error: "validation",
+                    message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+                  }),
+                );
+              } else {
+                write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
+              }
               process.exitCode = 1;
               return;
             }
@@ -137,7 +152,11 @@ export function createProgram(
         if (opts.id) {
           const existing = await service.get(opts.id);
           if (existing) {
-            write(formatTaskJson(existing));
+            if (useJson(opts)) {
+              write(formatTaskJson(existing));
+            } else {
+              write(formatTaskText(existing));
+            }
             return;
           }
         }
@@ -153,8 +172,11 @@ export function createProgram(
           notes: opts.note ? [opts.note] : undefined,
           metadata,
         });
-        // Always output JSON for add (agent-friendly)
-        write(formatTaskJson(task));
+        if (useJson(opts)) {
+          write(formatTaskJson(task));
+        } else {
+          write(formatTaskText(task));
+        }
       },
     );
 
@@ -249,34 +271,46 @@ export function createProgram(
         }
 
         if (opts.title && opts.title.length > MAX_TITLE_LENGTH) {
-          write(
-            JSON.stringify({
-              error: "validation",
-              message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
-            }),
-          );
+          if (useJson(opts)) {
+            write(
+              JSON.stringify({
+                error: "validation",
+                message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
+              }),
+            );
+          } else {
+            write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
+          }
           process.exitCode = 1;
           return;
         }
         if (opts.note && opts.note.length > MAX_NOTE_LENGTH) {
-          write(
-            JSON.stringify({
-              error: "validation",
-              message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
-            }),
-          );
+          if (useJson(opts)) {
+            write(
+              JSON.stringify({
+                error: "validation",
+                message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
+              }),
+            );
+          } else {
+            write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
+          }
           process.exitCode = 1;
           return;
         }
         if (opts.label) {
           for (const l of opts.label) {
             if (l.length > MAX_LABEL_LENGTH) {
-              write(
-                JSON.stringify({
-                  error: "validation",
-                  message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
-                }),
-              );
+              if (useJson(opts)) {
+                write(
+                  JSON.stringify({
+                    error: "validation",
+                    message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+                  }),
+                );
+              } else {
+                write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
+              }
               process.exitCode = 1;
               return;
             }
