@@ -29,6 +29,7 @@ interface TaskRow {
   status: string;
   priority: string;
   due_at: string | null;
+  blocked_by: string;
   labels: string;
   notes: string;
   metadata: string;
@@ -44,6 +45,7 @@ function rowToTask(row: TaskRow): Task {
     status: row.status as Status,
     priority: row.priority as Priority,
     due_at: row.due_at,
+    blocked_by: safeParseJson<string[]>(row.blocked_by, []),
     labels: safeParseJson<string[]>(row.labels, []),
     notes: safeParseJson<string[]>(row.notes, []),
     metadata: safeParseJson<Record<string, unknown>>(row.metadata, {}),
@@ -66,6 +68,7 @@ export async function createTask(
     status: input.status ?? "todo",
     priority: input.priority ?? "medium",
     due_at: input.due_at ?? null,
+    blocked_by: input.blocked_by ?? [],
     labels: input.labels ?? [],
     notes: input.notes ?? [],
     metadata: input.metadata ?? {},
@@ -82,6 +85,7 @@ export async function createTask(
       status: task.status,
       priority: task.priority,
       due_at: task.due_at,
+      blocked_by: JSON.stringify(task.blocked_by),
       labels: JSON.stringify(task.labels),
       notes: JSON.stringify(task.notes),
       metadata: JSON.stringify(task.metadata),
@@ -99,6 +103,7 @@ export interface ListFilters {
   priority?: Priority;
   label?: string;
   search?: string;
+  actionable?: boolean;
 }
 
 export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<Task[]> {
@@ -120,6 +125,15 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
     const escaped = filters.search.replace(/[\\%_]/g, "\\$&");
     query = query.where(
       sql<SqlBool>`title LIKE '%' || ${escaped} || '%' ESCAPE '\\' COLLATE NOCASE`,
+    );
+  }
+  if (filters?.actionable) {
+    query = query.where(
+      sql<SqlBool>`NOT EXISTS (
+        SELECT 1 FROM json_each(tasks.blocked_by) AS dep
+        JOIN tasks AS blocker ON blocker.id = dep.value
+        WHERE blocker.status != 'done' AND blocker.deleted_at IS NULL
+      )`,
     );
   }
 
@@ -191,6 +205,9 @@ export async function updateTask(
   }
   if (input.due_at !== undefined) {
     updates.due_at = input.due_at;
+  }
+  if (input.blocked_by !== undefined) {
+    updates.blocked_by = JSON.stringify(input.blocked_by);
   }
   if (input.labels !== undefined) {
     updates.labels = JSON.stringify(input.labels);

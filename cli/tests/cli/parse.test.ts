@@ -954,6 +954,75 @@ describe("CLI parse", () => {
     expect(parsed.labels).toEqual(["new"]);
   });
 
+  // blocked_by tests
+  it("add --blocked-by sets blocked_by", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Blocker", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Blocked task", "--blocked-by", blockerId, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocked_by).toEqual([blockerId]);
+  });
+
+  it("update --blocked-by replaces blocked_by list", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Dep A", "--json"]);
+    const depA = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Dep B", "--json"]);
+    const depB = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Task", "--blocked-by", depA, "--json"]);
+    const taskId = JSON.parse(output.trim()).id;
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "update", taskId, "--blocked-by", depB, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocked_by).toEqual([depB]);
+  });
+
+  it("list --actionable shows only unblocked tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Free task", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Blocker task", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Blocked task", "--blocked-by", blockerId, "--json"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--actionable"]);
+    expect(output).toContain("Free task");
+    expect(output).toContain("Blocker task");
+    expect(output).not.toContain("Blocked task");
+  });
+
+  it("list --actionable --json returns filtered JSON", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Free", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Blocker", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Blocked", "--blocked-by", blockerId, "--json"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "--actionable", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    const titles = parsed.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Free");
+    expect(titles).toContain("Blocker");
+    expect(titles).not.toContain("Blocked");
+  });
+
   it("list outputs JSON when config sets output_format = json", async () => {
     const config = {
       date_format: "mdy" as const,

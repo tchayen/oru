@@ -9,6 +9,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     status: "todo",
     priority: "medium",
     due_at: null,
+    blocked_by: [],
     labels: [],
     notes: [],
     metadata: {},
@@ -206,6 +207,31 @@ describe("parseDocument", () => {
   it("throws on invalid document format", () => {
     const task = makeTask();
     expect(() => parseDocument("no delimiters here", task)).toThrow("missing +++ delimiters");
+  });
+
+  it("roundtrip with blocked_by produces no changes", () => {
+    const task = makeTask({ blocked_by: ["dep-1", "dep-2"] });
+    const doc = serializeTask(task);
+    const { fields, newNotes } = parseDocument(doc, task);
+    expect(Object.keys(fields)).toHaveLength(0);
+    expect(newNotes).toHaveLength(0);
+  });
+
+  it("detects blocked_by change", () => {
+    const task = makeTask({ blocked_by: ["dep-1"] });
+    const doc = serializeTask(task).replace(
+      'blocked_by = [ "dep-1" ]',
+      'blocked_by = [ "dep-2", "dep-3" ]',
+    );
+    const { fields } = parseDocument(doc, task);
+    expect(fields.blocked_by).toEqual(["dep-2", "dep-3"]);
+  });
+
+  it("detects clearing blocked_by", () => {
+    const task = makeTask({ blocked_by: ["dep-1"] });
+    const doc = serializeTask(task).replace('blocked_by = [ "dep-1" ]', "blocked_by = []");
+    const { fields } = parseDocument(doc, task);
+    expect(fields.blocked_by).toEqual([]);
   });
 
   it("handles multiple field changes at once", () => {

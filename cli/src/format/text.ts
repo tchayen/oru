@@ -71,6 +71,9 @@ export function formatTaskText(task: Task, now?: Date): string {
     statusLine += `  Due: ${formatDue(task.due_at, now)}`;
   }
   lines.push(statusLine);
+  if (task.blocked_by.length > 0) {
+    lines.push(`  Blocked by: ${task.blocked_by.join(", ")}`);
+  }
   if (task.labels.length > 0) {
     lines.push(`  Labels: ${cyan(task.labels.join(", "))}`);
   }
