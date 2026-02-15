@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (prefersReducedMotion) {
     document.querySelectorAll(".reveal").forEach((el) => {
@@ -26,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {
       threshold: 0.1,
       rootMargin: "0px 0px -48px 0px",
-    }
+    },
   );
 
   document.querySelectorAll(".reveal").forEach((el) => {

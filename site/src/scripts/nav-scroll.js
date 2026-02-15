@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const nav = document.querySelector(".nav");
   if (!nav) {
@@ -38,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ticking = true;
       }
     },
-    { passive: true }
+    { passive: true },
   );
 
   // Run once on load

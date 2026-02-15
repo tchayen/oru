@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (prefersReducedMotion) {
     return;
@@ -18,9 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Collect all line/blank elements as an ordered sequence
-  const elements = Array.from(
-    terminalBody.querySelectorAll(".line, .blank")
-  );
+  const elements = Array.from(terminalBody.querySelectorAll(".line, .blank"));
   if (elements.length === 0) {
     return;
   }
@@ -76,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     },
-    { threshold: 0.3 }
+    { threshold: 0.3 },
   );
 
   observer.observe(container);
@@ -104,9 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const node of childNodes) {
       if (
         node === promptEl ||
-        (node.nodeType === 1 &&
-          node.classList &&
-          node.classList.contains("prompt"))
+        (node.nodeType === 1 && node.classList && node.classList.contains("prompt"))
       ) {
         foundPrompt = true;
         continue;
@@ -151,12 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
         cursor.parentNode.removeChild(cursor);
       }
 
-      const wrapperKey = wrapper
-        ? `${wrapper.tag}.${wrapper.cls}`
-        : null;
-      const prevKey = currentWrapper
-        ? `${currentWrapper.tag}.${currentWrapper.cls}`
-        : null;
+      const wrapperKey = wrapper ? `${wrapper.tag}.${wrapper.cls}` : null;
+      const prevKey = currentWrapper ? `${currentWrapper.tag}.${currentWrapper.cls}` : null;
 
       if (wrapperKey !== prevKey) {
         if (wrapper) {

@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (prefersReducedMotion) {
     return;
@@ -39,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
     diagramObserver.observe(diagram);
@@ -68,8 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const line = item.el.querySelector(".diagram-line");
         if (line) {
           setTimeout(() => {
-            line.style.transition =
-              "transform 300ms cubic-bezier(0.16, 1, 0.3, 1)";
+            line.style.transition = "transform 300ms cubic-bezier(0.16, 1, 0.3, 1)";
             line.style.transform = "scaleY(1)";
           }, delay);
         }
@@ -107,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
 
     timelineObserver.observe(timeline);
@@ -117,8 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // First draw the line
     setTimeout(() => {
       if (line) {
-        line.style.transition =
-          "transform 800ms cubic-bezier(0.16, 1, 0.3, 1)";
+        line.style.transition = "transform 800ms cubic-bezier(0.16, 1, 0.3, 1)";
         line.style.transform = "scaleX(1)";
       }
     }, 200);
@@ -137,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
             dot.classList.add("dot-animate-in");
           }
         },
-        400 + index * 120
+        400 + index * 120,
       );
     });
   }
