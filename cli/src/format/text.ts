@@ -1,6 +1,6 @@
 import type { Task } from "../tasks/types.js";
 import type { OplogEntry } from "../oplog/types.js";
-import { bold, dim, italic, red, green, yellow, magenta, cyan } from "./colors.js";
+import { bold, dim, italic, red, green, yellow, magenta, cyan, orange } from "./colors.js";
 
 export function isOverdue(dueAt: string, now?: Date): boolean {
   const ref = now ?? new Date();
@@ -222,7 +222,7 @@ export function formatContextText(sections: ContextSections, now?: Date): string
 
   const parts: string[] = [];
   for (const [name, tasks] of nonEmpty) {
-    parts.push(`${bold(name)} ${dim(`(${tasks.length})`)}`);
+    parts.push(`${orange(name)} ${dim(`(${tasks.length})`)}`);
     parts.push(formatTasksText(tasks, now));
   }
   return parts.join("\n\n");
