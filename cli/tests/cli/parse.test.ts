@@ -436,7 +436,6 @@ describe("CLI parse", () => {
     expect(parsed.metadata).toEqual({ keep: "yes" });
   });
 
-
   it("add --label accepts multiple labels", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "ao", "add", "Multi label", "--label", "work", "urgent", "--json"]);

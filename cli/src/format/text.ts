@@ -80,6 +80,11 @@ export function formatTaskText(task: Task, now?: Date): string {
       lines.push(`    ${dim("-")} ${italic(note)}`);
     }
   }
+  const metaKeys = Object.keys(task.metadata);
+  if (metaKeys.length > 0) {
+    const metaStr = metaKeys.map((k) => `${k}=${task.metadata[k]}`).join(", ");
+    lines.push(`  Metadata: ${metaStr}`);
+  }
   return lines.join("\n");
 }
 
@@ -102,15 +107,24 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
     6,
     ...tasks.map((t) => (t.labels.length > 0 ? t.labels.join(", ") : "").length),
   );
+  const metaW = Math.max(
+    4,
+    ...tasks.map((t) => {
+      const keys = Object.keys(t.metadata);
+      return keys.length > 0 ? keys.map((k) => `${k}=${t.metadata[k]}`).join(", ").length : 0;
+    }),
+  );
 
   const header = dim(
-    `     ${"ID".padEnd(idW)}  ${"PRI".padEnd(priW)}  ${"DUE".padEnd(dueW)}  ${"LABELS".padEnd(labelsW)}  TITLE`,
+    `     ${"ID".padEnd(idW)}  ${"PRI".padEnd(priW)}  ${"DUE".padEnd(dueW)}  ${"LABELS".padEnd(labelsW)}  ${"META".padEnd(metaW)}  TITLE`,
   );
   const rows = tasks.map((t) => {
     const check = colorCheck(t.status);
     const due = t.due_at ? formatDue(t.due_at, now) : "";
     const labels = t.labels.length > 0 ? t.labels.join(", ") : "";
-    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${due.padEnd(dueW)}  ${cyan(labels.padEnd(labelsW))}  ${bold(t.title)}`;
+    const metaKeys = Object.keys(t.metadata);
+    const meta = metaKeys.length > 0 ? metaKeys.map((k) => `${k}=${t.metadata[k]}`).join(", ") : "";
+    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${due.padEnd(dueW)}  ${cyan(labels.padEnd(labelsW))}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
   });
   return [header, ...rows].join("\n");
 }
