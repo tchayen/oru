@@ -85,8 +85,10 @@ export function formatTaskText(task: Task, now?: Date): string {
   }
   const metaKeys = Object.keys(task.metadata);
   if (metaKeys.length > 0) {
-    const metaStr = metaKeys.map((k) => `${k}=${task.metadata[k]}`).join(", ");
-    lines.push(`  Metadata: ${metaStr}`);
+    lines.push(`  ${dim("Metadata:")}`);
+    for (const key of metaKeys) {
+      lines.push(`    ${dim(key + ":")} ${String(task.metadata[key])}`);
+    }
   }
   return lines.join("\n");
 }
