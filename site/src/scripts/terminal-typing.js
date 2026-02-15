@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (prefersReducedMotion) {
     return;
@@ -102,9 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const node of childNodes) {
       if (
         node === promptEl ||
-        (node.nodeType === 1 &&
-          node.classList &&
-          node.classList.contains("prompt"))
+        (node.nodeType === 1 && node.classList && node.classList.contains("prompt"))
       ) {
         foundPrompt = true;
         continue;
@@ -150,9 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const wrapperKey = wrapper ? `${wrapper.tag}.${wrapper.cls}` : null;
-      const prevKey = currentWrapper
-        ? `${currentWrapper.tag}.${currentWrapper.cls}`
-        : null;
+      const prevKey = currentWrapper ? `${currentWrapper.tag}.${currentWrapper.cls}` : null;
 
       if (wrapperKey !== prevKey) {
         if (wrapper) {
