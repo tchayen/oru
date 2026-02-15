@@ -1,0 +1,54 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div class:list={["mini-code", className]}>
+  <slot />
+</div>
+
+<style>
+  .mini-code {
+    background: var(--bg-inset);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    overflow-x: auto;
+  }
+
+  .mini-code :global(.prompt) {
+    color: var(--accent);
+    user-select: none;
+  }
+
+  .mini-code :global(.cmd) {
+    color: var(--text-primary);
+  }
+
+  .mini-code :global(.sub) {
+    color: var(--syn-command);
+  }
+
+  .mini-code :global(.flag) {
+    color: var(--syn-flag);
+  }
+
+  .mini-code :global(.str) {
+    color: var(--syn-string);
+  }
+
+  .mini-code :global(.val) {
+    color: var(--syn-value);
+  }
+
+  .mini-code :global(.key) {
+    color: var(--syn-key);
+  }
+</style>

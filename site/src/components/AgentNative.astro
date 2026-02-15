@@ -1,0 +1,171 @@
+---
+import Terminal from "./ui/Terminal.astro";
+import Badge from "./ui/Badge.astro";
+---
+
+<section class="agent-native">
+  <div class="container">
+    <div class="agent-header reveal">
+      <p class="section-label">Agent-native</p>
+      <h2>Built for agents. Not retrofitted.</h2>
+      <p class="body-lg agent-body">
+        Your AI agents generate tasks, track progress, and need structured
+        output to reason about what to do next. ao treats them as first-class
+        participants — not afterthoughts bolted onto a human-only interface.
+      </p>
+      <p class="body agent-body-secondary">
+        Every command returns JSON. Creates are idempotent. Metadata is
+        arbitrary. There is no interaction model to work around.
+      </p>
+    </div>
+
+    <div class="agent-comparison reveal" data-delay="80">
+      <div class="comparison-col">
+        <div class="comparison-label">
+          <Badge>Human-friendly</Badge>
+        </div>
+        <Terminal title="ao list">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">list</span></span>
+          <span class="line"><span class="output">  #  Title                     Priority  Due        Status</span></span>
+          <span class="line"><span class="output">  1  Refactor auth middleware   </span><span class="val">high</span><span class="output">      Fri Feb 20 todo</span></span>
+          <span class="line"><span class="output">  2  Write migration tests     </span><span class="val">medium</span><span class="output">    —          in-progress</span></span>
+          <span class="line"><span class="output">  3  Update API docs           </span><span class="val">low</span><span class="output">       —          todo</span></span>
+        </Terminal>
+      </div>
+      <div class="comparison-col">
+        <div class="comparison-label">
+          <Badge>Agent-friendly</Badge>
+        </div>
+        <Terminal title="ao list --json">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">list</span> <span class="flag">--json</span></span>
+          <span class="line"><span class="output">[</span></span>
+          <span class="line"><span class="output">  {"{"}</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"id"</span><span class="output">: </span><span class="str">"019414a2-7b1a-..."</span><span class="output">,</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"title"</span><span class="output">: </span><span class="str">"Refactor auth middleware"</span><span class="output">,</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"status"</span><span class="output">: </span><span class="str">"todo"</span><span class="output">,</span></span>
+          <span class="line"><span class="output">    </span><span class="key">"priority"</span><span class="output">: </span><span class="str">"high"</span></span>
+          <span class="line"><span class="output">  {"}"}</span></span>
+          <span class="line"><span class="output">]</span></span>
+        </Terminal>
+      </div>
+    </div>
+
+    <div class="agent-features">
+      <div class="agent-feature reveal" data-delay="80">
+        <h3>Idempotent creates. Safe retries.</h3>
+        <p class="body agent-feature-body">
+          Agents retry. Network calls fail. ao's <code>--id</code> flag lets agents
+          supply their own UUIDv7, making creates idempotent. Run it twice, get
+          one task.
+        </p>
+        <Terminal title="idempotent creates">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span>
+          <span class="line"><span class="output">Created task 019414a3</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span>
+          <span class="line"><span class="output">Task already exists. No-op.</span></span>
+        </Terminal>
+      </div>
+
+      <div class="agent-feature reveal" data-delay="160">
+        <h3>Arbitrary metadata.</h3>
+        <p class="body agent-feature-body">
+          Agents need to stash context — which PR spawned a task, which model
+          created it, which run it belongs to. The <code>--meta</code> flag takes
+          arbitrary key-value pairs.
+        </p>
+        <Terminal title="metadata">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">add</span> <span class="str">"Review PR feedback"</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">agent=claude-code</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">pr=142</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">run=a1b2c3</span></span>
+          <span class="line"><span class="output">Created task 019414a4</span></span>
+        </Terminal>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .agent-native {
+    padding: 96px 0;
+    background: var(--bg-base);
+  }
+
+  .agent-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  .agent-header h2 {
+    margin-bottom: 16px;
+  }
+
+  .agent-body {
+    max-width: 640px;
+    margin: 0 auto 16px;
+    color: var(--text-secondary);
+  }
+
+  .agent-body-secondary {
+    max-width: 640px;
+    margin: 0 auto;
+    color: var(--text-tertiary);
+  }
+
+  .agent-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 64px;
+  }
+
+  .comparison-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .comparison-label {
+    text-align: center;
+  }
+
+  .agent-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .agent-feature {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .agent-feature h3 {
+    font-size: 22px;
+  }
+
+  .agent-feature-body {
+    color: var(--text-secondary);
+  }
+
+  .agent-feature-body code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    background: var(--bg-surface);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  @media (max-width: 767px) {
+    .agent-comparison {
+      grid-template-columns: 1fr;
+    }
+
+    .agent-features {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,149 @@
+---
+interface Props {
+  title?: string;
+  class?: string;
+}
+
+const { title = "terminal", class: className = "" } = Astro.props;
+---
+
+<div class:list={["terminal", className]}>
+  <div class="terminal-titlebar">
+    <div class="terminal-dots">
+      <span class="terminal-dot"></span>
+      <span class="terminal-dot"></span>
+      <span class="terminal-dot"></span>
+    </div>
+    <span class="terminal-title">{title}</span>
+  </div>
+  <div class="terminal-body">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .terminal {
+    background: var(--bg-inset);
+    border: 1px solid var(--border-default);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03),
+      0 4px 24px rgba(0, 0, 0, 0.4),
+      0 24px 80px rgba(0, 0, 0, 0.5);
+    transition:
+      border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .terminal:hover {
+    border-color: var(--accent-border);
+    box-shadow:
+      0 0 0 1px rgba(245, 158, 11, 0.1),
+      0 0 24px rgba(245, 158, 11, 0.06),
+      0 4px 24px rgba(0, 0, 0, 0.4),
+      0 24px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .terminal-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .terminal-dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  .terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--border-default);
+    transition: background 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .terminal:hover .terminal-dot:nth-child(1) {
+    background: #ef4444;
+  }
+
+  .terminal:hover .terminal-dot:nth-child(2) {
+    background: #eab308;
+  }
+
+  .terminal:hover .terminal-dot:nth-child(3) {
+    background: #22c55e;
+  }
+
+  .terminal-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 4px;
+  }
+
+  .terminal-body {
+    padding: 24px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    overflow-x: auto;
+  }
+
+  .terminal-body :global(.prompt) {
+    color: var(--accent);
+    user-select: none;
+  }
+
+  .terminal-body :global(.cmd) {
+    color: var(--text-primary);
+  }
+
+  .terminal-body :global(.sub) {
+    color: var(--syn-command);
+  }
+
+  .terminal-body :global(.flag) {
+    color: var(--syn-flag);
+  }
+
+  .terminal-body :global(.str) {
+    color: var(--syn-string);
+  }
+
+  .terminal-body :global(.val) {
+    color: var(--syn-value);
+  }
+
+  .terminal-body :global(.key) {
+    color: var(--syn-key);
+  }
+
+  .terminal-body :global(.output) {
+    color: var(--text-tertiary);
+  }
+
+  .terminal-body :global(.line) {
+    display: block;
+    white-space: pre;
+  }
+
+  .terminal-body :global(.line + .line) {
+    margin-top: 0;
+  }
+
+  .terminal-body :global(.blank) {
+    display: block;
+    height: 1.7em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .terminal {
+      transition: none;
+    }
+  }
+</style>
