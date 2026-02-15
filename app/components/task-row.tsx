@@ -1,20 +1,20 @@
-import { Pressable, Text, View, PlatformColor } from "react-native";
+import { Pressable, Text, PlatformColor } from "react-native";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { Link } from "expo-router";
 import type { Task, Priority, Status } from "@/utils/api";
 
-const PRIORITY_COLORS: Record<Priority, string> = {
-  urgent: "#FF3B30",
-  high: "#FF9500",
-  medium: "#007AFF",
-  low: "#8E8E93",
+const PRIORITY_ICONS: Record<Priority, string> = {
+  urgent: "exclamationmark.3",
+  high: "exclamationmark.2",
+  medium: "minus",
+  low: "arrow.down",
 };
 
 const STATUS_ICONS: Record<Status, string> = {
-  todo: "circle",
-  in_progress: "circle.lefthalf.filled",
-  done: "checkmark.circle.fill",
+  todo: "circle;weight=thin",
+  in_progress: "circle.lefthalf.filled;weight=thin",
+  done: "checkmark.circle.fill;weight=thin",
 };
 
 interface TaskRowProps {
@@ -24,7 +24,7 @@ interface TaskRowProps {
 
 export function TaskRow({ task, onToggleStatus }: TaskRowProps) {
   const statusIcon = STATUS_ICONS[task.status];
-  const priorityColor = PRIORITY_COLORS[task.priority];
+  const priorityIcon = PRIORITY_ICONS[task.priority];
 
   return (
     <Link href={`/${task.id}`} asChild>
@@ -69,19 +69,11 @@ export function TaskRow({ task, onToggleStatus }: TaskRowProps) {
           {task.title}
         </Text>
 
-        <View
-          style={{
-            paddingHorizontal: 8,
-            paddingVertical: 2,
-            borderRadius: 4,
-            borderCurve: "continuous",
-            backgroundColor: priorityColor + "1A",
-          }}
-        >
-          <Text style={{ fontSize: 12, fontWeight: "600", color: priorityColor }}>
-            {task.priority}
-          </Text>
-        </View>
+        <Image
+          source={`sf:${priorityIcon}`}
+          style={{ width: 16, height: 16 }}
+          tintColor={PlatformColor("secondaryLabel") as unknown as string}
+        />
       </Pressable>
     </Link>
   );
