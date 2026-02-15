@@ -4,10 +4,30 @@
       "Bash(npm install*)",
       "Bash(npm run*)",
       "Bash(npm test*)",
-      "Bash(npx vitest*)",
-      "Bash(npx tsup*)",
+      "Bash(npx oxfmt*)",
       "Bash(npx oxlint*)",
-      "Bash(npx oxfmt*)"
+      "Bash(npx tsup*)",
+      "Bash(npx vitest*)",
+
+      "Bash(gh *)",
+      "Bash(git add*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git commit*)",
+      "Bash(git diff*)",
+      "Bash(git fetch*)",
+      "Bash(git log*)",
+      "Bash(git merge*)",
+      "Bash(git pull*)",
+      "Bash(git push*)",
+      "Bash(git rebase*)",
+      "Bash(git remote*)",
+      "Bash(git rev-parse*)",
+      "Bash(git show*)",
+      "Bash(git stash*)",
+      "Bash(git status*)",
+      "Bash(git switch*)",
+      "Bash(git tag*)"
     ]
   }
 }

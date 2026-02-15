@@ -1,4 +1,4 @@
-import { type Kysely, sql } from "kysely";
+import { type Kysely, type SqlBool, sql } from "kysely";
 import { generateId } from "../id.js";
 import type { DB } from "../db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types.js";
@@ -97,12 +97,14 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
   if (filters?.label) {
     const label = filters.label;
     query = query.where(
-      sql`EXISTS (SELECT 1 FROM json_each(labels) WHERE json_each.value = ${label})`,
+      sql<SqlBool>`EXISTS (SELECT 1 FROM json_each(labels) WHERE json_each.value = ${label})`,
     );
   }
   if (filters?.search) {
     const escaped = filters.search.replace(/[\\%_]/g, "\\$&");
-    query = query.where(sql`title LIKE '%' || ${escaped} || '%' ESCAPE '\\' COLLATE NOCASE`);
+    query = query.where(
+      sql<SqlBool>`title LIKE '%' || ${escaped} || '%' ESCAPE '\\' COLLATE NOCASE`,
+    );
   }
 
   query = query.orderBy("created_at", "asc");
@@ -127,7 +129,7 @@ export async function getTask(db: Kysely<DB>, id: string): Promise<Task | null> 
     const rows = await db
       .selectFrom("tasks")
       .selectAll()
-      .where(sql`id LIKE ${escaped} || '%' ESCAPE '\\'`)
+      .where(sql<SqlBool>`id LIKE ${escaped} || '%' ESCAPE '\\'`)
       .where("deleted_at", "is", null)
       .execute();
     if (rows.length === 1) {
