@@ -8,6 +8,7 @@ const sampleTask: Task = {
   title: "Buy milk",
   status: "todo",
   priority: "medium",
+  blocked_by: [],
   labels: ["groceries"],
   notes: ["Get organic"],
   metadata: {},

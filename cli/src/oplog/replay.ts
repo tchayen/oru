@@ -88,6 +88,9 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     ? (data.priority as string)
     : "medium";
   let dueAt: string | null = typeof data.due_at === "string" ? data.due_at : null;
+  let blockedBy = JSON.stringify(
+    Array.isArray(data.blocked_by) ? filterStringArray(data.blocked_by) : [],
+  );
   let labels = JSON.stringify(Array.isArray(data.labels) ? filterStringArray(data.labels) : []);
   let metadata = JSON.stringify(
     data.metadata && typeof data.metadata === "object" && !Array.isArray(data.metadata)
@@ -187,6 +190,14 @@ function rebuildTask(db: Database.Database, taskId: string): void {
           // null or empty string clears the due date
           dueAt = op.value && op.value.trim().length > 0 ? op.value : null;
           break;
+        case "blocked_by":
+          if (op.value && isValidJson(op.value)) {
+            const parsed = JSON.parse(op.value);
+            if (Array.isArray(parsed)) {
+              blockedBy = JSON.stringify(filterStringArray(parsed));
+            }
+          }
+          break;
         case "labels":
           if (op.value && isValidJson(op.value)) {
             const parsed = JSON.parse(op.value);
@@ -215,13 +226,14 @@ function rebuildTask(db: Database.Database, taskId: string): void {
 
   // Upsert the task
   db.prepare(
-    `INSERT INTO tasks (id, title, status, priority, due_at, labels, notes, metadata, created_at, updated_at, deleted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO tasks (id, title, status, priority, due_at, blocked_by, labels, notes, metadata, created_at, updated_at, deleted_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        status = excluded.status,
        priority = excluded.priority,
        due_at = excluded.due_at,
+       blocked_by = excluded.blocked_by,
        labels = excluded.labels,
        notes = excluded.notes,
        metadata = excluded.metadata,
@@ -233,6 +245,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     status,
     priority,
     dueAt,
+    blockedBy,
     labels,
     JSON.stringify(notes),
     metadata,

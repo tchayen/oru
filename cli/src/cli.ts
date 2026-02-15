@@ -124,6 +124,7 @@ export function createProgram(
     )
     .option("-d, --due <date>", "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20')")
     .option("-l, --label <labels...>", "Add labels")
+    .option("-b, --blocked-by <ids...>", "IDs of tasks that block this task")
     .option("-n, --note <note>", "Add an initial note")
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
@@ -137,6 +138,7 @@ export function createProgram(
           priority?: Priority;
           due?: string;
           label?: string[];
+          blockedBy?: string[];
           note?: string;
           meta?: string[];
           json?: boolean;
@@ -246,6 +248,7 @@ export function createProgram(
           status: opts.status,
           priority: opts.priority,
           due_at: dueAt,
+          blocked_by: opts.blockedBy,
           labels: opts.label ?? undefined,
           notes: opts.note ? [opts.note] : undefined,
           metadata,
@@ -269,6 +272,7 @@ export function createProgram(
     .option("--overdue", "Show only overdue tasks")
     .option("--search <query>", "Search tasks by title")
     .option("-a, --all", "Include done tasks")
+    .option("--actionable", "Show only tasks with no incomplete blockers")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(
@@ -280,6 +284,7 @@ export function createProgram(
         overdue?: boolean;
         search?: string;
         all?: boolean;
+        actionable?: boolean;
         json?: boolean;
         plaintext?: boolean;
       }) => {
@@ -288,6 +293,7 @@ export function createProgram(
           priority: opts.priority,
           label: opts.label,
           search: opts.search,
+          actionable: opts.actionable,
         });
         // Hide done tasks unless --all or --status is specified
         if (!opts.all && !opts.status) {
@@ -367,6 +373,7 @@ export function createProgram(
     )
     .option("-l, --label <labels...>", "Add labels")
     .option("--unlabel <labels...>", "Remove labels")
+    .option("-b, --blocked-by <ids...>", "Set blocker task IDs (replaces full list)")
     .option("-n, --note <note>", "Append a note")
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
@@ -381,6 +388,7 @@ export function createProgram(
           due?: string;
           label?: string[];
           unlabel?: string[];
+          blockedBy?: string[];
           note?: string;
           meta?: string[];
           json?: boolean;
@@ -510,6 +518,10 @@ export function createProgram(
             updateFields.labels = labels;
           }
 
+          if (opts.blockedBy) {
+            updateFields.blocked_by = opts.blockedBy;
+          }
+
           if (opts.meta) {
             const existing = await service.get(id);
             if (!existing) {
@@ -543,6 +555,7 @@ export function createProgram(
                 title?: string;
                 status?: Status;
                 priority?: Priority;
+                blocked_by?: string[];
                 labels?: string[];
                 metadata?: Record<string, unknown>;
               },
@@ -557,6 +570,7 @@ export function createProgram(
                 title?: string;
                 status?: Status;
                 priority?: Priority;
+                blocked_by?: string[];
                 labels?: string[];
                 metadata?: Record<string, unknown>;
               },

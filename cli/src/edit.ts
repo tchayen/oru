@@ -26,6 +26,7 @@ export function serializeTask(task: Task): string {
     frontmatter.due = task.due_at;
   }
 
+  frontmatter.blocked_by = task.blocked_by;
   frontmatter.labels = task.labels;
 
   if (Object.keys(task.metadata).length > 0) {
@@ -92,6 +93,17 @@ export function parseDocument(
     }
   } else if (typeof parsedDue === "string" && parsedDue !== existing.due_at) {
     fields.due_at = parsedDue;
+  }
+
+  // Blocked by
+  if (Array.isArray(parsed.blocked_by)) {
+    const newBlockedBy = parsed.blocked_by.filter((b): b is string => typeof b === "string");
+    const changed =
+      newBlockedBy.length !== existing.blocked_by.length ||
+      newBlockedBy.some((b, i) => b !== existing.blocked_by[i]);
+    if (changed) {
+      fields.blocked_by = newBlockedBy;
+    }
   }
 
   // Labels

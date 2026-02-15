@@ -690,4 +690,81 @@ describe("oplog replay", () => {
     const task = await getTask(ky, "t1");
     expect(task).toBeNull();
   });
+
+  it("replays create with blocked_by", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Blocked task",
+          status: "todo",
+          priority: "medium",
+          blocked_by: ["dep-1", "dep-2"],
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    expect(task!.blocked_by).toEqual(["dep-1", "dep-2"]);
+  });
+
+  it("replays update to blocked_by", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          blocked_by: ["dep-1"],
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+      makeOp({
+        id: "op-2",
+        task_id: "t1",
+        op_type: "update",
+        field: "blocked_by",
+        value: JSON.stringify(["dep-2", "dep-3"]),
+        timestamp: "2024-01-01T00:01:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    expect(task!.blocked_by).toEqual(["dep-2", "dep-3"]);
+  });
+
+  it("filters non-string blocked_by from create ops", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          blocked_by: ["valid", 42, null, "also-valid"],
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    expect(task!.blocked_by).toEqual(["valid", "also-valid"]);
+  });
 });
