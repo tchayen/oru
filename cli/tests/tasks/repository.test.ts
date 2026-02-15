@@ -382,4 +382,37 @@ describe("task repository", () => {
     const actionable = await listTasks(ky, { actionable: true });
     expect(actionable.map((t) => t.title)).toContain("Always actionable");
   });
+
+  it("actionable filter excludes done tasks", async () => {
+    await createTask(ky, { title: "Todo task", status: "todo" });
+    await createTask(ky, { title: "In progress task", status: "in_progress" });
+    await createTask(ky, { title: "Done task", status: "done" });
+
+    const actionable = await listTasks(ky, { actionable: true });
+    const titles = actionable.map((t) => t.title);
+    expect(titles).toContain("Todo task");
+    expect(titles).toContain("In progress task");
+    expect(titles).not.toContain("Done task");
+  });
+
+  it("filters by multiple statuses", async () => {
+    await createTask(ky, { title: "Todo", status: "todo" });
+    await createTask(ky, { title: "In Progress", status: "in_progress" });
+    await createTask(ky, { title: "Done", status: "done" });
+
+    const tasks = await listTasks(ky, { status: ["todo", "in_progress"] });
+    expect(tasks).toHaveLength(2);
+    expect(tasks.map((t) => t.title).sort()).toEqual(["In Progress", "Todo"]);
+  });
+
+  it("filters by multiple priorities", async () => {
+    await createTask(ky, { title: "Low", priority: "low" });
+    await createTask(ky, { title: "High", priority: "high" });
+    await createTask(ky, { title: "Urgent", priority: "urgent" });
+    await createTask(ky, { title: "Medium", priority: "medium" });
+
+    const tasks = await listTasks(ky, { priority: ["high", "urgent"] });
+    expect(tasks).toHaveLength(2);
+    expect(tasks.map((t) => t.title).sort()).toEqual(["High", "Urgent"]);
+  });
 });

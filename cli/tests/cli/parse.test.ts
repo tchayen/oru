@@ -1123,6 +1123,36 @@ describe("CLI parse", () => {
     expect(titles).not.toContain("Blocked");
   });
 
+  it("list --actionable excludes done tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Active task", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Finished task", "-s", "done", "--json"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--actionable", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    const titles = parsed.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Active task");
+    expect(titles).not.toContain("Finished task");
+  });
+
+  it("list --actionable --all still excludes done tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Todo task", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "Done task", "-s", "done", "--json"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "list", "--actionable", "--all", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    const titles = parsed.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Todo task");
+    expect(titles).not.toContain("Done task");
+  });
+
   it("list --limit returns at most N tasks", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "ao", "add", "Task 1"]);
@@ -1345,6 +1375,78 @@ describe("CLI parse", () => {
     expect(output).toContain("ambiguous");
   });
 
+  // log command tests
+  it("log shows oplog entries in text format", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Log task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--status", "done"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "log", id]);
+    expect(output).toContain("CREATE");
+    expect(output).toContain("UPDATE");
+  });
+
+  it("log --json returns array of oplog entries", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Log json task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "update", id, "--status", "done"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "log", id, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(Array.isArray(parsed)).toBe(true);
+    expect(parsed.length).toBeGreaterThanOrEqual(2);
+    expect(parsed[0].op_type).toBe("create");
+    expect(parsed[1].op_type).toBe("update");
+  });
+
+  it("log for nonexistent task shows not found error", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "log", "nonexistent"]);
+    expect(output).toContain("not found");
+  });
+
+  it("log --json for nonexistent task returns error object", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "log", "nonexistent-id", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("not_found");
+    expect(parsed.id).toBe("nonexistent-id");
+  });
+
+  it("log handles ambiguous prefix error", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task A",
+      "--id",
+      "ffff-1111-0000-0000-000000000000",
+    ]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "ao",
+      "add",
+      "Task B",
+      "--id",
+      "ffff-2222-0000-0000-000000000000",
+    ]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "log", "ffff", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("ambiguous_prefix");
+  });
+
   it("delete shows ambiguous prefix error", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync([
@@ -1369,5 +1471,48 @@ describe("CLI parse", () => {
     await p3.parseAsync(["node", "ao", "delete", "eeee", "--json"]);
     const parsed = JSON.parse(output.trim());
     expect(parsed.error).toBe("ambiguous_prefix");
+  });
+
+  // Multi-value filter tests
+  it("list -s with comma-separated statuses filters correctly", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Todo task"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "In progress", "--status", "in_progress"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Done task", "--status", "done"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "-s", "todo,in_progress", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+    const titles = parsed.map((t: { title: string }) => t.title).sort();
+    expect(titles).toEqual(["In progress", "Todo task"]);
+  });
+
+  it("list -p with comma-separated priorities filters correctly", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Low task", "--priority", "low"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "add", "High task", "--priority", "high"]);
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "ao", "add", "Urgent task", "--priority", "urgent"]);
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "ao", "list", "-p", "high,urgent", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(2);
+    const titles = parsed.map((t: { title: string }) => t.title).sort();
+    expect(titles).toEqual(["High task", "Urgent task"]);
+  });
+
+  it("list -s with invalid comma-separated status rejects", async () => {
+    const p = createProgram(db, capture());
+    await expect(p.parseAsync(["node", "ao", "list", "-s", "todo,invalid"])).rejects.toThrow();
+  });
+
+  it("list -p with invalid comma-separated priority rejects", async () => {
+    const p = createProgram(db, capture());
+    await expect(p.parseAsync(["node", "ao", "list", "-p", "high,nope"])).rejects.toThrow();
   });
 });

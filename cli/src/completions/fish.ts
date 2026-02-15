@@ -44,6 +44,7 @@ complete -c ao -n __ao_needs_command -a delete -d 'Delete one or more tasks'
 complete -c ao -n __ao_needs_command -a done -d 'Mark one or more tasks as done'
 complete -c ao -n __ao_needs_command -a start -d 'Start one or more tasks'
 complete -c ao -n __ao_needs_command -a review -d 'Mark one or more tasks as in_review'
+complete -c ao -n __ao_needs_command -a log -d 'Show change history of a task'
 complete -c ao -n __ao_needs_command -a sync -d 'Sync with a filesystem remote'
 complete -c ao -n __ao_needs_command -a config -d 'Manage configuration'
 complete -c ao -n __ao_needs_command -a server -d 'Manage the HTTP server'
@@ -68,6 +69,7 @@ complete -c ao -n '__ao_using_command delete' -a '(__ao_task_ids)'
 complete -c ao -n '__ao_using_command done' -a '(__ao_task_ids)'
 complete -c ao -n '__ao_using_command start' -a '(__ao_task_ids)'
 complete -c ao -n '__ao_using_command review' -a '(__ao_task_ids)'
+complete -c ao -n '__ao_using_command log' -a '(__ao_task_ids)'
 
 # sync gets file completions
 complete -c ao -n '__ao_using_command sync' -F
@@ -102,6 +104,7 @@ complete -c ao -n '__ao_using_command list' -l plaintext -d 'Output as plain tex
 complete -c ao -n '__ao_using_command list' -l search -d 'Search by title' -r
 complete -c ao -n '__ao_using_command list' -l sort -a '${SORT_FIELDS.join(" ")}' -d 'Sort order' -r
 complete -c ao -n '__ao_using_command list' -s a -l all -d 'Include done tasks'
+complete -c ao -n '__ao_using_command list' -l actionable -d 'Show only actionable tasks'
 complete -c ao -n '__ao_using_command list' -l limit -d 'Maximum number of tasks' -r
 complete -c ao -n '__ao_using_command list' -l offset -d 'Number of tasks to skip' -r
 complete -c ao -n '__ao_using_command get' -l json -d 'Output as JSON'
@@ -121,6 +124,8 @@ complete -c ao -n '__ao_using_command start' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command start' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command review' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command review' -l plaintext -d 'Output as plain text'
+complete -c ao -n '__ao_using_command log' -l json -d 'Output as JSON'
+complete -c ao -n '__ao_using_command log' -l plaintext -d 'Output as plain text'
 complete -c ao -n '__ao_using_command sync' -l json -d 'Output as JSON'
 complete -c ao -n '__ao_using_command sync' -l plaintext -d 'Output as plain text'
 `;

@@ -12,10 +12,11 @@ import {
   formatTaskText,
   formatTasksText,
   formatLabelsText,
+  formatLogText,
   filterByDue,
   type DueFilter,
 } from "./format/text.js";
-import { formatTaskJson, formatTasksJson, formatLabelsJson } from "./format/json.js";
+import { formatTaskJson, formatTasksJson, formatLabelsJson, formatLogJson } from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
@@ -265,8 +266,28 @@ export function createProgram(
   program
     .command("list")
     .description("List tasks (hides done tasks by default)")
-    .addOption(new Option("-s, --status <status>", "Filter by status").choices(STATUSES))
-    .addOption(new Option("-p, --priority <priority>", "Filter by priority").choices(PRIORITIES))
+    .option("-s, --status <status>", "Filter by status (comma-separated for multiple)", (value) => {
+      const parts = value.split(",");
+      for (const p of parts) {
+        if (!STATUSES.includes(p as Status)) {
+          throw new Error(`Invalid status: ${p}. Allowed: ${STATUSES.join(", ")}`);
+        }
+      }
+      return parts.length === 1 ? (parts[0] as Status) : (parts as Status[]);
+    })
+    .option(
+      "-p, --priority <priority>",
+      "Filter by priority (comma-separated for multiple)",
+      (value) => {
+        const parts = value.split(",");
+        for (const p of parts) {
+          if (!PRIORITIES.includes(p as Priority)) {
+            throw new Error(`Invalid priority: ${p}. Allowed: ${PRIORITIES.join(", ")}`);
+          }
+        }
+        return parts.length === 1 ? (parts[0] as Priority) : (parts as Priority[]);
+      },
+    )
     .option("-l, --label <label>", "Filter by label")
     .addOption(new Option("--due <range>", "Filter by due date").choices(["today", "this-week"]))
     .option("--overdue", "Show only overdue tasks")
@@ -284,8 +305,8 @@ export function createProgram(
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(
       async (opts: {
-        status?: Status;
-        priority?: Priority;
+        status?: Status | Status[];
+        priority?: Priority | Priority[];
         label?: string;
         sort?: SortField;
         due?: "today" | "this-week";
@@ -936,6 +957,38 @@ export function createProgram(
           }
           throw err;
         }
+      }
+    });
+
+  // log
+  program
+    .command("log <id>")
+    .description("Show change history of a task")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      try {
+        const entries = await service.log(id);
+        if (!entries) {
+          if (useJson(opts)) {
+            write(JSON.stringify({ error: "not_found", id }));
+          } else {
+            write(`Task ${id} not found.`);
+          }
+          process.exitCode = 1;
+          return;
+        }
+        if (useJson(opts)) {
+          write(formatLogJson(entries));
+        } else {
+          write(formatLogText(entries));
+        }
+      } catch (err) {
+        if (err instanceof AmbiguousPrefixError) {
+          handleAmbiguousPrefix(err, useJson(opts));
+          return;
+        }
+        throw err;
       }
     });
 

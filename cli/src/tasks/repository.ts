@@ -102,8 +102,8 @@ export async function createTask(
 }
 
 export interface ListFilters {
-  status?: Status;
-  priority?: Priority;
+  status?: Status | Status[];
+  priority?: Priority | Priority[];
   label?: string;
   search?: string;
   sort?: SortField;
@@ -116,10 +116,18 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
   let query = db.selectFrom("tasks").selectAll().where("deleted_at", "is", null);
 
   if (filters?.status) {
-    query = query.where("status", "=", filters.status);
+    if (Array.isArray(filters.status)) {
+      query = query.where("status", "in", filters.status);
+    } else {
+      query = query.where("status", "=", filters.status);
+    }
   }
   if (filters?.priority) {
-    query = query.where("priority", "=", filters.priority);
+    if (Array.isArray(filters.priority)) {
+      query = query.where("priority", "in", filters.priority);
+    } else {
+      query = query.where("priority", "=", filters.priority);
+    }
   }
   if (filters?.label) {
     const label = filters.label;
@@ -134,12 +142,12 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
     );
   }
   if (filters?.actionable) {
-    query = query.where(
+    query = query.where("status", "!=", "done").where(
       sql<SqlBool>`NOT EXISTS (
-        SELECT 1 FROM json_each(tasks.blocked_by) AS dep
-        JOIN tasks AS blocker ON blocker.id = dep.value
-        WHERE blocker.status != 'done' AND blocker.deleted_at IS NULL
-      )`,
+          SELECT 1 FROM json_each(tasks.blocked_by) AS dep
+          JOIN tasks AS blocker ON blocker.id = dep.value
+          WHERE blocker.status != 'done' AND blocker.deleted_at IS NULL
+        )`,
     );
   }
 
