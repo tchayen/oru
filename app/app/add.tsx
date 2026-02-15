@@ -1,5 +1,6 @@
 import { use, useState } from "react";
 import { ScrollView, Text, View, TextInput, Pressable, Alert } from "react-native";
+import { Picker, Host } from "@expo/ui/swift-ui";
 import { Stack, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { ConnectionContext } from "@/hooks/use-connection";
@@ -7,11 +8,11 @@ import { type Priority, createTask } from "@/utils/api";
 
 const PRIORITIES: Priority[] = ["urgent", "high", "medium", "low"];
 
-const PRIORITY_COLORS: Record<Priority, string> = {
-  urgent: "#FF3B30",
-  high: "#FF9500",
-  medium: "#007AFF",
-  low: "#8E8E93",
+const PRIORITY_LABELS: Record<Priority, string> = {
+  urgent: "Urgent",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
 };
 
 export default function AddTaskScreen() {
@@ -87,41 +88,16 @@ export default function AddTaskScreen() {
 
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>PRIORITY</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {PRIORITIES.map((p) => {
-              const selected = priority === p;
-              const color = PRIORITY_COLORS[p];
-              return (
-                <Pressable
-                  key={p}
-                  onPress={() => {
-                    setPriority(p);
-                    if (process.env.EXPO_OS === "ios") {
-                      Haptics.selectionAsync();
-                    }
-                  }}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    borderCurve: "continuous",
-                    backgroundColor: selected ? color : "#F2F2F7",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "600",
-                      color: selected ? "#fff" : "#000",
-                    }}
-                  >
-                    {p.charAt(0).toUpperCase() + p.slice(1)}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <Host matchContents>
+            <Picker
+              options={PRIORITIES.map((p) => PRIORITY_LABELS[p])}
+              selectedIndex={PRIORITIES.indexOf(priority)}
+              onOptionSelected={({ nativeEvent }) => {
+                setPriority(PRIORITIES[nativeEvent.index]);
+              }}
+              variant="segmented"
+            />
+          </Host>
         </View>
       </ScrollView>
     </>

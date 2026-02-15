@@ -42,6 +42,8 @@ export default function RootLayout() {
           name="[id]"
           options={{
             title: "Task",
+            presentation: "formSheet",
+            sheetGrabberVisible: true,
           }}
         />
         <Stack.Screen

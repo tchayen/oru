@@ -1,8 +1,8 @@
 import { use, useEffect, useState, useCallback } from "react";
 import { ScrollView, Text, View, Pressable, Alert, ActivityIndicator } from "react-native";
+import { Picker, Host } from "@expo/ui/swift-ui";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
-import * as Haptics from "expo-haptics";
 import { ConnectionContext } from "@/hooks/use-connection";
 import {
   type Task,
@@ -22,42 +22,12 @@ const STATUS_LABELS: Record<Status, string> = {
   done: "Done",
 };
 
-const PRIORITY_COLORS: Record<Priority, string> = {
-  urgent: "#FF3B30",
-  high: "#FF9500",
-  medium: "#007AFF",
-  low: "#8E8E93",
+const PRIORITY_LABELS: Record<Priority, string> = {
+  urgent: "Urgent",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
 };
-
-function OptionButton({
-  label,
-  selected,
-  color,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  color?: string;
-  onPress: () => void;
-}) {
-  const bg = selected ? (color ?? "#007AFF") : "#F2F2F7";
-  const fg = selected ? "#fff" : "#000";
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 8,
-        borderCurve: "continuous",
-        backgroundColor: bg,
-      }}
-    >
-      <Text style={{ fontSize: 15, fontWeight: "500", color: fg }}>{label}</Text>
-    </Pressable>
-  );
-}
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -74,13 +44,11 @@ export default function TaskDetailScreen() {
   }, [serverUrl, id]);
 
   const handleStatusChange = useCallback(
-    async (status: Status) => {
+    async (event: { nativeEvent: { index: number; label: string } }) => {
       if (!task) {
         return;
       }
-      if (process.env.EXPO_OS === "ios") {
-        Haptics.selectionAsync();
-      }
+      const status = STATUSES[event.nativeEvent.index];
       const updated = await updateTask(serverUrl, task.id, { status });
       setTask(updated);
     },
@@ -88,13 +56,11 @@ export default function TaskDetailScreen() {
   );
 
   const handlePriorityChange = useCallback(
-    async (priority: Priority) => {
+    async (event: { nativeEvent: { index: number; label: string } }) => {
       if (!task) {
         return;
       }
-      if (process.env.EXPO_OS === "ios") {
-        Haptics.selectionAsync();
-      }
+      const priority = PRIORITIES[event.nativeEvent.index];
       const updated = await updateTask(serverUrl, task.id, { priority });
       setTask(updated);
     },
@@ -149,31 +115,26 @@ export default function TaskDetailScreen() {
 
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>STATUS</Text>
-          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-            {STATUSES.map((s) => (
-              <OptionButton
-                key={s}
-                label={STATUS_LABELS[s]}
-                selected={task.status === s}
-                onPress={() => handleStatusChange(s)}
-              />
-            ))}
-          </View>
+          <Host matchContents>
+            <Picker
+              options={STATUSES.map((s) => STATUS_LABELS[s])}
+              selectedIndex={STATUSES.indexOf(task.status)}
+              onOptionSelected={handleStatusChange}
+              variant="segmented"
+            />
+          </Host>
         </View>
 
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>PRIORITY</Text>
-          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-            {PRIORITIES.map((p) => (
-              <OptionButton
-                key={p}
-                label={p.charAt(0).toUpperCase() + p.slice(1)}
-                selected={task.priority === p}
-                color={PRIORITY_COLORS[p]}
-                onPress={() => handlePriorityChange(p)}
-              />
-            ))}
-          </View>
+          <Host matchContents>
+            <Picker
+              options={PRIORITIES.map((p) => PRIORITY_LABELS[p])}
+              selectedIndex={PRIORITIES.indexOf(task.priority)}
+              onOptionSelected={handlePriorityChange}
+              variant="segmented"
+            />
+          </Host>
         </View>
 
         {task.labels.length > 0 && (
@@ -202,15 +163,7 @@ export default function TaskDetailScreen() {
           <View style={{ gap: 8 }}>
             <Text style={{ fontSize: 13, fontWeight: "600", color: "#8E8E93" }}>NOTES</Text>
             {task.notes.map((note, i) => (
-              <Text
-                key={i}
-                selectable
-                style={{
-                  fontSize: 15,
-                  color: "#3C3C43",
-                  lineHeight: 22,
-                }}
-              >
+              <Text key={i} selectable style={{ fontSize: 15, color: "#3C3C43", lineHeight: 22 }}>
                 {note}
               </Text>
             ))}
@@ -218,10 +171,10 @@ export default function TaskDetailScreen() {
         )}
 
         <View style={{ gap: 4 }}>
-          <Text style={{ fontSize: 13, color: "#C7C7CC" }}>
+          <Text selectable style={{ fontSize: 13, color: "#C7C7CC" }}>
             Created {new Date(task.created_at).toLocaleDateString()}
           </Text>
-          <Text style={{ fontSize: 13, color: "#C7C7CC" }}>
+          <Text selectable style={{ fontSize: 13, color: "#C7C7CC" }}>
             Updated {new Date(task.updated_at).toLocaleDateString()}
           </Text>
         </View>
