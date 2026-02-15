@@ -25,11 +25,28 @@ import Badge from "./ui/Badge.astro";
           <Badge>Human-friendly</Badge>
         </div>
         <Terminal title="ao list">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">list</span></span>
-          <span class="line"><span class="output">  #  Title                     Priority  Due        Status</span></span>
-          <span class="line"><span class="output">  1  Refactor auth middleware   </span><span class="val">high</span><span class="output">      Fri Feb 20 todo</span></span>
-          <span class="line"><span class="output">  2  Write migration tests     </span><span class="val">medium</span><span class="output">    —          in-progress</span></span>
-          <span class="line"><span class="output">  3  Update API docs           </span><span class="val">low</span><span class="output">       —          todo</span></span>
+          <span class="line"
+            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            <span class="sub">list</span></span
+          >
+          <span class="line"
+            ><span class="output"> # Title Priority Due Status</span></span
+          >
+          <span class="line"
+            ><span class="output"> 1 Refactor auth middleware </span><span
+              class="val">high</span
+            ><span class="output"> Fri Feb 20 todo</span></span
+          >
+          <span class="line"
+            ><span class="output"> 2 Write migration tests </span><span
+              class="val">medium</span
+            ><span class="output"> — in-progress</span></span
+          >
+          <span class="line"
+            ><span class="output"> 3 Update API docs </span><span class="val"
+              >low</span
+            ><span class="output"> — todo</span></span
+          >
         </Terminal>
       </div>
       <div class="comparison-col">
@@ -37,14 +54,41 @@ import Badge from "./ui/Badge.astro";
           <Badge>Agent-friendly</Badge>
         </div>
         <Terminal title="ao list --json">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">list</span> <span class="flag">--json</span></span>
+          <span class="line"
+            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            <span class="sub">list</span>
+            <span class="flag">--json</span></span
+          >
           <span class="line"><span class="output">[</span></span>
-          <span class="line"><span class="output">  {"{"}</span></span>
-          <span class="line"><span class="output">    </span><span class="key">"id"</span><span class="output">: </span><span class="str">"019414a2-7b1a-..."</span><span class="output">,</span></span>
-          <span class="line"><span class="output">    </span><span class="key">"title"</span><span class="output">: </span><span class="str">"Refactor auth middleware"</span><span class="output">,</span></span>
-          <span class="line"><span class="output">    </span><span class="key">"status"</span><span class="output">: </span><span class="str">"todo"</span><span class="output">,</span></span>
-          <span class="line"><span class="output">    </span><span class="key">"priority"</span><span class="output">: </span><span class="str">"high"</span></span>
-          <span class="line"><span class="output">  {"}"}</span></span>
+          <span class="line"><span class="output"> {"{"}</span></span>
+          <span class="line"
+            ><span class="output"> </span><span class="key">"id"</span><span
+              class="output"
+              >:
+            </span><span class="str">"019414a2-7b1a-..."</span><span
+              class="output">,</span
+            ></span
+          >
+          <span class="line"
+            ><span class="output"> </span><span class="key">"title"</span><span
+              class="output"
+              >:
+            </span><span class="str">"Refactor auth middleware"</span><span
+              class="output">,</span
+            ></span
+          >
+          <span class="line"
+            ><span class="output"> </span><span class="key">"status"</span><span
+              class="output"
+              >:
+            </span><span class="str">"todo"</span><span class="output">,</span
+            ></span
+          >
+          <span class="line"
+            ><span class="output"> </span><span class="key">"priority"</span
+            ><span class="output">: </span><span class="str">"high"</span></span
+          >
+          <span class="line"><span class="output"> {"}"}</span></span>
           <span class="line"><span class="output">]</span></span>
         </Terminal>
       </div>
@@ -55,15 +99,31 @@ import Badge from "./ui/Badge.astro";
         <h3>Idempotent creates. Safe retries.</h3>
         <p class="body agent-feature-body">
           Agents retry. Network calls fail. ao's <code>--id</code> flag lets agents
-          supply their own UUIDv7, making creates idempotent. Run it twice, get
-          one task.
+          supply their own UUIDv7, making creates idempotent. Run it twice, get one
+          task.
         </p>
         <Terminal title="idempotent creates">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span>
-          <span class="line"><span class="output">Created task 019414a3</span></span>
+          <span class="line"
+            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            <span class="sub">add</span>
+            <span class="str">"Deploy to staging"</span>
+            <span class="flag">--id</span>
+            <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span
+          >
+          <span class="line"
+            ><span class="output">Created task 019414a3</span></span
+          >
           <span class="blank"></span>
-          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span>
-          <span class="line"><span class="output">Task already exists. No-op.</span></span>
+          <span class="line"
+            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            <span class="sub">add</span>
+            <span class="str">"Deploy to staging"</span>
+            <span class="flag">--id</span>
+            <span class="val">019414a3-8c2b-7e5f-9d4a-2b3c4d5e6f70</span></span
+          >
+          <span class="line"
+            ><span class="output">Task already exists. No-op.</span></span
+          >
         </Terminal>
       </div>
 
@@ -75,11 +135,26 @@ import Badge from "./ui/Badge.astro";
           arbitrary key-value pairs.
         </p>
         <Terminal title="metadata">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">add</span> <span class="str">"Review PR feedback"</span> \</span>
-          <span class="line">    <span class="flag">--meta</span> <span class="val">agent=claude-code</span> \</span>
-          <span class="line">    <span class="flag">--meta</span> <span class="val">pr=142</span> \</span>
-          <span class="line">    <span class="flag">--meta</span> <span class="val">run=a1b2c3</span></span>
-          <span class="line"><span class="output">Created task 019414a4</span></span>
+          <span class="line"
+            ><span class="prompt">$ </span><span class="cmd">ao</span>
+            <span class="sub">add</span>
+            <span class="str">"Review PR feedback"</span> \</span
+          >
+          <span class="line">
+            <span class="flag">--meta</span>
+            <span class="val">agent=claude-code</span> \</span
+          >
+          <span class="line">
+            <span class="flag">--meta</span>
+            <span class="val">pr=142</span> \</span
+          >
+          <span class="line">
+            <span class="flag">--meta</span>
+            <span class="val">run=a1b2c3</span></span
+          >
+          <span class="line"
+            ><span class="output">Created task 019414a4</span></span
+          >
         </Terminal>
       </div>
     </div>

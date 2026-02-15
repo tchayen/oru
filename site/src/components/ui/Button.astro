@@ -6,7 +6,12 @@ interface Props {
   [key: string]: any;
 }
 
-const { variant = "primary", href, class: className = "", ...rest } = Astro.props;
+const {
+  variant = "primary",
+  href,
+  class: className = "",
+  ...rest
+} = Astro.props;
 const Tag = href ? "a" : "button";
 ---
 

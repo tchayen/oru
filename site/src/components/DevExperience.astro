@@ -17,44 +17,69 @@ import MiniCode from "./ui/MiniCode.astro";
     <div class="dx-grid">
       <FeatureCard title="Natural language dates" class="reveal" data-delay="0">
         <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">add</span> <span class="str">"Ship v2"</span> <span class="flag">--due</span> <span class="val">tomorrow</span>
+          <span class="prompt">$ </span><span class="cmd">ao</span>
+          <span class="sub">add</span>
+          <span class="str">"Ship v2"</span>
+          <span class="flag">--due</span>
+          <span class="val">tomorrow</span>
         </MiniCode>
-        Parse "tomorrow", "friday", "next week", or any date string. No rigid formats required.
+        Parse "tomorrow", "friday", "next week", or any date string. No rigid formats
+        required.
       </FeatureCard>
 
       <FeatureCard title="TOML config" class="reveal" data-delay="80">
         <MiniCode slot="code">
           <span class="key">~/.ao/config.toml</span>
         </MiniCode>
-        Set default priority, preferred date format, and display preferences in a human-readable config file.
+        Set default priority, preferred date format, and display preferences in a
+        human-readable config file.
       </FeatureCard>
 
       <FeatureCard title="Labels" class="reveal" data-delay="160">
         <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">list</span> <span class="flag">--label</span> <span class="val">backend</span>
+          <span class="prompt">$ </span><span class="cmd">ao</span>
+          <span class="sub">list</span>
+          <span class="flag">--label</span>
+          <span class="val">backend</span>
         </MiniCode>
-        Tag and filter tasks. Labels are freeform strings — no predefined categories to manage.
+        Tag and filter tasks. Labels are freeform strings — no predefined categories
+        to manage.
       </FeatureCard>
 
       <FeatureCard title="Task notes" class="reveal" data-delay="80">
         <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">note</span> <span class="val">3</span> <span class="str">"Blocked on API review"</span>
+          <span class="prompt">$ </span><span class="cmd">ao</span>
+          <span class="sub">note</span>
+          <span class="val">3</span>
+          <span class="str">"Blocked on API review"</span>
         </MiniCode>
-        Append context to any task. Notes are append-only and sync safely across devices.
+        Append context to any task. Notes are append-only and sync safely across
+        devices.
       </FeatureCard>
 
       <FeatureCard title="Edit anything" class="reveal" data-delay="160">
         <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">edit</span> <span class="val">1</span> <span class="flag">--title</span> <span class="str">"Ship v1.0"</span> <span class="flag">--priority</span> <span class="val">low</span>
+          <span class="prompt">$ </span><span class="cmd">ao</span>
+          <span class="sub">edit</span>
+          <span class="val">1</span>
+          <span class="flag">--title</span>
+          <span class="str">"Ship v1.0"</span>
+          <span class="flag">--priority</span>
+          <span class="val">low</span>
         </MiniCode>
         Update title, priority, status, due date, or labels in a single command.
       </FeatureCard>
 
       <FeatureCard title="Pipe-friendly" class="reveal" data-delay="240">
         <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">ao</span> <span class="sub">show</span> <span class="val">1</span> <span class="flag">--json</span> | <span class="cmd">jq</span> <span class="str">'.due'</span>
+          <span class="prompt">$ </span><span class="cmd">ao</span>
+          <span class="sub">show</span>
+          <span class="val">1</span>
+          <span class="flag">--json</span> | <span class="cmd">jq</span>
+          <span class="str">'.due'</span>
         </MiniCode>
-        Compose with the Unix tools you already know. JSON output works with jq, grep, and scripts.
+        Compose with the Unix tools you already know. JSON output works with jq,
+        grep, and scripts.
       </FeatureCard>
     </div>
   </div>

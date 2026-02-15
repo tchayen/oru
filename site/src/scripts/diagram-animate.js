@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
 
   if (prefersReducedMotion) {
     return;
@@ -66,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const line = item.el.querySelector(".diagram-line");
         if (line) {
           setTimeout(() => {
-            line.style.transition = "transform 300ms cubic-bezier(0.16, 1, 0.3, 1)";
+            line.style.transition =
+              "transform 300ms cubic-bezier(0.16, 1, 0.3, 1)";
             line.style.transform = "scaleY(1)";
           }, delay);
         }
@@ -121,20 +124,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Then reveal dots one by one from left to right
     events.forEach((event, index) => {
-      setTimeout(
-        () => {
-          event.style.transition =
-            "opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1)";
-          event.style.opacity = "1";
-          event.style.transform = "scale(1)";
+      setTimeout(() => {
+        event.style.transition =
+          "opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1)";
+        event.style.opacity = "1";
+        event.style.transform = "scale(1)";
 
-          const dot = event.querySelector(".timeline-dot");
-          if (dot) {
-            dot.classList.add("dot-animate-in");
-          }
-        },
-        400 + index * 120,
-      );
+        const dot = event.querySelector(".timeline-dot");
+        if (dot) {
+          dot.classList.add("dot-animate-in");
+        }
+      }, 400 + index * 120);
     });
   }
 });
