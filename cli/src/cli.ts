@@ -39,6 +39,10 @@ import {
   generateBashCompletions,
   generateZshCompletions,
   generateFishCompletions,
+  detectShell,
+  installCompletions,
+  confirm,
+  formatSuccessMessage,
 } from "./completions/index.js";
 import { bold, dim, yellow } from "./format/colors.js";
 
@@ -1238,7 +1242,30 @@ export function createProgram(
   // completions
   const completionsCmd = program
     .command("completions")
-    .description("Generate shell completion scripts");
+    .description("Generate shell completion scripts")
+    .action(async () => {
+      const shell = detectShell();
+      if (!shell) {
+        write("Could not detect shell from $SHELL.\nUse: oru completions bash|zsh|fish");
+        process.exitCode = 1;
+        return;
+      }
+      if (!process.stdin.isTTY) {
+        write(
+          `Detected shell: ${shell}\nUse: oru completions ${shell} > <path>\nOr run interactively: oru completions`,
+        );
+        process.exitCode = 1;
+        return;
+      }
+      write(`Detected shell: ${shell}`);
+      const yes = await confirm(`Install completions for ${shell}? [Y/n] `);
+      if (!yes) {
+        write("Aborted.");
+        return;
+      }
+      const result = installCompletions(shell, write);
+      write(formatSuccessMessage(result));
+    });
 
   completionsCmd
     .command("bash")
