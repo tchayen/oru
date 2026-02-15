@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatTasksText, formatTaskText } from "../../src/format/text.js";
+import { formatTasksText, formatTaskText, filterByDue } from "../../src/format/text.js";
 import { formatTasksJson, formatTaskJson } from "../../src/format/json.js";
 import type { Task } from "../../src/tasks/types.js";
 
@@ -70,6 +70,128 @@ describe("text formatter", () => {
   it("shows notes when present", () => {
     const output = formatTaskText(sampleTask);
     expect(output).toContain("Get organic");
+  });
+});
+
+const sampleTaskNoDue: Task = { ...sampleTask, due_at: null };
+
+describe("filterByDue", () => {
+  // Wednesday 2026-02-18 at noon
+  const now = new Date(2026, 1, 18, 12, 0, 0);
+
+  const taskDueToday: Task = { ...sampleTaskNoDue, id: "today1", due_at: "2026-02-18T00:00:00" };
+  const taskDueTomorrow: Task = {
+    ...sampleTaskNoDue,
+    id: "tomorrow1",
+    due_at: "2026-02-19T00:00:00",
+  };
+  const taskOverdue: Task = { ...sampleTaskNoDue, id: "overdue1", due_at: "2026-02-15T00:00:00" };
+  const taskNoDue: Task = { ...sampleTaskNoDue, id: "nodue1", due_at: null };
+  const taskThisWeekFri: Task = {
+    ...sampleTaskNoDue,
+    id: "fri1",
+    due_at: "2026-02-20T00:00:00",
+  };
+  const taskNextWeek: Task = {
+    ...sampleTaskNoDue,
+    id: "nextweek1",
+    due_at: "2026-02-25T00:00:00",
+  };
+
+  const allTasks = [
+    taskDueToday,
+    taskDueTomorrow,
+    taskOverdue,
+    taskNoDue,
+    taskThisWeekFri,
+    taskNextWeek,
+  ];
+
+  it("filters tasks due today", () => {
+    const result = filterByDue(allTasks, "today", now);
+    expect(result.map((t) => t.id)).toEqual(["today1"]);
+  });
+
+  it("filters tasks due this week (Mon-Sun)", () => {
+    // Week of 2026-02-16 (Mon) to 2026-02-22 (Sun)
+    const result = filterByDue(allTasks, "this-week", now);
+    const ids = result.map((t) => t.id);
+    expect(ids).toContain("today1");
+    expect(ids).toContain("tomorrow1");
+    expect(ids).toContain("fri1");
+    expect(ids).not.toContain("overdue1"); // 2026-02-15 is Sunday of prev week
+    expect(ids).not.toContain("nodue1");
+    expect(ids).not.toContain("nextweek1");
+  });
+
+  it("filters overdue tasks", () => {
+    const result = filterByDue(allTasks, "overdue", now);
+    expect(result.map((t) => t.id)).toEqual(["overdue1"]);
+  });
+
+  it("excludes tasks with no due date from all filters", () => {
+    const noDueTasks = [taskNoDue];
+    expect(filterByDue(noDueTasks, "today", now)).toEqual([]);
+    expect(filterByDue(noDueTasks, "this-week", now)).toEqual([]);
+    expect(filterByDue(noDueTasks, "overdue", now)).toEqual([]);
+  });
+
+  it("task due today at specific time is not overdue before that time", () => {
+    const taskDueAt3pm: Task = { ...sampleTaskNoDue, id: "3pm", due_at: "2026-02-18T15:00:00" };
+    const result = filterByDue([taskDueAt3pm], "overdue", now);
+    expect(result).toEqual([]);
+  });
+
+  it("task due today at specific time is overdue after that time", () => {
+    const taskDueAt10am: Task = { ...sampleTaskNoDue, id: "10am", due_at: "2026-02-18T10:00:00" };
+    const result = filterByDue([taskDueAt10am], "overdue", now);
+    expect(result.map((t) => t.id)).toEqual(["10am"]);
+  });
+});
+
+describe("overdue highlighting", () => {
+  it("highlights overdue due date in red in single task view", () => {
+    process.env.FORCE_COLOR = "1";
+    try {
+      const overdue: Task = {
+        ...sampleTask,
+        due_at: "2020-01-01T00:00:00",
+      };
+      const output = formatTaskText(overdue);
+      // Red ANSI: \x1b[31m
+      expect(output).toContain("\x1b[31m2020-01-01\x1b[39m");
+    } finally {
+      delete process.env.FORCE_COLOR;
+    }
+  });
+
+  it("highlights overdue due date in red in list view", () => {
+    process.env.FORCE_COLOR = "1";
+    try {
+      const overdue: Task = {
+        ...sampleTask,
+        due_at: "2020-01-01T00:00:00",
+      };
+      const output = formatTasksText([overdue]);
+      expect(output).toContain("\x1b[31m2020-01-01\x1b[39m");
+    } finally {
+      delete process.env.FORCE_COLOR;
+    }
+  });
+
+  it("does not highlight future due date in red", () => {
+    process.env.FORCE_COLOR = "1";
+    try {
+      const future: Task = {
+        ...sampleTask,
+        due_at: "2099-12-31T00:00:00",
+      };
+      const output = formatTaskText(future);
+      expect(output).not.toContain("\x1b[31m2099-12-31\x1b[39m");
+      expect(output).toContain("2099-12-31");
+    } finally {
+      delete process.env.FORCE_COLOR;
+    }
   });
 });
 

@@ -8,7 +8,7 @@ import { TaskService } from "./main.js";
 import { createKysely } from "./db/kysely.js";
 import { openDb } from "./db/connection.js";
 import { initSchema } from "./db/schema.js";
-import { formatTaskText, formatTasksText } from "./format/text.js";
+import { formatTaskText, formatTasksText, filterByDue, type DueFilter } from "./format/text.js";
 import { formatTaskJson, formatTasksJson } from "./format/json.js";
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
@@ -240,6 +240,8 @@ export function createProgram(
       new Option("-p, --priority <priority>", "Filter by priority").choices(priorityChoices),
     )
     .option("-l, --label <label>", "Filter by label")
+    .addOption(new Option("--due <range>", "Filter by due date").choices(["today", "this-week"]))
+    .option("--overdue", "Show only overdue tasks")
     .option("--search <query>", "Search tasks by title")
     .option("-a, --all", "Include done tasks")
     .option("--json", "Output as JSON")
@@ -249,6 +251,8 @@ export function createProgram(
         status?: Status;
         priority?: Priority;
         label?: string;
+        due?: "today" | "this-week";
+        overdue?: boolean;
         search?: string;
         all?: boolean;
         json?: boolean;
@@ -263,6 +267,12 @@ export function createProgram(
         // Hide done tasks unless --all or --status is specified
         if (!opts.all && !opts.status) {
           tasks = tasks.filter((t) => t.status !== "done");
+        }
+        if (opts.due) {
+          tasks = filterByDue(tasks, opts.due as DueFilter);
+        }
+        if (opts.overdue) {
+          tasks = filterByDue(tasks, "overdue");
         }
         if (useJson(opts)) {
           write(formatTasksJson(tasks));
