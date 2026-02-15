@@ -34,9 +34,17 @@
 - [x] Duplicate notes not deduplicated — Adding the same note text twice results in duplicates. CLAUDE.md claims "notes append-only with dedup" but dedup doesn't work at the CLI/service layer (may only apply during oplog replay?). (PR #47)
 - [x] Table misalignment with long IDs — custom-id-123 (13 chars) pushes columns out of alignment since the ID column width is fixed at 8 chars. The table should dynamically size columns. (PR #45)
 - [ ] Metadata invisible in text output — --meta key=value pairs are stored correctly but only visible in --json output. The get text view and list view don't show metadata at all.
-- [ ] No way to delete metadata keys — --meta key= sets value to empty string. There's no way to actually remove a key (e.g. --meta key without = is silently ignored).
+- [x] No way to delete metadata keys — --meta key= sets value to empty string. There's no way to actually remove a key (e.g. --meta key without = is silently ignored). (PR #54)
 - [x] `--meta` without `=` silently ignored — --meta broken (no equals sign) succeeds silently without any warning. Should either warn or error. (PR #51)
 - [x] `config init` ignores env vars — AO_CONFIG_DIR didn't change where the config file was created (it always went to `~/.ao/config.toml`). Could be by design, but worth noting. (PR #52)
 - [ ] No sorting options on `list` — Cannot sort by due date, creation date, or title. The default sort (priority desc, then creation order) is reasonable but users might want --sort due or --sort title.
-- [ ] No `--limit`/`--offset` on `list` — For large task lists, there's no pagination. Fine for now but could matter at scale.
+- [x] No `--limit`/`--offset` on `list` — For large task lists, there's no pagination. Fine for now but could matter at scale. (PR #56)
 - [ ] No way to clear/remove notes — Notes are append-only, with no way to remove an incorrect note even via edit (the edit view says "Existing notes are append-only").
+
+# Features — agent & collaboration improvements
+
+- [ ] Multi-value filters on `list` — Allow comma-separated values like `ao list -s todo,in_progress` or `ao list -p high,urgent` to reduce round trips. Every extra command is latency and tokens for agents.
+- [ ] `ao list --actionable` — Show tasks that are not blocked, not done, sorted by priority. The "what should I work on next?" query in a single flag. Builds on the `blocked_by` feature from PR #39.
+- [ ] Oplog viewer — `ao log <id>` to show the change history of a task. Useful for understanding context when picking up a task someone else worked on ("why was this reopened? what was tried before?").
+- [ ] Owner/assignee field — `ao update <id> --assign agent` / `--assign human`. Foundation for `ao list --mine`, "what did the agent do while I was away", and dividing work between human and agent.
+- [ ] Handoff signal — A way to signal task transitions between human and agent. Could be a new status like `in_review`, or a dedicated `ao review <id>` command. Supports the ping-pong workflow where agent marks work done and human reviews.

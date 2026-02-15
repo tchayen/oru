@@ -114,4 +114,5 @@ Defaults to `~/.ao/ao.db`. Override with `AO_DB_PATH` env var.
 - Delete checklist sections that don't apply (e.g. remove "If adding a new CLI command" for an app-only PR)
 - Keep commit messages concise — focus on the "why", not the "what"
 - Do not add `Co-Authored-By` lines to commits
+- Do not add "Generated with Claude Code" to PR descriptions
 - Run `pnpm check` before pushing
