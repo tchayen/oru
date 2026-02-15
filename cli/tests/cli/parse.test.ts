@@ -620,6 +620,65 @@ describe("CLI parse", () => {
     expect(output).toContain("2026-03-20");
   });
 
+  // Quick status shortcuts: done, start
+  it("done command marks task as done", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Finish me", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "done", id, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.status).toBe("done");
+  });
+
+  it("done --json returns error for non-existent task", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "done", "no-such-id", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("not_found");
+  });
+
+  it("done command shows text output by default", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Text done", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "done", id]);
+    expect(output).toContain("done");
+    expect(output).toContain("Text done");
+  });
+
+  it("start command marks task as in_progress", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Begin me", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "start", id, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.status).toBe("in_progress");
+  });
+
+  it("start --json returns error for non-existent task", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "ao", "start", "no-such-id", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("not_found");
+  });
+
+  it("start command shows text output by default", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "ao", "add", "Text start", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "ao", "start", id]);
+    expect(output).toContain("in_progress");
+    expect(output).toContain("Text start");
+  });
+
   it("list outputs JSON when config sets output_format = json", async () => {
     const config = {
       date_format: "mdy" as const,

@@ -17,6 +17,12 @@ import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./c
 import { parseDate } from "./dates/parse.js";
 import { serializeTask, parseDocument, openInEditor } from "./edit.js";
 import type { Status, Priority } from "./tasks/types.js";
+import {
+  resolveDynamic,
+  generateBashCompletions,
+  generateZshCompletions,
+  generateFishCompletions,
+} from "./completions/index.js";
 
 declare const __GIT_COMMIT__: string;
 
@@ -619,6 +625,53 @@ export function createProgram(
       }
     });
 
+  // done (shortcut for update --status done)
+  program
+    .command("done <id>")
+    .description("Mark a task as done (shortcut for update -s done)")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const task = await service.update(id, { status: "done" });
+      if (!task) {
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "not_found", id }));
+        } else {
+          write(`Task ${id} not found.`);
+        }
+        process.exitCode = 1;
+        return;
+      }
+      if (useJson(opts)) {
+        write(formatTaskJson(task));
+      } else {
+        write(formatTaskText(task));
+      }
+    });
+
+  // start (shortcut for update --status in_progress)
+  program
+    .command("start <id>")
+    .description("Start a task (shortcut for update -s in_progress)")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const task = await service.update(id, { status: "in_progress" });
+      if (!task) {
+        if (useJson(opts)) {
+          write(JSON.stringify({ error: "not_found", id }));
+        } else {
+          write(`Task ${id} not found.`);
+        }
+        process.exitCode = 1;
+        return;
+      }
+      if (useJson(opts)) {
+        write(formatTaskJson(task));
+      } else {
+        write(formatTaskText(task));
+      }
+    });
   // delete
   program
     .command("delete <id>")
@@ -721,6 +774,42 @@ export function createProgram(
       child.on("exit", (code) => {
         process.exit(code ?? 0);
       });
+    });
+
+  // completions
+  const completionsCmd = program
+    .command("completions")
+    .description("Generate shell completion scripts");
+
+  completionsCmd
+    .command("bash")
+    .description("Generate bash completions")
+    .action(() => {
+      write(generateBashCompletions());
+    });
+
+  completionsCmd
+    .command("zsh")
+    .description("Generate zsh completions")
+    .action(() => {
+      write(generateZshCompletions());
+    });
+
+  completionsCmd
+    .command("fish")
+    .description("Generate fish completions")
+    .action(() => {
+      write(generateFishCompletions());
+    });
+
+  // hidden _complete command for dynamic completions
+  program
+    .command("_complete <type> [prefix]", { hidden: true })
+    .action(async (type: string, prefix?: string) => {
+      const results = await resolveDynamic(service, type, prefix ?? "");
+      if (results.length > 0) {
+        write(results.join("\n"));
+      }
     });
 
   return program;
