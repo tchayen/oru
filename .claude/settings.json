@@ -1,4 +1,19 @@
 {
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && pnpm install --frozen-lockfile && pnpm build",
+            "timeout": 120,
+            "statusMessage": "Installing dependencies and building CLI..."
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(pnpm install*)",
