@@ -1,0 +1,78 @@
+export function generateBashCompletions(): string {
+  return `# ao shell completions for bash
+# Install: ao completions bash >> ~/.bashrc
+
+_ao_completions() {
+  local cur prev words cword
+  _init_completion || return
+
+  local commands="add list get update delete sync config server completions"
+  local config_subcommands="init path"
+  local server_subcommands="start"
+  local completion_shells="bash zsh fish"
+  local status_values="todo in_progress done"
+  local priority_values="low medium high urgent"
+
+  # Determine the subcommand
+  local subcmd=""
+  local i
+  for ((i = 1; i < cword; i++)); do
+    case "\${words[i]}" in
+      add|list|get|update|delete|sync|config|server|completions)
+        subcmd="\${words[i]}"
+        break
+        ;;
+    esac
+  done
+
+  # Handle flag values
+  case "$prev" in
+    -s|--status)
+      COMPREPLY=($(compgen -W "$status_values" -- "$cur"))
+      return
+      ;;
+    -p|--priority)
+      COMPREPLY=($(compgen -W "$priority_values" -- "$cur"))
+      return
+      ;;
+    -l|--label)
+      local labels
+      labels=$(ao _complete labels "$cur" 2>/dev/null)
+      COMPREPLY=($(compgen -W "$labels" -- "$cur"))
+      return
+      ;;
+  esac
+
+  case "$subcmd" in
+    "")
+      COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+      ;;
+    config)
+      COMPREPLY=($(compgen -W "$config_subcommands" -- "$cur"))
+      ;;
+    server)
+      if [[ "$prev" == "start" ]] && [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "--port --tunnel" -- "$cur"))
+      else
+        COMPREPLY=($(compgen -W "$server_subcommands" -- "$cur"))
+      fi
+      ;;
+    completions)
+      COMPREPLY=($(compgen -W "$completion_shells" -- "$cur"))
+      ;;
+    get|update|delete)
+      if [[ "$cur" != -* ]]; then
+        local tasks
+        tasks=$(ao _complete tasks "$cur" 2>/dev/null | cut -f1)
+        COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
+      fi
+      ;;
+    sync)
+      _filedir
+      ;;
+  esac
+}
+
+complete -F _ao_completions ao
+`;
+}

@@ -16,6 +16,12 @@ import { getDeviceId } from "./device.js";
 import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./config/config.js";
 import { parseDate } from "./dates/parse.js";
 import type { Status, Priority } from "./tasks/types.js";
+import {
+  resolveDynamic,
+  generateBashCompletions,
+  generateZshCompletions,
+  generateFishCompletions,
+} from "./completions/index.js";
 
 declare const __GIT_COMMIT__: string;
 
@@ -601,6 +607,42 @@ export function createProgram(
       child.on("exit", (code) => {
         process.exit(code ?? 0);
       });
+    });
+
+  // completions
+  const completionsCmd = program
+    .command("completions")
+    .description("Generate shell completion scripts");
+
+  completionsCmd
+    .command("bash")
+    .description("Generate bash completions")
+    .action(() => {
+      write(generateBashCompletions());
+    });
+
+  completionsCmd
+    .command("zsh")
+    .description("Generate zsh completions")
+    .action(() => {
+      write(generateZshCompletions());
+    });
+
+  completionsCmd
+    .command("fish")
+    .description("Generate fish completions")
+    .action(() => {
+      write(generateFishCompletions());
+    });
+
+  // hidden _complete command for dynamic completions
+  program
+    .command("_complete <type> [prefix]", { hidden: true })
+    .action(async (type: string, prefix?: string) => {
+      const results = await resolveDynamic(service, type, prefix ?? "");
+      if (results.length > 0) {
+        write(results.join("\n"));
+      }
     });
 
   return program;
