@@ -1,17 +1,21 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
-import { createTestDb } from "../helpers/test-db.js";
+import type { Kysely } from "kysely";
+import type { DB } from "../../src/db/kysely.js";
+import { createTestDb, createTestKysely } from "../helpers/test-db.js";
 import { writeOp } from "../../src/oplog/writer.js";
 
 describe("oplog writer", () => {
   let db: Database.Database;
+  let ky: Kysely<DB>;
 
   beforeEach(() => {
     db = createTestDb();
+    ky = createTestKysely(db);
   });
 
-  it("records a create op", () => {
-    const entry = writeOp(db, {
+  it("records a create op", async () => {
+    const entry = await writeOp(ky, {
       task_id: "task-1",
       device_id: "device-a",
       op_type: "create",
@@ -25,8 +29,8 @@ describe("oplog writer", () => {
     expect(entry.timestamp).toBeTruthy();
   });
 
-  it("records an update op", () => {
-    const entry = writeOp(db, {
+  it("records an update op", async () => {
+    const entry = await writeOp(ky, {
       task_id: "task-1",
       device_id: "device-a",
       op_type: "update",
@@ -38,8 +42,8 @@ describe("oplog writer", () => {
     expect(entry.value).toBe("done");
   });
 
-  it("records a delete op", () => {
-    const entry = writeOp(db, {
+  it("records a delete op", async () => {
+    const entry = await writeOp(ky, {
       task_id: "task-1",
       device_id: "device-a",
       op_type: "delete",
@@ -51,15 +55,15 @@ describe("oplog writer", () => {
     expect(entry.value).toBeNull();
   });
 
-  it("generates unique UUIDv7 ids", () => {
-    const e1 = writeOp(db, {
+  it("generates unique UUIDv7 ids", async () => {
+    const e1 = await writeOp(ky, {
       task_id: "t1",
       device_id: "d1",
       op_type: "create",
       field: null,
       value: "{}",
     });
-    const e2 = writeOp(db, {
+    const e2 = await writeOp(ky, {
       task_id: "t2",
       device_id: "d1",
       op_type: "create",
@@ -69,8 +73,8 @@ describe("oplog writer", () => {
     expect(e1.id).not.toBe(e2.id);
   });
 
-  it("stores device_id correctly", () => {
-    writeOp(db, {
+  it("stores device_id correctly", async () => {
+    await writeOp(ky, {
       task_id: "t1",
       device_id: "my-device",
       op_type: "create",
@@ -83,10 +87,10 @@ describe("oplog writer", () => {
     expect(raw.device_id).toBe("my-device");
   });
 
-  it("accepts explicit timestamp", () => {
+  it("accepts explicit timestamp", async () => {
     const ts = "2024-06-01T00:00:00.000Z";
-    const entry = writeOp(
-      db,
+    const entry = await writeOp(
+      ky,
       {
         task_id: "t1",
         device_id: "d1",

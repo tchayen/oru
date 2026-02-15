@@ -2,6 +2,7 @@ import { fileURLToPath } from "url";
 import { Command, Option } from "commander";
 import type Database from "better-sqlite3";
 import { TaskService } from "./main.js";
+import { createKysely } from "./db/kysely.js";
 import { openDb } from "./db/connection.js";
 import { initSchema } from "./db/schema.js";
 import { formatTaskText, formatTasksText } from "./format/text.js";
@@ -35,7 +36,9 @@ export function createProgram(
   db: Database.Database,
   write: (text: string) => void = (t) => process.stdout.write(t + "\n"),
 ): Command {
-  const service = new TaskService(db);
+  const ky = createKysely(db);
+  const deviceId = getDeviceId(db);
+  const service = new TaskService(ky, deviceId);
   const program = new Command("ao")
     .description("agentodo — agent-friendly todo CLI with offline sync")
     .version("0.1.0");
@@ -72,7 +75,7 @@ export function createProgram(
     .option("-n, --note <note>", "Add an initial note")
     .option("--meta <key=value...>", "Add metadata key=value pairs")
     .action(
-      (
+      async (
         title: string,
         opts: {
           id?: string;
@@ -130,7 +133,7 @@ export function createProgram(
 
         // Idempotent create: if --id is given and task exists, return it
         if (opts.id) {
-          const existing = service.get(opts.id);
+          const existing = await service.get(opts.id);
           if (existing) {
             write(formatTaskJson(existing));
             return;
@@ -139,7 +142,7 @@ export function createProgram(
 
         const metadata = opts.meta ? parseMetadata(opts.meta) : undefined;
 
-        const task = service.add({
+        const task = await service.add({
           title,
           id: opts.id,
           status: opts.status,
@@ -165,14 +168,14 @@ export function createProgram(
     .option("--search <query>", "Search tasks by title")
     .option("--json", "Output as JSON")
     .action(
-      (opts: {
+      async (opts: {
         status?: Status;
         priority?: Priority;
         label?: string;
         search?: string;
         json?: boolean;
       }) => {
-        const tasks = service.list({
+        const tasks = await service.list({
           status: opts.status,
           priority: opts.priority,
           label: opts.label,
@@ -191,8 +194,8 @@ export function createProgram(
     .command("get <id>")
     .description("Get a task by ID")
     .option("--json", "Output as JSON")
-    .action((id: string, opts: { json?: boolean }) => {
-      const task = service.get(id);
+    .action(async (id: string, opts: { json?: boolean }) => {
+      const task = await service.get(id);
       if (!task) {
         if (useJson(opts)) {
           write(JSON.stringify({ error: "not_found", id }));
@@ -221,7 +224,7 @@ export function createProgram(
     .option("--meta <key=value...>", "Set metadata key=value pairs")
     .option("--json", "Output as JSON")
     .action(
-      (
+      async (
         id: string,
         opts: {
           title?: string;
@@ -290,7 +293,7 @@ export function createProgram(
         }
 
         if (opts.label) {
-          const existing = service.get(id);
+          const existing = await service.get(id);
           if (!existing) {
             if (useJson(opts)) {
               write(JSON.stringify({ error: "not_found", id }));
@@ -310,7 +313,7 @@ export function createProgram(
         }
 
         if (opts.meta) {
-          const existing = service.get(id);
+          const existing = await service.get(id);
           if (!existing) {
             if (useJson(opts)) {
               write(JSON.stringify({ error: "not_found", id }));
@@ -328,7 +331,7 @@ export function createProgram(
         let task;
 
         if (opts.note && hasFields) {
-          task = service.updateWithNote(
+          task = await service.updateWithNote(
             id,
             updateFields as {
               title?: string;
@@ -340,9 +343,9 @@ export function createProgram(
             opts.note,
           );
         } else if (opts.note) {
-          task = service.addNote(id, opts.note);
+          task = await service.addNote(id, opts.note);
         } else if (hasFields) {
-          task = service.update(
+          task = await service.update(
             id,
             updateFields as {
               title?: string;
@@ -353,7 +356,7 @@ export function createProgram(
             },
           );
         } else {
-          task = service.get(id);
+          task = await service.get(id);
         }
 
         if (!task) {
@@ -379,8 +382,8 @@ export function createProgram(
     .command("delete <id>")
     .description("Delete a task")
     .option("--json", "Output as JSON")
-    .action((id: string, opts: { json?: boolean }) => {
-      const result = service.delete(id);
+    .action(async (id: string, opts: { json?: boolean }) => {
+      const result = await service.delete(id);
       if (useJson(opts)) {
         if (!result) {
           write(JSON.stringify({ error: "not_found", id }));
@@ -404,7 +407,6 @@ export function createProgram(
     .action(async (remotePath: string, opts: { json?: boolean }) => {
       const remote = new FsRemote(remotePath);
       try {
-        const deviceId = getDeviceId(db);
         const engine = new SyncEngine(db, remote, deviceId);
         const result = await engine.sync();
 

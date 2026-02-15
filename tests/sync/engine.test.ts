@@ -3,7 +3,9 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import type Database from "better-sqlite3";
-import { createTestDb } from "../helpers/test-db.js";
+import type { Kysely } from "kysely";
+import type { DB } from "../../src/db/kysely.js";
+import { createTestDb, createTestKysely } from "../helpers/test-db.js";
 import { FsRemote } from "../../src/sync/fs-remote.js";
 import { SyncEngine } from "../../src/sync/engine.js";
 import { writeOp } from "../../src/oplog/writer.js";
@@ -14,11 +16,13 @@ describe("SyncEngine", () => {
   let tmpDir: string;
   let remote: FsRemote;
   let db: Database.Database;
+  let ky: Kysely<DB>;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ao-engine-test-"));
     remote = new FsRemote(path.join(tmpDir, "remote-oplog.db"));
     db = createTestDb();
+    ky = createTestKysely(db);
   });
 
   afterEach(() => {
@@ -28,7 +32,7 @@ describe("SyncEngine", () => {
   });
 
   it("pushes local ops to remote", async () => {
-    writeOp(db, {
+    await writeOp(ky, {
       task_id: "t1",
       device_id: "device-a",
       op_type: "create",
@@ -75,16 +79,17 @@ describe("SyncEngine", () => {
     const engine = new SyncEngine(db, remote, "device-a");
     await engine.pull();
 
-    const task = getTask(db, "t-remote");
+    const task = await getTask(ky, "t-remote");
     expect(task).toBeDefined();
     expect(task!.title).toBe("Remote Task");
   });
 
   it("round-trip: push then pull on different device", async () => {
     const db2 = createTestDb();
+    const ky2 = createTestKysely(db2);
 
     // Device A creates a task
-    writeOp(db, {
+    await writeOp(ky, {
       task_id: "t1",
       device_id: "device-a",
       op_type: "create",
@@ -98,7 +103,7 @@ describe("SyncEngine", () => {
         metadata: {},
       }),
     });
-    createTask(db, { id: "t1", title: "Shared Task" });
+    await createTask(ky, { id: "t1", title: "Shared Task" });
 
     const engineA = new SyncEngine(db, remote, "device-a");
     await engineA.push();
@@ -107,7 +112,7 @@ describe("SyncEngine", () => {
     const engineB = new SyncEngine(db2, remote, "device-b");
     await engineB.pull();
 
-    const task = getTask(db2, "t1");
+    const task = await getTask(ky2, "t1");
     expect(task).toBeDefined();
     expect(task!.title).toBe("Shared Task");
 
@@ -116,9 +121,10 @@ describe("SyncEngine", () => {
 
   it("bidirectional merge", async () => {
     const db2 = createTestDb();
+    const ky2 = createTestKysely(db2);
 
     // Both devices create different tasks locally
-    writeOp(db, {
+    await writeOp(ky, {
       task_id: "t-a",
       device_id: "device-a",
       op_type: "create",
@@ -132,9 +138,9 @@ describe("SyncEngine", () => {
         metadata: {},
       }),
     });
-    createTask(db, { id: "t-a", title: "From A" });
+    await createTask(ky, { id: "t-a", title: "From A" });
 
-    writeOp(db2, {
+    await writeOp(ky2, {
       task_id: "t-b",
       device_id: "device-b",
       op_type: "create",
@@ -148,7 +154,7 @@ describe("SyncEngine", () => {
         metadata: {},
       }),
     });
-    createTask(db2, { id: "t-b", title: "From B" });
+    await createTask(ky2, { id: "t-b", title: "From B" });
 
     // Both push and pull
     const engineA = new SyncEngine(db, remote, "device-a");
@@ -160,17 +166,17 @@ describe("SyncEngine", () => {
     await engineB.pull();
 
     // Both should have both tasks
-    expect(getTask(db, "t-a")).toBeDefined();
-    expect(getTask(db, "t-b")).toBeDefined();
-    expect(getTask(db2, "t-a")).toBeDefined();
-    expect(getTask(db2, "t-b")).toBeDefined();
+    expect(await getTask(ky, "t-a")).toBeDefined();
+    expect(await getTask(ky, "t-b")).toBeDefined();
+    expect(await getTask(ky2, "t-a")).toBeDefined();
+    expect(await getTask(ky2, "t-b")).toBeDefined();
 
     db2.close();
   });
 
   // GAP-6: Push idempotency — pushing same ops twice doesn't duplicate
   it("push is idempotent — double push does not duplicate", async () => {
-    writeOp(db, {
+    await writeOp(ky, {
       task_id: "t1",
       device_id: "device-a",
       op_type: "create",
@@ -201,6 +207,7 @@ describe("SyncEngine", () => {
 
   it("conflict resolution through sync", async () => {
     const db2 = createTestDb();
+    const ky2 = createTestKysely(db2);
 
     // Both devices start with the same task
     const createValue = JSON.stringify({
@@ -212,14 +219,14 @@ describe("SyncEngine", () => {
       metadata: {},
     });
 
-    writeOp(db, {
+    await writeOp(ky, {
       task_id: "t1",
       device_id: "device-a",
       op_type: "create",
       field: null,
       value: createValue,
     });
-    createTask(db, { id: "t1", title: "Task" });
+    await createTask(ky, { id: "t1", title: "Task" });
 
     const engineA = new SyncEngine(db, remote, "device-a");
     await engineA.push();
@@ -228,7 +235,7 @@ describe("SyncEngine", () => {
     await engineB.pull();
 
     // Device A updates status
-    writeOp(db, {
+    await writeOp(ky, {
       task_id: "t1",
       device_id: "device-a",
       op_type: "update",
@@ -237,7 +244,7 @@ describe("SyncEngine", () => {
     });
 
     // Device B updates priority
-    writeOp(db2, {
+    await writeOp(ky2, {
       task_id: "t1",
       device_id: "device-b",
       op_type: "update",
@@ -252,8 +259,8 @@ describe("SyncEngine", () => {
     await engineB.pull();
 
     // Both should have per-field merge
-    const taskA = getTask(db, "t1");
-    const taskB = getTask(db2, "t1");
+    const taskA = await getTask(ky, "t1");
+    const taskB = await getTask(ky2, "t1");
     expect(taskA!.status).toBe("done");
     expect(taskA!.priority).toBe("urgent");
     expect(taskB!.status).toBe("done");

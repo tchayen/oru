@@ -1,6 +1,15 @@
-import type Database from "better-sqlite3";
+import { type Kysely, sql } from "kysely";
 import { generateId } from "../id.js";
+import type { DB } from "../db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types.js";
+
+function safeParseJson<T>(raw: string, fallback: T): T {
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
 
 interface TaskRow {
   id: string;
@@ -13,14 +22,6 @@ interface TaskRow {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-}
-
-function safeParseJson<T>(raw: string, fallback: T): T {
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
 }
 
 function rowToTask(row: TaskRow): Task {
@@ -38,7 +39,11 @@ function rowToTask(row: TaskRow): Task {
   };
 }
 
-export function createTask(db: Database.Database, input: CreateTaskInput, now?: string): Task {
+export async function createTask(
+  db: Kysely<DB>,
+  input: CreateTaskInput,
+  now?: string,
+): Promise<Task> {
   const id = input.id ?? generateId();
   const timestamp = now ?? new Date().toISOString();
   const task: Task = {
@@ -54,21 +59,21 @@ export function createTask(db: Database.Database, input: CreateTaskInput, now?: 
     deleted_at: null,
   };
 
-  db.prepare(
-    `INSERT INTO tasks (id, title, status, priority, labels, notes, metadata, created_at, updated_at, deleted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    task.id,
-    task.title,
-    task.status,
-    task.priority,
-    JSON.stringify(task.labels),
-    JSON.stringify(task.notes),
-    JSON.stringify(task.metadata),
-    task.created_at,
-    task.updated_at,
-    task.deleted_at,
-  );
+  await db
+    .insertInto("tasks")
+    .values({
+      id: task.id,
+      title: task.title,
+      status: task.status,
+      priority: task.priority,
+      labels: JSON.stringify(task.labels),
+      notes: JSON.stringify(task.notes),
+      metadata: JSON.stringify(task.metadata),
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+      deleted_at: task.deleted_at,
+    })
+    .execute();
 
   return task;
 }
@@ -80,46 +85,51 @@ export interface ListFilters {
   search?: string;
 }
 
-export function listTasks(db: Database.Database, filters?: ListFilters): Task[] {
-  let sql = "SELECT * FROM tasks WHERE deleted_at IS NULL";
-  const params: unknown[] = [];
+export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<Task[]> {
+  let query = db.selectFrom("tasks").selectAll().where("deleted_at", "is", null);
 
   if (filters?.status) {
-    sql += " AND status = ?";
-    params.push(filters.status);
+    query = query.where("status", "=", filters.status);
   }
   if (filters?.priority) {
-    sql += " AND priority = ?";
-    params.push(filters.priority);
+    query = query.where("priority", "=", filters.priority);
   }
   if (filters?.label) {
-    sql += " AND EXISTS (SELECT 1 FROM json_each(labels) WHERE json_each.value = ?)";
-    params.push(filters.label);
+    const label = filters.label;
+    query = query.where(
+      sql`EXISTS (SELECT 1 FROM json_each(labels) WHERE json_each.value = ${label})`,
+    );
   }
   if (filters?.search) {
-    sql += " AND title LIKE '%' || ? || '%' ESCAPE '\\' COLLATE NOCASE";
-    params.push(filters.search.replace(/[\\%_]/g, "\\$&"));
+    const escaped = filters.search.replace(/[\\%_]/g, "\\$&");
+    query = query.where(sql`title LIKE '%' || ${escaped} || '%' ESCAPE '\\' COLLATE NOCASE`);
   }
 
-  sql += " ORDER BY created_at ASC";
-  const rows = db.prepare(sql).all(...params) as TaskRow[];
+  query = query.orderBy("created_at", "asc");
+  const rows = await query.execute();
   return rows.map(rowToTask);
 }
 
-export function getTask(db: Database.Database, id: string): Task | null {
-  const row = db.prepare("SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL").get(id) as
-    | TaskRow
-    | undefined;
+export async function getTask(db: Kysely<DB>, id: string): Promise<Task | null> {
+  const row = await db
+    .selectFrom("tasks")
+    .selectAll()
+    .where("id", "=", id)
+    .where("deleted_at", "is", null)
+    .executeTakeFirst();
+
   if (row) {
     return rowToTask(row);
   }
 
-  // Prefix matching fallback for short IDs
   if (id.length < 36) {
     const escaped = id.replace(/[\\%_]/g, "\\$&");
-    const rows = db
-      .prepare("SELECT * FROM tasks WHERE id LIKE ? || '%' ESCAPE '\\' AND deleted_at IS NULL")
-      .all(escaped) as TaskRow[];
+    const rows = await db
+      .selectFrom("tasks")
+      .selectAll()
+      .where(sql`id LIKE ${escaped} || '%' ESCAPE '\\'`)
+      .where("deleted_at", "is", null)
+      .execute();
     if (rows.length === 1) {
       return rowToTask(rows[0]);
     }
@@ -128,79 +138,76 @@ export function getTask(db: Database.Database, id: string): Task | null {
   return null;
 }
 
-export function updateTask(
-  db: Database.Database,
+export async function updateTask(
+  db: Kysely<DB>,
   id: string,
   input: UpdateTaskInput,
   timestamp?: string,
-): Task | null {
-  const existing = getTask(db, id);
+): Promise<Task | null> {
+  const existing = await getTask(db, id);
   if (!existing) {
     return null;
   }
 
   const now = timestamp ?? new Date().toISOString();
-  const updates: string[] = ["updated_at = ?"];
-  const params: unknown[] = [now];
+  const updates: Record<string, string> = { updated_at: now };
 
   if (input.title !== undefined) {
-    updates.push("title = ?");
-    params.push(input.title);
+    updates.title = input.title;
   }
   if (input.status !== undefined) {
-    updates.push("status = ?");
-    params.push(input.status);
+    updates.status = input.status;
   }
   if (input.priority !== undefined) {
-    updates.push("priority = ?");
-    params.push(input.priority);
+    updates.priority = input.priority;
   }
   if (input.labels !== undefined) {
-    updates.push("labels = ?");
-    params.push(JSON.stringify(input.labels));
+    updates.labels = JSON.stringify(input.labels);
   }
   if (input.metadata !== undefined) {
-    updates.push("metadata = ?");
-    params.push(JSON.stringify(input.metadata));
+    updates.metadata = JSON.stringify(input.metadata);
   }
 
-  params.push(existing.id);
-  db.prepare(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`).run(...params);
+  await db.updateTable("tasks").set(updates).where("id", "=", existing.id).execute();
 
   return getTask(db, existing.id);
 }
 
-export function appendNote(
-  db: Database.Database,
+export async function appendNote(
+  db: Kysely<DB>,
   id: string,
   note: string,
   timestamp?: string,
-): Task | null {
-  const existing = getTask(db, id);
+): Promise<Task | null> {
+  const existing = await getTask(db, id);
   if (!existing) {
     return null;
   }
 
   const notes = [...existing.notes, note];
   const now = timestamp ?? new Date().toISOString();
-  db.prepare("UPDATE tasks SET notes = ?, updated_at = ? WHERE id = ?").run(
-    JSON.stringify(notes),
-    now,
-    existing.id,
-  );
+  await db
+    .updateTable("tasks")
+    .set({ notes: JSON.stringify(notes), updated_at: now })
+    .where("id", "=", existing.id)
+    .execute();
 
   return getTask(db, existing.id);
 }
 
-export function deleteTask(db: Database.Database, id: string, timestamp?: string): boolean {
-  const existing = getTask(db, id);
+export async function deleteTask(db: Kysely<DB>, id: string, timestamp?: string): Promise<boolean> {
+  const existing = await getTask(db, id);
   if (!existing) {
     return false;
   }
 
   const now = timestamp ?? new Date().toISOString();
-  const result = db
-    .prepare("UPDATE tasks SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL")
-    .run(now, now, existing.id);
-  return result.changes > 0;
+  const result = await db
+    .updateTable("tasks")
+    .set({ deleted_at: now, updated_at: now })
+    .where("id", "=", existing.id)
+    .where("deleted_at", "is", null)
+    .executeTakeFirst();
+
+  return BigInt(result.numUpdatedRows) > 0n;
 }
