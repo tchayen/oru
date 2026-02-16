@@ -12,8 +12,6 @@ export function sortTasks(tasks: Task[]): Task[] {
   return [...tasks].sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
 }
 
-// --- Mock data for development ---
-
 let mockTasks: Task[] = [
   {
     id: "019539a1-0000-7000-8000-000000000001",
@@ -110,8 +108,6 @@ let mockTasks: Task[] = [
 function getMockTasks(): Task[] {
   return mockTasks.filter((t) => t.deleted_at === null);
 }
-
-// --- API client ---
 
 function authHeaders(token: string | null): Record<string, string> {
   if (!token) {

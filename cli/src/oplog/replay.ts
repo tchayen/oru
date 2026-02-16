@@ -75,7 +75,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   try {
     data = JSON.parse(createOp.value) as Record<string, unknown>;
   } catch {
-    return;
+    return; // Malformed create op, skip this task
   }
 
   // Start with created state
@@ -116,7 +116,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   // Apply all ops in order
   for (const op of ops) {
     if (op.op_type === "create") {
-      continue;
+      continue; // Already handled
     }
 
     if (op.op_type === "delete") {
@@ -200,6 +200,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
           owner = op.value && op.value.trim().length > 0 ? op.value : null;
           break;
         case "due_at":
+          // null or empty string clears the due date
           dueAt = op.value && op.value.trim().length > 0 ? op.value : null;
           break;
         case "blocked_by":

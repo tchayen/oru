@@ -203,7 +203,6 @@ describe("CLI parse", () => {
     expect(JSON.parse(output.trim())).toEqual([]);
   });
 
-  // GAP-1: Combined --note + --status in a single atomic update
   it("update --note + --status applies both atomically", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Atomic task", "--json"]);
@@ -257,7 +256,6 @@ describe("CLI parse", () => {
     expect(result.notes).toEqual(["Fresh note"]);
   });
 
-  // AGENT-3: Idempotent create with --id
   it("add --id creates task with given ID", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "oru", "add", "ID task", "--id", "custom-id-123", "--json"]);
@@ -278,7 +276,6 @@ describe("CLI parse", () => {
     expect(second.title).toBe("First run"); // Original title preserved
   });
 
-  // AGENT-8a: --note on add
   it("add --note creates task with initial note", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "oru", "add", "Noted task", "--note", "initial context", "--json"]);
@@ -286,7 +283,6 @@ describe("CLI parse", () => {
     expect(parsed.notes).toContain("initial context");
   });
 
-  // AGENT-8b: --label on update
   it("update --label appends a label", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Label task", "--json"]);
@@ -309,7 +305,6 @@ describe("CLI parse", () => {
     expect(parsed.labels).toEqual(["work"]);
   });
 
-  // AGENT-7: --json on delete
   it("delete --json returns structured response", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Delete json", "--json"]);
@@ -328,7 +323,6 @@ describe("CLI parse", () => {
     expect(parsed).toEqual({ error: "not_found", id: "no-such-id" });
   });
 
-  // GAP-8: --label filtering via CLI
   it("list --label filters by label", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Work task", "--label", "work"]);
@@ -342,7 +336,6 @@ describe("CLI parse", () => {
     expect(output).not.toContain("Home task");
   });
 
-  // AGENT-4: ORU_FORMAT=json env var
   it("ORU_FORMAT=json makes list output JSON", async () => {
     process.env.ORU_FORMAT = "json";
     try {
@@ -359,7 +352,6 @@ describe("CLI parse", () => {
     }
   });
 
-  // GAP-5: CLI sync command
   it("sync command pushes and pulls", async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-cli-sync-test-"));
     const remotePath = path.join(tmpDir, "remote.db");

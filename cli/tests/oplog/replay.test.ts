@@ -390,7 +390,6 @@ describe("oplog replay", () => {
     expect(task!.status).toBe("done");
   });
 
-  // GAP-2: Same-timestamp conflict resolution uses id as deterministic tiebreaker
   it("same-timestamp updates resolve deterministically by id", async () => {
     replayOps(db, [
       makeOp({
