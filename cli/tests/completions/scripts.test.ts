@@ -93,6 +93,10 @@ describe("bash completions script", () => {
     expect(script).toContain("telemetry_subcommands");
   });
 
+  it("contains backup command", () => {
+    expect(script).toContain("backup");
+  });
+
   it("registers the completion function", () => {
     expect(script).toContain("complete -F");
   });
@@ -186,6 +190,10 @@ describe("zsh completions script", () => {
   it("contains telemetry command", () => {
     expect(script).toContain("telemetry:Manage anonymous usage telemetry");
   });
+
+  it("contains backup command", () => {
+    expect(script).toContain("backup:Create a database backup snapshot");
+  });
 });
 
 describe("fish completions script", () => {
@@ -277,5 +285,9 @@ describe("fish completions script", () => {
   it("contains telemetry command with subcommands", () => {
     expect(script).toContain("telemetry");
     expect(script).toContain("'__oru_using_command telemetry'");
+  });
+
+  it("contains backup command", () => {
+    expect(script).toContain("backup");
   });
 });

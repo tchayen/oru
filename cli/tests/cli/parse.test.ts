@@ -2032,4 +2032,72 @@ describe("CLI parse", () => {
     expect(subcommands).toContain("enable");
     expect(subcommands).toContain("disable");
   });
+
+  // backup command tests
+  it("backup command exists", async () => {
+    const program = createProgram(db, capture());
+    const cmd = program.commands.find((c) => c.name() === "backup");
+    expect(cmd).toBeDefined();
+    expect(cmd!.description()).toContain("backup");
+  });
+
+  it("backup creates a snapshot in the given directory", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-backup-cli-"));
+    try {
+      const dbPath = path.join(tmpDir, "oru.db");
+      const fileDb = new (await import("better-sqlite3")).default(dbPath);
+      const { initSchema } = await import("../../src/db/schema.js");
+      fileDb.pragma("journal_mode = WAL");
+      fileDb.pragma("foreign_keys = ON");
+      initSchema(fileDb);
+      const p = createProgram(fileDb, capture());
+      await p.parseAsync(["node", "oru", "backup", tmpDir]);
+      fileDb.close();
+      expect(output).toContain("Backed up to");
+      const files = fs.readdirSync(tmpDir).filter((f) => f.startsWith("oru-") && f.endsWith(".db"));
+      expect(files).toHaveLength(1);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("backup with no path and no config errors", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "backup"]);
+    expect(output).toContain("No backup path");
+  });
+
+  it("backup uses config backup_path when no argument given", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-backup-cli-"));
+    try {
+      const dbPath = path.join(tmpDir, "oru.db");
+      const fileDb = new (await import("better-sqlite3")).default(dbPath);
+      const { initSchema } = await import("../../src/db/schema.js");
+      fileDb.pragma("journal_mode = WAL");
+      fileDb.pragma("foreign_keys = ON");
+      initSchema(fileDb);
+      const backupDir = path.join(tmpDir, "backups");
+      const config = {
+        date_format: "mdy" as const,
+        first_day_of_week: "monday" as const,
+        output_format: "text" as const,
+        next_month: "same_day" as const,
+        auto_update_check: true,
+        telemetry: true,
+        telemetry_notice_shown: false,
+        backup_path: backupDir,
+        backup_interval: 60,
+      };
+      const p = createProgram(fileDb, capture(), config);
+      await p.parseAsync(["node", "oru", "backup"]);
+      fileDb.close();
+      expect(output).toContain("Backed up to");
+      const files = fs
+        .readdirSync(backupDir)
+        .filter((f) => f.startsWith("oru-") && f.endsWith(".db"));
+      expect(files).toHaveLength(1);
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
 });

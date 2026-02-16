@@ -23,6 +23,8 @@ export interface Config {
   auto_update_check: boolean;
   telemetry: boolean;
   telemetry_notice_shown: boolean;
+  backup_path: string | null;
+  backup_interval: number;
 }
 
 const DEFAULTS: Config = {
@@ -33,6 +35,8 @@ const DEFAULTS: Config = {
   auto_update_check: true,
   telemetry: true,
   telemetry_notice_shown: false,
+  backup_path: null,
+  backup_interval: 60,
 };
 
 const VALID_DATE_FORMATS = new Set<string>(["dmy", "mdy"]);
@@ -87,6 +91,13 @@ auto_update_check = true
 # Send anonymous usage data to improve oru
 # Set to false to disable (or set DO_NOT_TRACK=1)
 telemetry = true
+
+# Auto-backup: copy the database to this directory on each CLI run
+# (at most once per backup_interval minutes). Disabled by default.
+# backup_path = "~/Dropbox/oru-backup"
+
+# Minimum minutes between auto-backups (default: 60)
+# backup_interval = 60
 `;
 
 export function loadConfig(configPath?: string): Config {
@@ -129,6 +140,14 @@ export function loadConfig(configPath?: string): Config {
 
   if (typeof parsed.telemetry_notice_shown === "boolean") {
     config.telemetry_notice_shown = parsed.telemetry_notice_shown;
+  }
+
+  if (typeof parsed.backup_path === "string" && parsed.backup_path.length > 0) {
+    config.backup_path = parsed.backup_path;
+  }
+
+  if (typeof parsed.backup_interval === "number" && parsed.backup_interval > 0) {
+    config.backup_interval = parsed.backup_interval;
   }
 
   return config;

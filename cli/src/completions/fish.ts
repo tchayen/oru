@@ -47,6 +47,7 @@ complete -c oru -n __oru_needs_command -a review -d 'Mark one or more tasks as i
 complete -c oru -n __oru_needs_command -a context -d 'Show a summary of what needs your attention'
 complete -c oru -n __oru_needs_command -a log -d 'Show change history of a task'
 complete -c oru -n __oru_needs_command -a sync -d 'Sync with a filesystem remote'
+complete -c oru -n __oru_needs_command -a backup -d 'Create a database backup snapshot'
 complete -c oru -n __oru_needs_command -a config -d 'Manage configuration'
 complete -c oru -n __oru_needs_command -a server -d 'Manage the HTTP server'
 complete -c oru -n __oru_needs_command -a completions -d 'Generate shell completions'
@@ -78,6 +79,9 @@ complete -c oru -n '__oru_using_command done' -a '(__oru_task_ids)'
 complete -c oru -n '__oru_using_command start' -a '(__oru_task_ids)'
 complete -c oru -n '__oru_using_command review' -a '(__oru_task_ids)'
 complete -c oru -n '__oru_using_command log' -a '(__oru_task_ids)'
+
+# backup gets directory completions
+complete -c oru -n '__oru_using_command backup' -a '(__fish_complete_directories)'
 
 # sync gets file completions
 complete -c oru -n '__oru_using_command sync' -F

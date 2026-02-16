@@ -27,6 +27,8 @@ describe("config", () => {
       auto_update_check: true,
       telemetry: true,
       telemetry_notice_shown: false,
+      backup_path: null,
+      backup_interval: 60,
     });
   });
 
@@ -41,6 +43,8 @@ describe("config", () => {
       auto_update_check: true,
       telemetry: true,
       telemetry_notice_shown: false,
+      backup_path: null,
+      backup_interval: 60,
     });
   });
 
@@ -115,6 +119,8 @@ output_format = "json"
       auto_update_check: true,
       telemetry: true,
       telemetry_notice_shown: false,
+      backup_path: null,
+      backup_interval: 60,
     });
   });
 
@@ -154,6 +160,30 @@ output_format = "json"
     expect(config.telemetry).toBe(true);
   });
 
+  it("parses backup_path", () => {
+    fs.writeFileSync(configPath, 'backup_path = "~/backups"\n');
+    const config = loadConfig(configPath);
+    expect(config.backup_path).toBe("~/backups");
+  });
+
+  it("parses backup_interval", () => {
+    fs.writeFileSync(configPath, "backup_interval = 30\n");
+    const config = loadConfig(configPath);
+    expect(config.backup_interval).toBe(30);
+  });
+
+  it("ignores empty backup_path", () => {
+    fs.writeFileSync(configPath, 'backup_path = ""\n');
+    const config = loadConfig(configPath);
+    expect(config.backup_path).toBeNull();
+  });
+
+  it("ignores non-positive backup_interval", () => {
+    fs.writeFileSync(configPath, "backup_interval = 0\n");
+    const config = loadConfig(configPath);
+    expect(config.backup_interval).toBe(60);
+  });
+
   it("ignores unknown keys", () => {
     fs.writeFileSync(
       configPath,
@@ -177,6 +207,8 @@ unknown_key = "whatever"
       auto_update_check: true,
       telemetry: true,
       telemetry_notice_shown: false,
+      backup_path: null,
+      backup_interval: 60,
     });
   });
 });
