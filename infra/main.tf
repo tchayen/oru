@@ -112,6 +112,23 @@ resource "cloudflare_record" "apex" {
   proxied = true
 }
 
+# ── Telemetry D1 database ────────────────────────────────────────────────────
+
+resource "cloudflare_d1_database" "telemetry" {
+  account_id = var.cloudflare_account_id
+  name       = "oru-telemetry"
+}
+
+# ── Telemetry DNS ───────────────────────────────────────────────────────────
+
+resource "cloudflare_record" "telemetry" {
+  zone_id = data.cloudflare_zone.site.id
+  name    = "telemetry"
+  content = "100::"
+  type    = "AAAA"
+  proxied = true
+}
+
 # ── Outputs ──────────────────────────────────────────────────────────────────
 
 output "pages_url" {
@@ -120,4 +137,12 @@ output "pages_url" {
 
 output "custom_domain" {
   value = "https://${var.domain}"
+}
+
+output "telemetry_url" {
+  value = "https://telemetry.${var.domain}"
+}
+
+output "telemetry_d1_id" {
+  value = cloudflare_d1_database.telemetry.id
 }

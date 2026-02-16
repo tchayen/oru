@@ -1,0 +1,8 @@
+name = "oru-telemetry"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "oru-telemetry"
+database_id = "" # Set after terraform creates the D1 database

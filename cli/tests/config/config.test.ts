@@ -25,6 +25,8 @@ describe("config", () => {
       output_format: "text",
       next_month: "same_day",
       auto_update_check: true,
+      telemetry: true,
+      telemetry_notice_shown: false,
     });
   });
 
@@ -37,6 +39,8 @@ describe("config", () => {
       output_format: "text",
       next_month: "same_day",
       auto_update_check: true,
+      telemetry: true,
+      telemetry_notice_shown: false,
     });
   });
 
@@ -109,6 +113,8 @@ output_format = "json"
       output_format: "json",
       next_month: "same_day",
       auto_update_check: true,
+      telemetry: true,
+      telemetry_notice_shown: false,
     });
   });
 
@@ -128,6 +134,24 @@ output_format = "json"
     fs.writeFileSync(configPath, 'next_month = "last"\n');
     const config = loadConfig(configPath);
     expect(config.next_month).toBe("same_day");
+  });
+
+  it("parses telemetry = false", () => {
+    fs.writeFileSync(configPath, "telemetry = false\n");
+    const config = loadConfig(configPath);
+    expect(config.telemetry).toBe(false);
+  });
+
+  it("parses telemetry = true", () => {
+    fs.writeFileSync(configPath, "telemetry = true\n");
+    const config = loadConfig(configPath);
+    expect(config.telemetry).toBe(true);
+  });
+
+  it("ignores non-boolean telemetry", () => {
+    fs.writeFileSync(configPath, 'telemetry = "no"\n');
+    const config = loadConfig(configPath);
+    expect(config.telemetry).toBe(true);
   });
 
   it("ignores unknown keys", () => {
@@ -151,6 +175,8 @@ unknown_key = "whatever"
       output_format: "json",
       next_month: "same_day",
       auto_update_check: true,
+      telemetry: true,
+      telemetry_notice_shown: false,
     });
   });
 });

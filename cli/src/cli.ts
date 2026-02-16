@@ -30,7 +30,13 @@ import {
 import { SyncEngine } from "./sync/engine.js";
 import { FsRemote } from "./sync/fs-remote.js";
 import { getDeviceId } from "./device.js";
-import { loadConfig, getConfigPath, DEFAULT_CONFIG_TOML, type Config } from "./config/config.js";
+import {
+  loadConfig,
+  getConfigPath,
+  setConfigValue,
+  DEFAULT_CONFIG_TOML,
+  type Config,
+} from "./config/config.js";
 import { parseDate } from "./dates/parse.js";
 import { serializeTask, parseDocument, openInEditor } from "./edit.js";
 import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
@@ -46,6 +52,7 @@ import {
   formatSuccessMessage,
 } from "./completions/index.js";
 import { dim, yellow, orange } from "./format/colors.js";
+import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
 
 declare const __GIT_COMMIT__: string;
 declare const __VERSION__: string;
@@ -1319,6 +1326,37 @@ export function createProgram(
       await performUpdate(!!opts.check);
     });
 
+  // telemetry
+  const telemetryCmd = program.command("telemetry").description("Manage anonymous usage telemetry");
+
+  telemetryCmd
+    .command("status")
+    .description("Show whether telemetry is enabled or disabled")
+    .action(() => {
+      const reason = getTelemetryDisabledReason(resolvedConfig);
+      if (reason) {
+        write(`Telemetry: ${reason}`);
+      } else {
+        write("Telemetry: enabled");
+      }
+    });
+
+  telemetryCmd
+    .command("enable")
+    .description("Enable anonymous usage telemetry")
+    .action(() => {
+      setConfigValue("telemetry", "true");
+      write("Telemetry enabled.");
+    });
+
+  telemetryCmd
+    .command("disable")
+    .description("Disable anonymous usage telemetry")
+    .action(() => {
+      setConfigValue("telemetry", "false");
+      write("Telemetry disabled.");
+    });
+
   // hidden _complete command for dynamic completions
   program
     .command("_complete <type> [prefix]", { hidden: true })
@@ -1336,10 +1374,19 @@ export function createProgram(
 
 // Entry point when run directly
 async function main() {
+  const startTime = Date.now();
   const db = openDb();
   initSchema(db);
   const config = loadConfig();
   const program = createProgram(db, undefined, config);
+
+  // Show first-run telemetry notice
+  try {
+    const { showFirstRunNotice } = await import("./telemetry/telemetry.js");
+    showFirstRunNotice(config);
+  } catch {
+    // Never let telemetry errors affect CLI
+  }
 
   // Start non-blocking update check
   let updateCheckPromise: Promise<string | null> | undefined;
@@ -1360,6 +1407,22 @@ async function main() {
     throw err;
   } finally {
     db.close();
+  }
+
+  // Send telemetry event (fire-and-forget)
+  try {
+    const { extractCommandAndFlags, buildEvent, sendEvent } =
+      await import("./telemetry/telemetry.js");
+    const { command } = extractCommandAndFlags(process.argv);
+    // Don't send telemetry for the telemetry command itself
+    if (isTelemetryEnabled(config) && !command.startsWith("telemetry")) {
+      const durationMs = Date.now() - startTime;
+      const { flags } = extractCommandAndFlags(process.argv);
+      const event = buildEvent(command, flags, durationMs, Number(process.exitCode ?? 0));
+      sendEvent(event);
+    }
+  } catch {
+    // Never let telemetry errors affect CLI
   }
 
   // Print update notice after command completes

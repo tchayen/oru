@@ -51,6 +51,7 @@ complete -c oru -n __oru_needs_command -a config -d 'Manage configuration'
 complete -c oru -n __oru_needs_command -a server -d 'Manage the HTTP server'
 complete -c oru -n __oru_needs_command -a completions -d 'Generate shell completions'
 complete -c oru -n __oru_needs_command -a self-update -d 'Update oru to the latest version'
+complete -c oru -n __oru_needs_command -a telemetry -d 'Manage anonymous usage telemetry'
 
 # config subcommands
 complete -c oru -n '__oru_using_command config' -a init -d 'Create a default config file'
@@ -63,6 +64,11 @@ complete -c oru -n '__oru_using_subcommand server start' -l tunnel -d 'Create a 
 
 # completions subcommands
 complete -c oru -n '__oru_using_command completions' -a 'bash zsh fish'
+
+# telemetry subcommands
+complete -c oru -n '__oru_using_command telemetry' -a status -d 'Show telemetry status'
+complete -c oru -n '__oru_using_command telemetry' -a enable -d 'Enable telemetry'
+complete -c oru -n '__oru_using_command telemetry' -a disable -d 'Disable telemetry'
 
 # Task ID completions for get, update, delete, done, start
 complete -c oru -n '__oru_using_command get' -a '(__oru_task_ids)'

@@ -88,6 +88,11 @@ describe("bash completions script", () => {
     expect(script).toContain("--actionable");
   });
 
+  it("contains telemetry command", () => {
+    expect(script).toContain("telemetry");
+    expect(script).toContain("telemetry_subcommands");
+  });
+
   it("registers the completion function", () => {
     expect(script).toContain("complete -F");
   });
@@ -177,6 +182,10 @@ describe("zsh completions script", () => {
   it("contains --actionable for list", () => {
     expect(script).toContain("--actionable");
   });
+
+  it("contains telemetry command", () => {
+    expect(script).toContain("telemetry:Manage anonymous usage telemetry");
+  });
 });
 
 describe("fish completions script", () => {
@@ -263,5 +272,10 @@ describe("fish completions script", () => {
 
   it("contains --actionable for list", () => {
     expect(script).toContain("actionable");
+  });
+
+  it("contains telemetry command with subcommands", () => {
+    expect(script).toContain("telemetry");
+    expect(script).toContain("'__oru_using_command telemetry'");
   });
 });

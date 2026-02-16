@@ -1954,4 +1954,82 @@ describe("CLI parse", () => {
     expect(output).not.toContain("overdue");
     expect(output).not.toContain("blocked");
   });
+
+  // Telemetry command
+  it("telemetry status shows enabled by default", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "telemetry", "status"]);
+    expect(output).toContain("enabled");
+  });
+
+  it("telemetry status shows disabled when config says false", async () => {
+    const config = {
+      date_format: "mdy" as const,
+      first_day_of_week: "monday" as const,
+      output_format: "text" as const,
+      next_month: "same_day" as const,
+      auto_update_check: true,
+      telemetry: false,
+    };
+    const p = createProgram(db, capture(), config);
+    await p.parseAsync(["node", "oru", "telemetry", "status"]);
+    expect(output).toContain("disabled");
+    expect(output).toContain("config");
+  });
+
+  it("telemetry status shows disabled via DO_NOT_TRACK", async () => {
+    process.env.DO_NOT_TRACK = "1";
+    try {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "telemetry", "status"]);
+      expect(output).toContain("disabled");
+      expect(output).toContain("DO_NOT_TRACK");
+    } finally {
+      delete process.env.DO_NOT_TRACK;
+    }
+  });
+
+  it("telemetry enable writes config file", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-telemetry-cli-"));
+    const configPath = path.join(tmpDir, "config.toml");
+    process.env.ORU_CONFIG_PATH = configPath;
+    try {
+      fs.writeFileSync(configPath, "telemetry = false\n");
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "telemetry", "enable"]);
+      expect(output).toContain("enabled");
+      const content = fs.readFileSync(configPath, "utf-8");
+      expect(content).toContain("telemetry = true");
+    } finally {
+      delete process.env.ORU_CONFIG_PATH;
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("telemetry disable writes config file", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-telemetry-cli-"));
+    const configPath = path.join(tmpDir, "config.toml");
+    process.env.ORU_CONFIG_PATH = configPath;
+    try {
+      fs.writeFileSync(configPath, "telemetry = true\n");
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "telemetry", "disable"]);
+      expect(output).toContain("disabled");
+      const content = fs.readFileSync(configPath, "utf-8");
+      expect(content).toContain("telemetry = false");
+    } finally {
+      delete process.env.ORU_CONFIG_PATH;
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("telemetry command exists with subcommands", async () => {
+    const program = createProgram(db, capture());
+    const cmd = program.commands.find((c) => c.name() === "telemetry");
+    expect(cmd).toBeDefined();
+    const subcommands = cmd!.commands.map((c) => c.name());
+    expect(subcommands).toContain("status");
+    expect(subcommands).toContain("enable");
+    expect(subcommands).toContain("disable");
+  });
 });
