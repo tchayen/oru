@@ -459,6 +459,55 @@ describe("CLI parse", () => {
     expect(parsed.metadata).toEqual({ keep: "yes" });
   });
 
+  it("add --meta rejects whitespace-only key=value pairs", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "Whitespace key task",
+      "--meta",
+      "  =value",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata).toEqual({});
+  });
+
+  it("add --meta rejects whitespace-only deletion keys", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "Whitespace delete task",
+      "--meta",
+      "keep=yes",
+      "--json",
+    ]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--meta", "  ", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata).toEqual({ keep: "yes" });
+  });
+
+  it("add --meta still works normally with regular key=value pairs", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "Normal meta task",
+      "--meta",
+      "key=value",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata).toEqual({ key: "value" });
+  });
+
   it("add --label accepts multiple labels", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync([

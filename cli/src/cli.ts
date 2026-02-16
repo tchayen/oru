@@ -74,12 +74,12 @@ function parseMetadata(pairs: string[]): Record<string, string | null> {
   for (const pair of pairs) {
     const eqIdx = pair.indexOf("=");
     if (eqIdx === -1) {
-      if (pair) {
-        meta[pair] = null;
+      if (pair.trim()) {
+        meta[pair.trim()] = null;
       }
       continue;
     }
-    const key = pair.slice(0, eqIdx);
+    const key = pair.slice(0, eqIdx).trim();
     const value = pair.slice(eqIdx + 1);
     if (key) {
       meta[key] = value;
