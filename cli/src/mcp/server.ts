@@ -11,6 +11,14 @@ declare const __VERSION__: string;
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
 
+function sanitizeError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg.includes("SQLITE_") || msg.includes("constraint") || msg.includes("database")) {
+    return "An internal error occurred. Please try again.";
+  }
+  return msg;
+}
+
 export function createMcpServer(service: TaskService): McpServer {
   const version = typeof __VERSION__ !== "undefined" ? __VERSION__ : "0.0.0";
   const server = new McpServer({ name: "oru", version }, { capabilities: { logging: {} } });
@@ -45,7 +53,7 @@ export function createMcpServer(service: TaskService): McpServer {
             return { content: [{ type: "text", text: JSON.stringify(existing, null, 2) }] };
           }
         }
-        return { content: [{ type: "text", text: msg }], isError: true };
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
     },
   );
