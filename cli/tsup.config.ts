@@ -29,4 +29,17 @@ export default defineConfig([
     minify: true,
     external: ["better-sqlite3", "cloudflared"],
   },
+  {
+    entry: ["src/mcp/index.ts"],
+    format: ["esm"],
+    target: "node22",
+    outDir: "dist/mcp",
+    clean: false,
+    minify: true,
+    banner: { js: "#!/usr/bin/env node" },
+    external: ["better-sqlite3"],
+    define: {
+      __VERSION__: JSON.stringify(pkg.version),
+    },
+  },
 ]);
