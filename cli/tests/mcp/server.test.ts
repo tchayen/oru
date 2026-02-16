@@ -282,6 +282,57 @@ describe("MCP server", () => {
     const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
     expect(tasks).toHaveLength(1);
   });
+
+  it("excludes done tasks by default", async () => {
+    await client.callTool({ name: "add_task", arguments: { title: "Active task" } });
+    await client.callTool({
+      name: "add_task",
+      arguments: { title: "Completed task", status: "done" },
+    });
+
+    const result = await client.callTool({
+      name: "list_tasks",
+      arguments: {},
+    });
+    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("Active task");
+  });
+
+  it("includes done tasks when all is true", async () => {
+    await client.callTool({ name: "add_task", arguments: { title: "Active task" } });
+    await client.callTool({
+      name: "add_task",
+      arguments: { title: "Completed task", status: "done" },
+    });
+
+    const result = await client.callTool({
+      name: "list_tasks",
+      arguments: { all: true },
+    });
+    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(tasks).toHaveLength(2);
+    const titles = tasks.map((t: { title: string }) => t.title);
+    expect(titles).toContain("Active task");
+    expect(titles).toContain("Completed task");
+  });
+
+  it("explicit status filter overrides all parameter", async () => {
+    await client.callTool({ name: "add_task", arguments: { title: "Active task" } });
+    await client.callTool({
+      name: "add_task",
+      arguments: { title: "Completed task", status: "done" },
+    });
+
+    // Even with all: false, explicit status: "done" should return done tasks
+    const result = await client.callTool({
+      name: "list_tasks",
+      arguments: { status: "done", all: false },
+    });
+    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("Completed task");
+  });
 });
 
 describe("sanitizeError", () => {
