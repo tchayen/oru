@@ -18,6 +18,26 @@ export function isOverdue(dueAt: string, now?: Date): boolean {
   return dueDate < ref;
 }
 
+export function isDueSoon(dueAt: string, now?: Date): boolean {
+  if (isOverdue(dueAt, now)) {
+    return false;
+  }
+  const ref = now ?? new Date();
+  const dueDate = new Date(
+    Number(dueAt.slice(0, 4)),
+    Number(dueAt.slice(5, 7)) - 1,
+    Number(dueAt.slice(8, 10)),
+    Number(dueAt.slice(11, 13)) || 0,
+    Number(dueAt.slice(14, 16)) || 0,
+  );
+  // For all-day tasks (00:00), use end of the due day as the effective deadline
+  if (dueAt.slice(11, 16) === "00:00") {
+    dueDate.setDate(dueDate.getDate() + 1);
+  }
+  const hoursUntilDue = (dueDate.getTime() - ref.getTime()) / (1000 * 60 * 60);
+  return hoursUntilDue <= 48;
+}
+
 function formatDue(dueAt: string, now?: Date): string {
   // dueAt is "YYYY-MM-DDTHH:MM:SS" local time
   const date = dueAt.slice(0, 10);
@@ -200,6 +220,7 @@ export function formatLogText(entries: OplogEntry[]): string {
 
 export interface ContextSections {
   overdue: Task[];
+  due_soon: Task[];
   in_progress: Task[];
   actionable: Task[];
   blocked: Task[];
@@ -209,6 +230,7 @@ export interface ContextSections {
 export function formatContextText(sections: ContextSections, now?: Date): string {
   const entries: [string, Task[]][] = [
     ["Overdue", sections.overdue],
+    ["Due Soon", sections.due_soon],
     ["In Progress", sections.in_progress],
     ["Actionable", sections.actionable],
     ["Blocked", sections.blocked],

@@ -1753,4 +1753,59 @@ describe("CLI parse", () => {
     expect(output).not.toContain("Blocked");
     expect(output).not.toContain("Recently Completed");
   });
+
+  // Due Soon section in context
+  it("context shows task due tomorrow in Due Soon section", async () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Due tomorrow task", "--due", tomorrowStr]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context"]);
+    expect(output).toContain("Due Soon");
+    expect(output).toContain("Due tomorrow task");
+  });
+
+  it("context does not show task due in 3 days in Due Soon", async () => {
+    const threeDays = new Date();
+    threeDays.setDate(threeDays.getDate() + 3);
+    const threeDaysStr = `${threeDays.getFullYear()}-${String(threeDays.getMonth() + 1).padStart(2, "0")}-${String(threeDays.getDate()).padStart(2, "0")}`;
+
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Due in 3 days", "--due", threeDaysStr]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context"]);
+    expect(output).not.toContain("Due Soon");
+  });
+
+  it("context shows overdue task in Overdue, not Due Soon", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Past due task", "--due", "2020-01-01"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context"]);
+    expect(output).toContain("Overdue");
+    expect(output).toContain("Past due task");
+    expect(output).not.toContain("Due Soon");
+  });
+
+  it("context --json includes due_soon key", async () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Soon task", "--due", tomorrowStr]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_soon).toBeDefined();
+    expect(parsed.due_soon).toHaveLength(1);
+    expect(parsed.due_soon[0].title).toBe("Soon task");
+  });
 });
