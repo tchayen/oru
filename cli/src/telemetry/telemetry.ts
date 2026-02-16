@@ -1,5 +1,6 @@
 import type { Config } from "../config/config.js";
 import { setConfigValue } from "../config/config.js";
+import { SHOW_SERVER } from "../flags.js";
 
 declare const __VERSION__: string;
 
@@ -91,9 +92,9 @@ export function extractCommandAndFlags(argv: string[]): { command: string; flags
 function isSubcommand(parent: string, arg: string): boolean {
   const subcommands: Record<string, string[]> = {
     config: ["init", "path"],
-    server: ["start"],
     completions: ["bash", "zsh", "fish"],
     telemetry: ["status", "enable", "disable"],
+    ...(SHOW_SERVER ? { server: ["start"] } : {}),
   };
   return subcommands[parent]?.includes(arg) ?? false;
 }
