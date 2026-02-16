@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -210,6 +210,29 @@ unknown_key = "whatever"
       backup_path: null,
       backup_interval: 60,
     });
+  });
+
+  it("falls back to defaults with a warning when TOML is invalid", () => {
+    fs.writeFileSync(configPath, "{{{{ not valid toml !!! = = =\x00\x01\x02");
+    const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const config = loadConfig(configPath);
+    expect(config).toEqual({
+      date_format: "mdy",
+      first_day_of_week: "monday",
+      output_format: "text",
+      next_month: "same_day",
+      auto_update_check: true,
+      telemetry: true,
+      telemetry_notice_shown: false,
+      backup_path: null,
+      backup_interval: 60,
+    });
+    expect(stderrSpy).toHaveBeenCalledOnce();
+    const warning = stderrSpy.mock.calls[0][0] as string;
+    expect(warning).toContain("Warning: Could not parse config file");
+    expect(warning).toContain(configPath);
+    expect(warning).toContain("Using defaults");
+    stderrSpy.mockRestore();
   });
 });
 
