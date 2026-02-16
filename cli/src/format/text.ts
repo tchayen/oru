@@ -225,6 +225,7 @@ export interface ContextSections {
   actionable: Task[];
   blocked: Task[];
   recently_completed: Task[];
+  blockerTitles?: Map<string, string>;
 }
 
 export function formatContextText(sections: ContextSections, now?: Date): string {
@@ -246,6 +247,19 @@ export function formatContextText(sections: ContextSections, now?: Date): string
   for (const [name, tasks] of nonEmpty) {
     parts.push(`${orange(name)} ${dim(`(${tasks.length})`)}`);
     parts.push(formatTasksText(tasks, now));
+    if (name === "Blocked" && sections.blockerTitles) {
+      for (const task of tasks) {
+        if (task.blocked_by.length > 0) {
+          const blockerDescs = task.blocked_by
+            .map((id) => {
+              const title = sections.blockerTitles!.get(id);
+              return title ? `${id} (${title})` : id;
+            })
+            .join(", ");
+          parts.push(dim(`  ${task.id} blocked by: ${blockerDescs}`));
+        }
+      }
+    }
   }
   return parts.join("\n\n");
 }

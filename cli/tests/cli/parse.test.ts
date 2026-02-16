@@ -1741,6 +1741,46 @@ describe("CLI parse", () => {
     expect(parsed.actionable[0].title).toBe("Agent task");
   });
 
+  it("context text output shows blocker titles for blocked tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Refactor authentication module", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Update API docs", "--blocked-by", blockerId]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "context"]);
+    expect(output).toContain("Blocked");
+    expect(output).toContain("Refactor authentication module");
+    expect(output).toContain("blocked by:");
+  });
+
+  it("context --json includes blocker_titles for blocked tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Blocker task", "--json"]);
+    const blockerId = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Blocked task", "--blocked-by", blockerId]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocker_titles).toBeDefined();
+    expect(parsed.blocker_titles[blockerId]).toBe("Blocker task");
+  });
+
+  it("context --json omits blocker_titles when no blocked tasks", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Active task", "--status", "in_progress"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocker_titles).toBeUndefined();
+  });
+
   it("context empty sections are omitted in text output", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Active task", "--status", "in_progress"]);
