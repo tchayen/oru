@@ -38,7 +38,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter oru build
+      - run: pnpm --filter oru-cli build
 
       - name: Create production deployment
         working-directory: cli
@@ -90,8 +90,8 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter oru build
-      - run: pnpm --filter oru publish --no-git-checks
+      - run: pnpm --filter oru-cli build
+      - run: pnpm --filter oru-cli publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
