@@ -177,37 +177,43 @@ function rebuildTask(db: Database.Database, taskId: string): void {
           continue;
         }
       }
-      fieldWinners[field] = { timestamp: op.timestamp, id: op.id };
 
-      // Validate and apply
+      // Validate and apply — only update fieldWinners if the value is actually applied
+      let applied = false;
       switch (field) {
         case "title":
           if (typeof op.value === "string") {
             title = op.value;
+            applied = true;
           }
           break;
         case "status":
           if (op.value && VALID_STATUSES.has(op.value)) {
             status = op.value;
+            applied = true;
           }
           break;
         case "priority":
           if (op.value && VALID_PRIORITIES.has(op.value)) {
             priority = op.value;
+            applied = true;
           }
           break;
         case "owner":
           owner = op.value && op.value.trim().length > 0 ? op.value : null;
+          applied = true;
           break;
         case "due_at":
           // null or empty string clears the due date
           dueAt = op.value && op.value.trim().length > 0 ? op.value : null;
+          applied = true;
           break;
         case "blocked_by":
           if (op.value && isValidJson(op.value)) {
             const parsed = JSON.parse(op.value);
             if (Array.isArray(parsed)) {
               blockedBy = JSON.stringify(filterStringArray(parsed));
+              applied = true;
             }
           }
           break;
@@ -216,14 +222,23 @@ function rebuildTask(db: Database.Database, taskId: string): void {
             const parsed = JSON.parse(op.value);
             if (Array.isArray(parsed)) {
               labels = JSON.stringify(filterStringArray(parsed));
+              applied = true;
             }
           }
           break;
         case "metadata":
           if (op.value && isValidJson(op.value)) {
-            metadata = op.value;
+            const parsed = JSON.parse(op.value);
+            if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+              metadata = op.value;
+              applied = true;
+            }
           }
           break;
+      }
+
+      if (applied) {
+        fieldWinners[field] = { timestamp: op.timestamp, id: op.id };
       }
 
       if (op.timestamp > updatedAt) {
