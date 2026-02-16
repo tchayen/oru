@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "node:os";
 import readline from "readline";
 import { generateBashCompletions } from "./bash.js";
 import { generateZshCompletions } from "./zsh.js";
@@ -31,10 +32,7 @@ export function detectShell(): Shell | null {
   return null;
 }
 
-export function getInstallPaths(
-  shell: Shell,
-  homeDir: string = process.env.HOME ?? "",
-): InstallPaths {
+export function getInstallPaths(shell: Shell, homeDir: string = os.homedir()): InstallPaths {
   switch (shell) {
     case "bash":
       return {

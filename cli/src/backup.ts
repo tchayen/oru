@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "node:os";
 import type Database from "better-sqlite3";
 
 let backupCounter = 0;
@@ -21,7 +22,7 @@ function backupFilename(): string {
  */
 export function performBackup(db: Database.Database, backupDir: string): string {
   const resolved = backupDir.startsWith("~")
-    ? path.join(process.env.HOME ?? "", backupDir.slice(1))
+    ? path.join(os.homedir(), backupDir.slice(1))
     : backupDir;
   fs.mkdirSync(resolved, { recursive: true });
   const dest = path.join(resolved, backupFilename());
@@ -34,7 +35,7 @@ export function performBackup(db: Database.Database, backupDir: string): string 
  */
 export function shouldAutoBackup(backupDir: string, intervalMinutes: number): boolean {
   const resolved = backupDir.startsWith("~")
-    ? path.join(process.env.HOME ?? "", backupDir.slice(1))
+    ? path.join(os.homedir(), backupDir.slice(1))
     : backupDir;
   if (!fs.existsSync(resolved)) {
     return true;
