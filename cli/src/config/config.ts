@@ -21,6 +21,8 @@ export interface Config {
   output_format: OutputFormat;
   next_month: NextMonthBehavior;
   auto_update_check: boolean;
+  telemetry: boolean;
+  telemetry_notice_shown: boolean;
 }
 
 const DEFAULTS: Config = {
@@ -29,6 +31,8 @@ const DEFAULTS: Config = {
   output_format: "text",
   next_month: "same_day",
   auto_update_check: true,
+  telemetry: true,
+  telemetry_notice_shown: false,
 };
 
 const VALID_DATE_FORMATS = new Set<string>(["dmy", "mdy"]);
@@ -79,6 +83,10 @@ next_month = "same_day"
 # Check for new versions on startup (once per 24h)
 # Set to false to disable
 auto_update_check = true
+
+# Send anonymous usage data to improve oru
+# Set to false to disable (or set DO_NOT_TRACK=1)
+telemetry = true
 `;
 
 export function loadConfig(configPath?: string): Config {
@@ -115,5 +123,29 @@ export function loadConfig(configPath?: string): Config {
     config.auto_update_check = parsed.auto_update_check;
   }
 
+  if (typeof parsed.telemetry === "boolean") {
+    config.telemetry = parsed.telemetry;
+  }
+
+  if (typeof parsed.telemetry_notice_shown === "boolean") {
+    config.telemetry_notice_shown = parsed.telemetry_notice_shown;
+  }
+
   return config;
+}
+
+export function setConfigValue(key: string, value: string): void {
+  const configPath = getConfigPath();
+  let content = "";
+  if (fs.existsSync(configPath)) {
+    content = fs.readFileSync(configPath, "utf-8");
+  }
+  const pattern = new RegExp(`^${key}\\s*=\\s*.*`, "m");
+  if (pattern.test(content)) {
+    content = content.replace(pattern, `${key} = ${value}`);
+  } else {
+    content = content.trimEnd() + `\n${key} = ${value}\n`;
+  }
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+  fs.writeFileSync(configPath, content);
 }

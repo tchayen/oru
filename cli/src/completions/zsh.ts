@@ -28,6 +28,7 @@ _oru() {
     'server:Manage the HTTP server'
     'completions:Generate shell completions'
     'self-update:Update oru to the latest version'
+    'telemetry:Manage anonymous usage telemetry'
   )
 
   local -a status_values
@@ -187,6 +188,15 @@ _oru() {
         self-update)
           _arguments \\
             '--check[Only check if an update is available]'
+          ;;
+        telemetry)
+          local -a telemetry_commands
+          telemetry_commands=(
+            'status:Show whether telemetry is enabled or disabled'
+            'enable:Enable anonymous usage telemetry'
+            'disable:Disable anonymous usage telemetry'
+          )
+          _describe -t commands 'telemetry command' telemetry_commands
           ;;
       esac
 
