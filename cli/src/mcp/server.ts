@@ -164,7 +164,7 @@ export function createMcpServer(service: TaskService): McpServer {
     {
       title: "List tasks",
       description:
-        "List tasks with optional filters. Returns a JSON array of tasks. Done tasks are excluded by default — pass status='done' to see completed tasks. Use 'actionable' filter to get only tasks that are not blocked and not done. The 'search' filter performs a case-insensitive substring match on task titles.",
+        "List tasks with optional filters. Returns a JSON array of tasks. Done tasks are excluded by default — pass all: true to include them, or status='done' to see only completed tasks. Use 'actionable' filter to get only tasks that are not blocked and not done. The 'search' filter performs a case-insensitive substring match on task titles.",
       inputSchema: z.object({
         status: StatusEnum.optional().describe(
           "Filter by status. Valid values: todo, in_progress, in_review, done. Pass 'done' to see completed tasks.",
@@ -188,12 +188,21 @@ export function createMcpServer(service: TaskService): McpServer {
           .describe(
             "When true, returns only actionable tasks — those with status 'todo' that are not blocked by other incomplete tasks.",
           ),
+        all: z
+          .boolean()
+          .optional()
+          .describe("Include done tasks (ignored when status filter is set)"),
         limit: z.number().optional().describe("Maximum number of results to return"),
         offset: z.number().optional().describe("Number of results to skip (for pagination)"),
       }),
     },
-    async (filters) => {
-      const tasks = await service.list(filters as ListFilters);
+    async (input) => {
+      const { all, ...filters } = input;
+      let tasks = await service.list(filters as ListFilters);
+      // Hide done tasks unless all is true or an explicit status filter is provided
+      if (!all && !filters.status) {
+        tasks = tasks.filter((t) => t.status !== "done");
+      }
       return { content: [{ type: "text", text: JSON.stringify(tasks, null, 2) }] };
     },
   );
