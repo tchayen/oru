@@ -463,4 +463,108 @@ describe("task repository", () => {
     // Only one note stored, and it should be trimmed
     expect(found!.notes).toEqual(["Hello"]);
   });
+
+  describe("prefix matching edge cases", () => {
+    it("getTask with empty prefix matches all tasks", async () => {
+      await createTask(ky, { title: "Task A" });
+      await createTask(ky, { title: "Task B" });
+      // Empty prefix with LIKE '%' matches both tasks
+      await expect(getTask(ky, "")).rejects.toThrow(AmbiguousPrefixError);
+    });
+
+    it("getTask with prefix longer than any ID returns null", async () => {
+      await createTask(ky, { id: "short-id", title: "Short" });
+      // A prefix much longer than any real ID
+      const found = await getTask(
+        ky,
+        "this-is-an-extremely-long-prefix-that-will-never-match-any-id-ever",
+      );
+      expect(found).toBeNull();
+    });
+
+    it("getTask with SQL wildcard % in prefix treats it as literal", async () => {
+      await createTask(ky, { id: "abc-def-123", title: "ABC task" });
+      await createTask(ky, { id: "xyz-ghi-456", title: "XYZ task" });
+
+      // % is escaped in the LIKE query, so it's treated as literal — no match
+      const found = await getTask(ky, "%");
+      expect(found).toBeNull();
+    });
+
+    it("getTask with SQL wildcard _ in prefix treats it as literal", async () => {
+      await createTask(ky, { id: "a1c-def-123", title: "A1C task" });
+      await createTask(ky, { id: "a2c-def-456", title: "A2C task" });
+
+      // _ is escaped in the LIKE query, so it's treated as literal — no match
+      const found = await getTask(ky, "a_c");
+      expect(found).toBeNull();
+    });
+
+    it("getTask with full exact ID still works", async () => {
+      const task = await createTask(ky, { id: "exact-full-id-12345678", title: "Exact match" });
+      const found = await getTask(ky, "exact-full-id-12345678");
+      expect(found).toBeDefined();
+      expect(found!.id).toBe("exact-full-id-12345678");
+      expect(found!.title).toBe("Exact match");
+    });
+
+    it("getTask with prefix matching exactly one task returns that task", async () => {
+      await createTask(ky, { id: "unique-prefix-abc", title: "Unique" });
+      await createTask(ky, { id: "different-xyz", title: "Different" });
+
+      const found = await getTask(ky, "unique");
+      expect(found).toBeDefined();
+      expect(found!.id).toBe("unique-prefix-abc");
+      expect(found!.title).toBe("Unique");
+    });
+
+    it("getTask with single character prefix matching multiple tasks throws", async () => {
+      await createTask(ky, { id: "0abc-def-111", title: "Zero A" });
+      await createTask(ky, { id: "0xyz-ghi-222", title: "Zero B" });
+
+      await expect(getTask(ky, "0")).rejects.toThrow(AmbiguousPrefixError);
+      try {
+        await getTask(ky, "0");
+      } catch (err) {
+        expect(err).toBeInstanceOf(AmbiguousPrefixError);
+        const ambErr = err as AmbiguousPrefixError;
+        expect(ambErr.prefix).toBe("0");
+        expect(ambErr.matches).toHaveLength(2);
+      }
+    });
+
+    it("getTask prefix matching ignores deleted tasks", async () => {
+      const task1 = await createTask(ky, { id: "prefix-match-1", title: "Task 1" });
+      await createTask(ky, { id: "prefix-match-2", title: "Task 2" });
+
+      // Delete task 2
+      await deleteTask(ky, "prefix-match-2");
+
+      // Now "prefix" should only match task 1 (not ambiguous)
+      const found = await getTask(ky, "prefix");
+      expect(found).toBeDefined();
+      expect(found!.id).toBe("prefix-match-1");
+    });
+
+    it("getTask exact match takes priority over prefix match", async () => {
+      // Create a task whose ID is a prefix of another task
+      await createTask(ky, { id: "abc", title: "Short ID" });
+      await createTask(ky, { id: "abc-def-ghi", title: "Long ID" });
+
+      // Looking for "abc" should do exact match first and return the short ID
+      const found = await getTask(ky, "abc");
+      expect(found).toBeDefined();
+      expect(found!.id).toBe("abc");
+      expect(found!.title).toBe("Short ID");
+    });
+
+    it("getTask with backslash in prefix escapes properly", async () => {
+      // Backslash is an escape character in LIKE - verify it's escaped
+      await createTask(ky, { id: "normal-id-123", title: "Normal" });
+
+      // A prefix with backslash should not cause SQL errors
+      const found = await getTask(ky, "test\\something");
+      expect(found).toBeNull();
+    });
+  });
 });
