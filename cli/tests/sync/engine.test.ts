@@ -174,7 +174,6 @@ describe("SyncEngine", () => {
     db2.close();
   });
 
-  // GAP-6: Push idempotency — pushing same ops twice doesn't duplicate
   it("push is idempotent — double push does not duplicate", async () => {
     await writeOp(ky, {
       task_id: "t1",

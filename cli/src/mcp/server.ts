@@ -15,8 +15,6 @@ export function createMcpServer(service: TaskService): McpServer {
   const version = typeof __VERSION__ !== "undefined" ? __VERSION__ : "0.0.0";
   const server = new McpServer({ name: "oru", version }, { capabilities: { logging: {} } });
 
-  // --- Tools ---
-
   server.registerTool(
     "add_task",
     {
