@@ -3,11 +3,14 @@ import type { RemoteBackend } from "./remote.js";
 import type { OplogEntry } from "../oplog/types.js";
 import { replayOps } from "../oplog/replay.js";
 
+export const MAX_PULL_ITERATIONS = 1000;
+
 export class SyncEngine {
   constructor(
     private db: Database.Database,
     private remote: RemoteBackend,
     private deviceId: string,
+    private maxPullIterations = MAX_PULL_ITERATIONS,
   ) {}
 
   async push(): Promise<number> {
@@ -50,9 +53,16 @@ export class SyncEngine {
 
   async pull(): Promise<number> {
     let totalNew = 0;
+    let iterations = 0;
 
     // Loop until caught up (remote may return bounded pages)
     for (;;) {
+      if (++iterations > this.maxPullIterations) {
+        throw new Error(
+          `Sync pull loop exceeded ${this.maxPullIterations} iterations — aborting to prevent infinite loop. This likely indicates a bug in the remote backend.`,
+        );
+      }
+
       // Get the pull cursor (stored locally)
       const cursorRow = this.db
         .prepare("SELECT value FROM meta WHERE key = ?")
