@@ -389,12 +389,15 @@ export function createProgram(
           return;
         }
 
+        // Normalize empty/whitespace owner to null
+        const owner = opts.assign !== undefined && opts.assign.trim() === "" ? null : opts.assign;
+
         const task = await service.add({
           title,
           id: opts.id,
           status: opts.status,
           priority: opts.priority,
-          owner: opts.assign,
+          owner,
           due_at: dueAt,
           blocked_by: opts.blockedBy,
           labels: opts.label ?? undefined,
@@ -617,7 +620,7 @@ export function createProgram(
           }
 
           if (opts.assign !== undefined) {
-            if (opts.assign.toLowerCase() === "none") {
+            if (opts.assign.toLowerCase() === "none" || opts.assign.trim() === "") {
               updateFields.owner = null;
             } else {
               updateFields.owner = opts.assign;
