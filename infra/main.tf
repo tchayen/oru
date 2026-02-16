@@ -71,7 +71,7 @@ resource "cloudflare_pages_project" "site" {
   }
 
   build_config {
-    build_command   = "pnpm run build"
+    build_command   = "cd .. && pnpm install --filter oru-site... && cd site && pnpm run build"
     destination_dir = "dist"
     root_dir        = "site"
   }
@@ -80,13 +80,15 @@ resource "cloudflare_pages_project" "site" {
     production {
       fail_open = true
       environment_variables = {
-        NODE_VERSION = "25"
+        NODE_VERSION            = "25"
+        SKIP_DEPENDENCY_INSTALL = "true"
       }
     }
     preview {
       fail_open = true
       environment_variables = {
-        NODE_VERSION = "25"
+        NODE_VERSION            = "25"
+        SKIP_DEPENDENCY_INSTALL = "true"
       }
     }
   }
