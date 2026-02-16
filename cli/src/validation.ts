@@ -1,0 +1,44 @@
+export const MAX_TITLE_LENGTH = 1000;
+export const MAX_NOTE_LENGTH = 10000;
+export const MAX_LABEL_LENGTH = 200;
+
+export function sanitizeTitle(title: string): string {
+  return title.replace(/[\r\n]+/g, " ").trim();
+}
+
+export type ValidationResult = { valid: true } | { valid: false; message: string };
+
+export function validateTitle(title: string, { required = false } = {}): ValidationResult {
+  if (title.length === 0) {
+    return { valid: false, message: required ? "Title is required" : "Title cannot be empty" };
+  }
+  if (title.length > MAX_TITLE_LENGTH) {
+    return {
+      valid: false,
+      message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
+    };
+  }
+  return { valid: true };
+}
+
+export function validateNote(note: string): ValidationResult {
+  if (note.length > MAX_NOTE_LENGTH) {
+    return {
+      valid: false,
+      message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
+    };
+  }
+  return { valid: true };
+}
+
+export function validateLabels(labels: string[]): ValidationResult {
+  for (const l of labels) {
+    if (l.length > MAX_LABEL_LENGTH) {
+      return {
+        valid: false,
+        message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
+      };
+    }
+  }
+  return { valid: true };
+}
