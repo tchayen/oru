@@ -172,7 +172,7 @@ export async function openInEditor(content: string): Promise<string> {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Editor exited with code ${code}`));
+          reject(new Error(`Editor exited with code ${code}. No changes were saved.`));
         }
       });
       child.on("error", reject);
