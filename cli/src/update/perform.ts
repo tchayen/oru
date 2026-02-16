@@ -47,7 +47,7 @@ function detectInstallMethod(): "script" | "npm" {
 async function fetchLatestVersion(): Promise<string> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  const res = await fetch("https://registry.npmjs.org/oru/latest", {
+  const res = await fetch("https://registry.npmjs.org/oru-cli/latest", {
     signal: controller.signal,
   });
   clearTimeout(timer);
@@ -66,7 +66,7 @@ function getPlatform(): string {
 
 async function updateViaNpm(): Promise<void> {
   process.stderr.write("Updating via npm...\n");
-  execSync("npm install -g oru@latest", { stdio: "inherit" });
+  execSync("npm install -g oru-cli@latest", { stdio: "inherit" });
 }
 
 async function updateViaScript(version: string): Promise<void> {

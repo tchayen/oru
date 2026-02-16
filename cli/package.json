@@ -1,5 +1,5 @@
 {
-  "name": "oru",
+  "name": "oru-cli",
   "version": "0.1.0",
   "description": "oru — agent-friendly todo CLI with offline sync",
   "homepage": "https://oru.dev",
