@@ -119,16 +119,6 @@ resource "cloudflare_d1_database" "telemetry" {
   name       = "oru-telemetry"
 }
 
-# ── Telemetry DNS ───────────────────────────────────────────────────────────
-
-resource "cloudflare_record" "telemetry" {
-  zone_id = data.cloudflare_zone.site.id
-  name    = "telemetry"
-  content = "100::"
-  type    = "AAAA"
-  proxied = true
-}
-
 # ── Outputs ──────────────────────────────────────────────────────────────────
 
 output "pages_url" {
