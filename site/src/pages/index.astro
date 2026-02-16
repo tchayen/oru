@@ -10,6 +10,7 @@ import SyncArchitecture from "../components/SyncArchitecture.astro";
 import DevExperience from "../components/DevExperience.astro";
 import InstallCta from "../components/InstallCta.astro";
 import Footer from "../components/Footer.astro";
+import { SHOW_APP } from "../flags";
 ---
 
 <Layout>
@@ -19,7 +20,7 @@ import Footer from "../components/Footer.astro";
     <AgentNative />
     <TerminalDemo />
     <LocalFirst />
-    <CliMobile />
+    {SHOW_APP && <CliMobile />}
     <SyncArchitecture />
     <DevExperience />
     <InstallCta />

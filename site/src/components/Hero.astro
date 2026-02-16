@@ -2,6 +2,7 @@
 import Badge from "./ui/Badge.astro";
 import InstallBlock from "./ui/InstallBlock.astro";
 import Button from "./ui/Button.astro";
+import { SHOW_APP } from "../flags";
 ---
 
 <section class="hero relative pt-32 pb-24 bg-bg-base overflow-hidden max-sm:pt-20 max-sm:pb-16">
@@ -18,13 +19,15 @@ import Button from "./ui/Button.astro";
         >agent</span
       > can operate.
     </h1>
-    <p class="body-lg max-w-[640px] text-text-secondary mb-8 reveal" data-delay="160">
+    <p class={`body-lg max-w-[640px] text-text-secondary reveal ${SHOW_APP ? "mb-8" : "mb-12"}`} data-delay="160">
       Local-first CLI for personal tasks. SQLite database on your machine,
       offline sync, JSON output for agents. No accounts. No cloud.
     </p>
-    <p class="body text-text-tertiary max-w-[480px] mb-12 reveal" data-delay="200">
-      With a native iOS companion for when you are away from the terminal.
-    </p>
+    {SHOW_APP && (
+      <p class="body text-text-tertiary max-w-[480px] mb-12 reveal" data-delay="200">
+        With a native iOS companion for when you are away from the terminal.
+      </p>
+    )}
     <div
       class="hero-cta flex items-center gap-4 flex-wrap justify-center reveal max-sm:flex-col max-sm:w-full"
       data-delay="240"

@@ -1,5 +1,6 @@
 ---
 import Card from "./ui/Card.astro";
+import { SHOW_APP } from "../flags";
 ---
 
 <section class="py-24 bg-bg-elevated">
@@ -10,9 +11,7 @@ import Card from "./ui/Card.astro";
       <p class="body-lg max-w-[640px] mx-auto text-text-secondary">
         oru does not sync task snapshots. It syncs operations. Every create,
         update, and delete is appended to an oplog — an ordered, immutable log
-        of everything that happened. The CLI runs a lightweight HTTP server on
-        your machine. Your phone syncs over the local network. Nothing leaves
-        your LAN.
+        of everything that happened.{SHOW_APP && " The CLI runs a lightweight HTTP server on your machine. Your phone syncs over the local network. Nothing leaves your LAN."}
       </p>
     </div>
 
@@ -52,21 +51,23 @@ import Card from "./ui/Card.astro";
               >
             </div>
           </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >update</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >Mobile</span
-              >
+          {SHOW_APP && (
+            <div class="flex flex-col items-center gap-3">
+              <div
+                class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
+              ></div>
+              <div class="flex flex-col items-center gap-0.5">
+                <span
+                  class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
+                  >update</span
+                >
+                <span
+                  class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
+                  >Mobile</span
+                >
+              </div>
             </div>
-          </div>
+          )}
           <div class="flex flex-col items-center gap-3">
             <div
               class="dot-cli w-3.5 h-3.5 rounded-full border-2 border-accent bg-accent shadow-[0_0_12px_rgba(245,158,11,0.3)] relative z-1"
@@ -82,21 +83,23 @@ import Card from "./ui/Card.astro";
               >
             </div>
           </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >note</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >Mobile</span
-              >
+          {SHOW_APP && (
+            <div class="flex flex-col items-center gap-3">
+              <div
+                class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
+              ></div>
+              <div class="flex flex-col items-center gap-0.5">
+                <span
+                  class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
+                  >note</span
+                >
+                <span
+                  class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
+                  >Mobile</span
+                >
+              </div>
             </div>
-          </div>
+          )}
           <div class="flex flex-col items-center gap-3">
             <div
               class="dot-cli w-3.5 h-3.5 rounded-full border-2 border-accent bg-accent shadow-[0_0_12px_rgba(245,158,11,0.3)] relative z-1"
@@ -112,21 +115,23 @@ import Card from "./ui/Card.astro";
               >
             </div>
           </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >update</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >Mobile</span
-              >
+          {SHOW_APP && (
+            <div class="flex flex-col items-center gap-3">
+              <div
+                class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
+              ></div>
+              <div class="flex flex-col items-center gap-0.5">
+                <span
+                  class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
+                  >update</span
+                >
+                <span
+                  class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
+                  >Mobile</span
+                >
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
       <div class="flex justify-center gap-6 mt-4">
@@ -135,11 +140,13 @@ import Card from "./ui/Card.astro";
             class="w-2 h-2 rounded-full bg-accent border-accent shadow-[0_0_12px_rgba(245,158,11,0.3)]"
           ></span> CLI
         </span>
-        <span class="flex items-center gap-2 text-xs text-text-tertiary">
-          <span
-            class="w-2 h-2 rounded-full bg-syn-command border-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)]"
-          ></span> Mobile
-        </span>
+        {SHOW_APP && (
+          <span class="flex items-center gap-2 text-xs text-text-tertiary">
+            <span
+              class="w-2 h-2 rounded-full bg-syn-command border-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)]"
+            ></span> Mobile
+          </span>
+        )}
       </div>
     </div>
 
@@ -147,9 +154,10 @@ import Card from "./ui/Card.astro";
       <Card class="sync-card reveal" data-delay="80">
         <h4 class="mb-3 text-[16px]">Last-write-wins per field</h4>
         <p class="body-sm text-text-tertiary">
-          Change the title on your phone and the priority on your laptop. Both
-          edits survive. Conflicts are resolved at the field level, not the task
-          level.
+          {SHOW_APP
+            ? "Change the title on your phone and the priority on your laptop. Both edits survive."
+            : "Change the title in one session and the priority in another. Both edits survive."}{" "}
+          Conflicts are resolved at the field level, not the task level.
         </p>
       </Card>
       <Card class="sync-card reveal" data-delay="160">
