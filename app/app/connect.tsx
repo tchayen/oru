@@ -18,25 +18,11 @@ export default function ConnectScreen() {
       return;
     }
 
-    let url: string;
-    let token: string | null = null;
-
+    let pairUrl: URL;
     try {
-      const parsed = JSON.parse(data);
-      if (typeof parsed.url === "string") {
-        url = parsed.url;
-        token = typeof parsed.token === "string" ? parsed.token : null;
-      } else {
-        return;
-      }
+      pairUrl = new URL(data);
     } catch {
-      // Fall back to plain URL for backward compat
-      try {
-        new URL(data);
-        url = data;
-      } catch {
-        return;
-      }
+      return;
     }
 
     setScanned(true);
@@ -46,30 +32,35 @@ export default function ConnectScreen() {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      const res = await fetch(`${url}/tasks`, { signal: controller.signal, headers });
+
+      // Hit the pairing endpoint to exchange the one-time code for a token
+      const res = await fetch(pairUrl.toString(), {
+        method: "POST",
+        signal: controller.signal,
+      });
       clearTimeout(timeout);
+
       if (!res.ok) {
         throw new Error(`Server responded with ${res.status}`);
       }
+
+      const body = await res.json();
+      const token: string | null = typeof body.token === "string" ? body.token : null;
+      const serverUrl = pairUrl.origin;
+
+      setValidating(false);
+      if (process.env.EXPO_OS === "ios") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      await connect(serverUrl, token);
+      router.replace("/");
     } catch {
       setValidating(false);
       setError("Could not reach the server. Make sure oru server is running.");
       if (process.env.EXPO_OS === "ios") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
-      return;
     }
-
-    setValidating(false);
-    if (process.env.EXPO_OS === "ios") {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    await connect(url, token);
-    router.replace("/");
   };
 
   if (!permission) {

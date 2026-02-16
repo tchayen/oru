@@ -6,10 +6,14 @@ import { AmbiguousPrefixError } from "../tasks/repository.js";
 const validStatuses = new Set<string>(STATUSES);
 const validPriorities = new Set<string>(PRIORITIES);
 
-export function createApp(service: TaskService, token: string): Hono {
+export function createApp(service: TaskService, token: string, pairingCode: string): Hono {
   const app = new Hono();
+  let activePairingCode: string | null = pairingCode;
 
   app.use("*", async (c, next) => {
+    if (c.req.path === "/pair") {
+      return next();
+    }
     const auth = c.req.header("Authorization");
     if (!auth?.startsWith("Bearer ") || auth.slice(7) !== token) {
       return c.json(
@@ -18,6 +22,15 @@ export function createApp(service: TaskService, token: string): Hono {
       );
     }
     await next();
+  });
+
+  app.post("/pair", (c) => {
+    const code = c.req.query("code");
+    if (!activePairingCode || code !== activePairingCode) {
+      return c.json({ error: "invalid_code", message: "Invalid or expired pairing code" }, 403);
+    }
+    activePairingCode = null;
+    return c.json({ token });
   });
 
   app.get("/tasks", async (c) => {
