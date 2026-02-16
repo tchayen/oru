@@ -1,11 +1,11 @@
 import { execSync } from "child_process";
 import { readFileSync } from "fs";
-import { defineConfig } from "tsup";
+import { defineConfig, type Options } from "tsup";
 
 const gitCommit = execSync("git rev-parse --short HEAD").toString().trim();
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
 
-export default defineConfig([
+const configs: Options[] = [
   {
     entry: ["src/cli.ts"],
     format: ["esm"],
@@ -21,15 +21,6 @@ export default defineConfig([
     },
   },
   {
-    entry: ["src/server/index.ts"],
-    format: ["esm"],
-    target: "node22",
-    outDir: "dist/server",
-    clean: false,
-    minify: true,
-    external: ["better-sqlite3", "cloudflared"],
-  },
-  {
     entry: ["src/mcp/index.ts"],
     format: ["esm"],
     target: "node22",
@@ -42,4 +33,18 @@ export default defineConfig([
       __VERSION__: JSON.stringify(pkg.version),
     },
   },
-]);
+];
+
+if (process.env.ORU_BUILD_SERVER === "1") {
+  configs.push({
+    entry: ["src/server/index.ts"],
+    format: ["esm"],
+    target: "node22",
+    outDir: "dist/server",
+    clean: false,
+    minify: true,
+    external: ["better-sqlite3", "cloudflared"],
+  });
+}
+
+export default defineConfig(configs);
