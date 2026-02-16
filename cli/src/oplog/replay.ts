@@ -155,7 +155,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
         if (op.value && op.value.trim().length > 0) {
           const trimmed = op.value.trim();
           if (notes.length < MAX_NOTES_PER_TASK && !notes.some((n) => n.trim() === trimmed)) {
-            notes.push(op.value);
+            notes.push(trimmed);
           }
         }
         if (op.timestamp > updatedAt) {
