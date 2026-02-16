@@ -156,7 +156,7 @@ export function parseDocument(
   return { fields, newNotes, removedNotes };
 }
 
-export async function openInEditor(content: string): Promise<string> {
+export async function openInEditor(content: string): Promise<{ edited: string; tmpFile: string }> {
   const tmpFile = path.join(os.tmpdir(), `oru-edit-${Date.now()}.toml`);
   fs.writeFileSync(tmpFile, content);
 
@@ -165,24 +165,25 @@ export async function openInEditor(content: string): Promise<string> {
   const bin = args.shift()!;
   args.push(tmpFile);
 
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const child = spawn(bin, args, { stdio: "inherit" });
-      child.on("exit", (code) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`Editor exited with code ${code}. No changes were saved.`));
-        }
-      });
-      child.on("error", reject);
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(bin, args, { stdio: "inherit" });
+    child.on("exit", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Editor exited with code ${code}. No changes were saved.`));
+      }
     });
-    return fs.readFileSync(tmpFile, "utf-8");
-  } finally {
-    try {
-      fs.unlinkSync(tmpFile);
-    } catch {
-      // ignore cleanup errors
-    }
+    child.on("error", reject);
+  });
+  const edited = fs.readFileSync(tmpFile, "utf-8");
+  return { edited, tmpFile };
+}
+
+export function cleanupTmpFile(tmpFile: string): void {
+  try {
+    fs.unlinkSync(tmpFile);
+  } catch {
+    // ignore cleanup errors
   }
 }
