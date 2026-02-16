@@ -305,7 +305,10 @@ export function createProgram(
             resolvedConfig.next_month,
           );
           if (!parsed) {
-            validationError(json, `Could not parse due date: ${opts.due}`);
+            validationError(
+              json,
+              `Could not parse due date: ${opts.due}. Try: today, tomorrow, next friday, 2026-03-01, or march 15`,
+            );
             return;
           }
           dueAt = parsed;
@@ -524,7 +527,10 @@ export function createProgram(
                 resolvedConfig.first_day_of_week,
               );
               if (!parsed) {
-                validationError(json, `Could not parse due date: ${opts.due}`);
+                validationError(
+                  json,
+                  `Could not parse due date: ${opts.due}. Try: today, tomorrow, next friday, 2026-03-01, or march 15`,
+                );
                 return;
               }
               updateFields.due_at = parsed;
