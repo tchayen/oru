@@ -109,6 +109,9 @@ export function parseDocument(
         `Invalid due date: ${parsedDue}. Expected format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS`,
       );
     }
+    if (isNaN(new Date(parsedDue).getTime())) {
+      throw new Error(`Invalid due date: ${parsedDue}. The date is not a valid calendar date.`);
+    }
     fields.due_at = parsedDue;
   }
 
