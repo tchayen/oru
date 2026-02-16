@@ -245,17 +245,12 @@ describe("overdue highlighting", () => {
       const lines = output.split("\n");
       // The header line has the DUE column; check that both date rows
       // are aligned identically — the overdue red ANSI should NOT add extra padding
-      const headerDueIndex = lines[0].indexOf("DUE");
-      // In each data row, find the position of the date text (YYYY-MM-DD is 10 chars)
-      // The future date has no ANSI wrapping, so column alignment should match
-      const futureLine = lines[2]; // third line = second task row
-      const futureDate = "2099-12-31";
-      // Strip ANSI from overdue line to compare raw positions
-      const overdueLine = lines[1].replace(/\x1b\[\d+(;\d+)*m/g, "");
-      const overdueDate = "2020-01-01";
-      const overduePos = overdueLine.indexOf(overdueDate);
-      const strippedFuture = futureLine.replace(/\x1b\[\d+(;\d+)*m/g, "");
-      const futurePos = strippedFuture.indexOf(futureDate);
+      // Strip ANSI codes to compare raw column positions
+      const stripAnsi = (s: string) => s.replace(/\u001b\[\d+(;\d+)*m/g, "");
+      const overdueLine = stripAnsi(lines[1]);
+      const futureLine = stripAnsi(lines[2]);
+      const overduePos = overdueLine.indexOf("2020-01-01");
+      const futurePos = futureLine.indexOf("2099-12-31");
       expect(overduePos).toBe(futurePos);
     } finally {
       delete process.env.FORCE_COLOR;

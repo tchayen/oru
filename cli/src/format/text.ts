@@ -139,7 +139,9 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
   const dueW = Math.max(
     3,
     ...tasks.map((t) => {
-      if (!t.due_at) return 0;
+      if (!t.due_at) {
+        return 0;
+      }
       const time = t.due_at.slice(11, 16);
       return time === "00:00" ? 10 : 16; // "YYYY-MM-DD" or "YYYY-MM-DD HH:MM"
     }),
