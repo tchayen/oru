@@ -495,15 +495,7 @@ describe("CLI parse", () => {
 
   it("add --meta still works normally with regular key=value pairs", async () => {
     const p = createProgram(db, capture());
-    await p.parseAsync([
-      "node",
-      "oru",
-      "add",
-      "Normal meta task",
-      "--meta",
-      "key=value",
-      "--json",
-    ]);
+    await p.parseAsync(["node", "oru", "add", "Normal meta task", "--meta", "key=value", "--json"]);
     const parsed = JSON.parse(output.trim());
     expect(parsed.metadata).toEqual({ key: "value" });
   });
