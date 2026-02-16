@@ -6,6 +6,7 @@ import { createApp } from "../../src/server/routes.js";
 import type { Hono } from "hono";
 
 const token = "test-token";
+const pairingCode = "test-pairing-code";
 let app: Hono;
 let service: TaskService;
 
@@ -14,7 +15,7 @@ beforeEach(() => {
   const ky = createTestKysely(db);
   const deviceId = getDeviceId(db);
   service = new TaskService(ky, deviceId);
-  app = createApp(service, token);
+  app = createApp(service, token, pairingCode);
 });
 
 function req(method: string, path: string, body?: unknown) {
@@ -28,6 +29,60 @@ function req(method: string, path: string, body?: unknown) {
   }
   return app.request(path, init);
 }
+
+describe("POST /pair", () => {
+  it("returns token for valid pairing code", async () => {
+    const res = await app.request(`/pair?code=${pairingCode}`, { method: "POST" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.token).toBe(token);
+  });
+
+  it("burns the pairing code after first use", async () => {
+    const res1 = await app.request(`/pair?code=${pairingCode}`, { method: "POST" });
+    expect(res1.status).toBe(200);
+
+    const res2 = await app.request(`/pair?code=${pairingCode}`, { method: "POST" });
+    expect(res2.status).toBe(403);
+    const body = await res2.json();
+    expect(body.error).toBe("invalid_code");
+  });
+
+  it("returns 403 for wrong pairing code", async () => {
+    const res = await app.request("/pair?code=wrong-code", { method: "POST" });
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 403 for missing code", async () => {
+    const res = await app.request("/pair", { method: "POST" });
+    expect(res.status).toBe(403);
+  });
+});
+
+describe("authentication", () => {
+  it("returns 401 for missing Authorization header", async () => {
+    const res = await app.request("/tasks", { method: "GET" });
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error).toBe("unauthorized");
+  });
+
+  it("returns 401 for wrong token", async () => {
+    const res = await app.request("/tasks", {
+      method: "GET",
+      headers: { Authorization: "Bearer wrong-token" },
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 401 for malformed Authorization header", async () => {
+    const res = await app.request("/tasks", {
+      method: "GET",
+      headers: { Authorization: "Basic dXNlcjpwYXNz" },
+    });
+    expect(res.status).toBe(401);
+  });
+});
 
 describe("POST /tasks", () => {
   it("creates a task and returns 201", async () => {

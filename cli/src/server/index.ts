@@ -39,7 +39,8 @@ const ky = createKysely(db);
 const deviceId = getDeviceId(db);
 const service = new TaskService(ky, deviceId);
 const token = process.env.ORU_AUTH_TOKEN ?? crypto.randomBytes(32).toString("base64url");
-const app = createApp(service, token);
+const pairingCode = process.env.ORU_PAIRING_CODE ?? crypto.randomBytes(16).toString("base64url");
+const app = createApp(service, token, pairingCode);
 
 let tunnelStop: (() => void) | undefined;
 
@@ -56,13 +57,13 @@ const server = serve({ fetch: app.fetch, port }, async (info) => {
       tunnelStop = () => tunnel.stop();
       tunnel.once("url", (tunnelUrl: string) => {
         console.log(`Tunnel: ${tunnelUrl}`);
-        printQr(JSON.stringify({ url: tunnelUrl, token }));
+        printQr(`${tunnelUrl}/pair?code=${pairingCode}`);
       });
     } catch (err) {
       console.error("Failed to start tunnel:", err);
     }
   } else {
-    printQr(JSON.stringify({ url: localUrl, token }));
+    printQr(`${localUrl}/pair?code=${pairingCode}`);
   }
 });
 

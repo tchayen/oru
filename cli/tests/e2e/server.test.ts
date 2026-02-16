@@ -7,6 +7,7 @@ import os from "os";
 const SERVER_PATH = path.resolve(__dirname, "../../dist/server/index.js");
 
 const E2E_TOKEN = "e2e-test-token";
+const E2E_PAIRING_CODE = "e2e-pairing-code";
 
 let tmpDir: string;
 let dbPath: string;
@@ -58,19 +59,37 @@ describe("server process e2e", () => {
   it("starts, serves requests, and stops", async () => {
     const port = 9871 + Math.floor(Math.random() * 100);
 
-    // Start server directly (not via CLI, to have more control)
     const serverProc = spawn("node", [SERVER_PATH], {
       env: {
         ...process.env,
         ORU_DB_PATH: dbPath,
         ORU_PORT: String(port),
         ORU_AUTH_TOKEN: E2E_TOKEN,
+        ORU_PAIRING_CODE: E2E_PAIRING_CODE,
       },
       stdio: "pipe",
     });
 
     try {
       await waitForServer(port);
+
+      // Pairing endpoint returns token
+      const pairRes = await fetch(`http://localhost:${port}/pair?code=${E2E_PAIRING_CODE}`, {
+        method: "POST",
+      });
+      expect(pairRes.status).toBe(200);
+      const pairBody = await pairRes.json();
+      expect(pairBody.token).toBe(E2E_TOKEN);
+
+      // Pairing code is burned
+      const pairRes2 = await fetch(`http://localhost:${port}/pair?code=${E2E_PAIRING_CODE}`, {
+        method: "POST",
+      });
+      expect(pairRes2.status).toBe(403);
+
+      // Unauthenticated request returns 401
+      const noAuthRes = await fetch(`http://localhost:${port}/tasks`);
+      expect(noAuthRes.status).toBe(401);
 
       // Create a task
       const createRes = await fetch(`http://localhost:${port}/tasks`, {
@@ -126,10 +145,6 @@ describe("server process e2e", () => {
         headers: authHeaders(),
       });
       expect(notFoundRes.status).toBe(404);
-
-      // Verify unauthenticated request returns 401
-      const noAuthRes = await fetch(`http://localhost:${port}/tasks`);
-      expect(noAuthRes.status).toBe(401);
     } finally {
       serverProc.kill("SIGTERM");
       await new Promise<void>((r) => {
@@ -153,6 +168,7 @@ describe("server process e2e", () => {
         ORU_DB_PATH: dbPath,
         ORU_PORT: String(port),
         ORU_AUTH_TOKEN: E2E_TOKEN,
+        ORU_PAIRING_CODE: E2E_PAIRING_CODE,
       },
       stdio: "pipe",
     });
