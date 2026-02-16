@@ -1,5 +1,6 @@
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import { SORT_FIELDS } from "../tasks/repository.js";
+import { SHOW_SERVER } from "../flags.js";
 
 export function generateZshCompletions(): string {
   return `#compdef oru
@@ -24,8 +25,7 @@ _oru() {
     'context:Show a summary of what needs your attention'
     'log:Show change history of a task'
     'sync:Sync with a filesystem remote'
-    'config:Manage configuration'
-    'server:Manage the HTTP server'
+    'config:Manage configuration'${SHOW_SERVER ? "\n    'server:Manage the HTTP server'" : ""}
     'completions:Generate shell completions'
     'backup:Create a database backup snapshot'
     'self-update:Update oru to the latest version'
@@ -158,7 +158,9 @@ _oru() {
           )
           _describe -t commands 'config command' config_commands
           ;;
-        server)
+${
+  SHOW_SERVER
+    ? `        server)
           local -a server_commands
           server_commands=(
             'start:Start the server'
@@ -180,8 +182,9 @@ _oru() {
               esac
               ;;
           esac
-          ;;
-        completions)
+          ;;`
+    : ""
+}        completions)
           local -a shells
           shells=(bash zsh fish)
           _describe -t shells 'shell' shells
