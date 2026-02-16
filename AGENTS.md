@@ -25,16 +25,16 @@ If oru is installed globally (`npm install -g oru-cli`), use
 
 ## Available MCP tools
 
-| Tool | Description |
-| --- | --- |
-| `add_task` | Create a new task. Supports custom ID for idempotent creates. |
-| `update_task` | Update fields on an existing task. Can also append a note. |
-| `delete_task` | Delete a task by ID. |
-| `list_tasks` | List tasks with filters (status, priority, owner, label, search). Done tasks excluded by default. |
-| `get_task` | Get a single task by ID or ID prefix. |
+| Tool          | Description                                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------------------- |
+| `add_task`    | Create a new task. Supports custom ID for idempotent creates.                                             |
+| `update_task` | Update fields on an existing task. Can also append a note.                                                |
+| `delete_task` | Delete a task by ID.                                                                                      |
+| `list_tasks`  | List tasks with filters (status, priority, owner, label, search). Done tasks excluded by default.         |
+| `get_task`    | Get a single task by ID or ID prefix.                                                                     |
 | `get_context` | Summary of what needs attention: overdue, due soon, in progress, actionable, blocked, recently completed. |
-| `add_note` | Append a note to a task. |
-| `list_labels` | List all labels currently in use. |
+| `add_note`    | Append a note to a task.                                                                                  |
+| `list_labels` | List all labels currently in use.                                                                         |
 
 ## Task model
 
