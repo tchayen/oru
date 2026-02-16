@@ -53,6 +53,7 @@ import {
 } from "./completions/index.js";
 import { dim, yellow, orange } from "./format/colors.js";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
+import { performBackup } from "./backup.js";
 
 declare const __GIT_COMMIT__: string;
 declare const __VERSION__: string;
@@ -1359,6 +1360,22 @@ export function createProgram(
       write("Telemetry disabled.");
     });
 
+  // backup
+  program
+    .command("backup [path]")
+    .description("Create a database backup snapshot")
+    .action((targetPath?: string) => {
+      const backupDir = targetPath ?? resolvedConfig.backup_path;
+      if (!backupDir) {
+        write("No backup path specified. Pass a path argument or set backup_path in config.");
+        process.exitCode = 1;
+        return;
+      }
+      const dbPath = db.name;
+      const dest = performBackup(dbPath, backupDir);
+      write(`Backed up to ${dest}`);
+    });
+
   // hidden _complete command for dynamic completions
   program
     .command("_complete <type> [prefix]", { hidden: true })
@@ -1381,6 +1398,12 @@ async function main() {
   initSchema(db);
   const config = loadConfig();
   const program = createProgram(db, undefined, config);
+
+  // Auto-backup if configured
+  if (config.backup_path) {
+    const { autoBackup } = await import("./backup.js");
+    autoBackup(db.name, config.backup_path, config.backup_interval);
+  }
 
   // Show first-run telemetry notice
   try {

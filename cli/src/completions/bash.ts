@@ -9,7 +9,7 @@ _oru_completions() {
   local cur prev words cword
   _init_completion || return
 
-  local commands="add list labels get update edit delete done start review context log sync config server completions self-update telemetry"
+  local commands="add list labels get update edit delete done start review context log sync config server backup completions self-update telemetry"
   local config_subcommands="init path"
   local server_subcommands="start"
   local telemetry_subcommands="status enable disable"
@@ -23,7 +23,7 @@ _oru_completions() {
   local i
   for ((i = 1; i < cword; i++)); do
     case "\${words[i]}" in
-      add|list|labels|get|update|edit|delete|done|start|review|context|log|sync|config|server|completions|self-update|telemetry)
+      add|list|labels|get|update|edit|delete|done|start|review|context|log|sync|config|server|backup|completions|self-update|telemetry)
         subcmd="\${words[i]}"
         break
         ;;
@@ -115,6 +115,9 @@ _oru_completions() {
       ;;
     sync)
       _filedir
+      ;;
+    backup)
+      _filedir -d
       ;;
   esac
 }

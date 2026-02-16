@@ -27,6 +27,7 @@ _oru() {
     'config:Manage configuration'
     'server:Manage the HTTP server'
     'completions:Generate shell completions'
+    'backup:Create a database backup snapshot'
     'self-update:Update oru to the latest version'
     'telemetry:Manage anonymous usage telemetry'
   )
@@ -184,6 +185,10 @@ _oru() {
           local -a shells
           shells=(bash zsh fish)
           _describe -t shells 'shell' shells
+          ;;
+        backup)
+          _arguments \\
+            '1:backup directory:_directories'
           ;;
         self-update)
           _arguments \\
