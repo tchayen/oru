@@ -1230,7 +1230,6 @@ if (isEntryPoint) {
     } else {
       console.error(err instanceof Error ? err.message : String(err));
     }
->>>>>>> 2020cf0 (Add ORU_DEBUG=1 for verbose error output)
     process.exit(1);
   });
 }
