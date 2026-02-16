@@ -16,9 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Collect all line/blank elements as an ordered sequence
-  const elements = Array.from(
-    terminalBody.querySelectorAll<HTMLElement>(".line, .blank"),
-  );
+  const elements = Array.from(terminalBody.querySelectorAll<HTMLElement>(".line, .blank"));
   if (elements.length === 0) {
     return;
   }

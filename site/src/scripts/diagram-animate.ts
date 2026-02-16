@@ -43,10 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     diagramObserver.observe(diagram);
   }
 
-  function animateDiagram(
-    nodes: NodeListOf<HTMLElement>,
-    connectors: NodeListOf<HTMLElement>,
-  ) {
+  function animateDiagram(nodes: NodeListOf<HTMLElement>, connectors: NodeListOf<HTMLElement>) {
     const allItems: Array<
       { type: "node"; el: HTMLElement } | { type: "connector"; el: HTMLElement }
     > = [];
@@ -115,10 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     timelineObserver.observe(timeline);
   }
 
-  function animateTimeline(
-    line: HTMLElement | null,
-    events: NodeListOf<HTMLElement>,
-  ) {
+  function animateTimeline(line: HTMLElement | null, events: NodeListOf<HTMLElement>) {
     // First draw the line
     setTimeout(() => {
       if (line) {
