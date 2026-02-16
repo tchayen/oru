@@ -55,17 +55,17 @@ import {
 import { dim, yellow, orange } from "./format/colors.js";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
 import { performBackup } from "./backup.js";
+import {
+  sanitizeTitle,
+  validateTitle as checkTitle,
+  validateNote as checkNote,
+  validateLabels as checkLabels,
+  MAX_TITLE_LENGTH,
+  MAX_NOTE_LENGTH,
+} from "./validation.js";
 
 declare const __GIT_COMMIT__: string;
 declare const __VERSION__: string;
-
-const MAX_TITLE_LENGTH = 1000;
-const MAX_NOTE_LENGTH = 10000;
-const MAX_LABEL_LENGTH = 200;
-
-function sanitizeTitle(title: string): string {
-  return title.replace(/[\r\n]+/g, " ").trim();
-}
 
 function parseMetadata(pairs: string[]): Record<string, string | null> {
   const meta: Record<string, string | null> = {};
@@ -211,31 +211,28 @@ export function createProgram(
   }
 
   function validateTitle(title: string, json: boolean): boolean {
-    if (title.length === 0) {
-      validationError(json, "Title cannot be empty");
-      return false;
-    }
-    if (title.length > MAX_TITLE_LENGTH) {
-      validationError(json, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`);
+    const result = checkTitle(title);
+    if (!result.valid) {
+      validationError(json, result.message);
       return false;
     }
     return true;
   }
 
   function validateNote(note: string, json: boolean): boolean {
-    if (note.length > MAX_NOTE_LENGTH) {
-      validationError(json, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`);
+    const result = checkNote(note);
+    if (!result.valid) {
+      validationError(json, result.message);
       return false;
     }
     return true;
   }
 
   function validateLabels(labels: string[], json: boolean): boolean {
-    for (const l of labels) {
-      if (l.length > MAX_LABEL_LENGTH) {
-        validationError(json, `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`);
-        return false;
-      }
+    const result = checkLabels(labels);
+    if (!result.valid) {
+      validationError(json, result.message);
+      return false;
     }
     return true;
   }

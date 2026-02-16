@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { TaskService } from "../main.js";
 import { VALID_STATUSES, VALID_PRIORITIES, type Status, type Priority } from "../tasks/types.js";
 import { AmbiguousPrefixError } from "../tasks/repository.js";
+import { sanitizeTitle, validateTitle, validateNote, validateLabels } from "../validation.js";
 
 export function createApp(service: TaskService, token: string, pairingCode: string): Hono {
   const app = new Hono();
@@ -112,15 +113,10 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
     if (!title || typeof title !== "string") {
       return c.json({ error: "validation", message: "Title is required" }, 400);
     }
-    title = title.replace(/[\r\n]+/g, " ").trim();
-    if (title.length === 0) {
-      return c.json({ error: "validation", message: "Title is required" }, 400);
-    }
-    if (title.length > 1000) {
-      return c.json(
-        { error: "validation", message: "Title exceeds maximum length of 1000 characters" },
-        400,
-      );
+    title = sanitizeTitle(title);
+    const titleCheck = validateTitle(title, { required: true });
+    if (!titleCheck.valid) {
+      return c.json({ error: "validation", message: titleCheck.message }, 400);
     }
     if (status && !VALID_STATUSES.has(status)) {
       return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
@@ -155,16 +151,11 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       if (typeof title !== "string") {
         return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
       }
-      title = title.replace(/[\r\n]+/g, " ").trim();
-      if (title.length === 0) {
-        return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
+      title = sanitizeTitle(title);
+      const titleCheck = validateTitle(title);
+      if (!titleCheck.valid) {
+        return c.json({ error: "validation", message: titleCheck.message }, 400);
       }
-    }
-    if (title && title.length > 1000) {
-      return c.json(
-        { error: "validation", message: "Title exceeds maximum length of 1000 characters" },
-        400,
-      );
     }
     if (status && !VALID_STATUSES.has(status)) {
       return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
