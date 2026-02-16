@@ -31,7 +31,7 @@ jobs:
         run: pnpm tsgo
 
       - name: Build
-        run: pnpm build
+        run: ORU_BUILD_SERVER=1 pnpm build
 
       - name: Test
         run: pnpm test
@@ -57,13 +57,13 @@ jobs:
       - run: pnpm install
 
       - name: Build main
-        run: pnpm build && pnpm --filter oru-site build
+        run: ORU_BUILD_SERVER=1 pnpm build && pnpm --filter oru-site build
 
       - name: Save main bundle sizes
         id: main-size
         run: |
           echo "cli=$(stat -c%s cli/dist/cli.js)" >> "$GITHUB_OUTPUT"
-          if [ -f cli/dist/server/index.js ]; then echo "server=$(stat -c%s cli/dist/server/index.js)"; else echo "server=0"; fi >> "$GITHUB_OUTPUT"
+          echo "server=$(stat -c%s cli/dist/server/index.js)" >> "$GITHUB_OUTPUT"
           echo "site_html=$(stat -c%s site/dist/index.html)" >> "$GITHUB_OUTPUT"
           echo "site_css=$(stat -c%s site/dist/_astro/*.css)" >> "$GITHUB_OUTPUT"
 
@@ -74,7 +74,7 @@ jobs:
       - run: pnpm install
 
       - name: Build PR
-        run: pnpm build && pnpm --filter oru-site build
+        run: ORU_BUILD_SERVER=1 pnpm build && pnpm --filter oru-site build
 
       - name: Report bundle size
         uses: actions/github-script@v7
@@ -89,7 +89,7 @@ jobs:
             const mainSiteCss = Number("${{ steps.main-size.outputs.site_css }}");
 
             const prCli = fs.statSync("cli/dist/cli.js").size;
-            const prServer = fs.existsSync("cli/dist/server/index.js") ? fs.statSync("cli/dist/server/index.js").size : 0;
+            const prServer = fs.statSync("cli/dist/server/index.js").size;
             const prSiteHtml = fs.statSync("site/dist/index.html").size;
             const cssFiles = fs.readdirSync("site/dist/_astro").filter(f => f.endsWith(".css"));
             const prSiteCss = cssFiles.reduce((sum, f) => sum + fs.statSync(path.join("site/dist/_astro", f)).size, 0);
@@ -114,7 +114,7 @@ jobs:
               "| File | main | PR | Delta |",
               "| --- | ---: | ---: | ---: |",
               `| \`cli.js\` | ${fmt(mainCli)} KB | ${fmt(prCli)} KB | ${delta(mainCli, prCli)} |`,
-              mainServer || prServer ? `| \`server/index.js\` | ${mainServer ? fmt(mainServer) + " KB" : "N/A"} | ${prServer ? fmt(prServer) + " KB" : "N/A"} | ${mainServer && prServer ? delta(mainServer, prServer) : "—"} |` : null,
+              `| \`server/index.js\` | ${fmt(mainServer)} KB | ${fmt(prServer)} KB | ${delta(mainServer, prServer)} |`,
               "",
               "**Site**",
               "",
@@ -122,7 +122,7 @@ jobs:
               "| --- | ---: | ---: | ---: |",
               `| \`index.html\` | ${fmt(mainSiteHtml)} KB | ${fmt(prSiteHtml)} KB | ${delta(mainSiteHtml, prSiteHtml)} |`,
               `| \`*.css\` | ${fmt(mainSiteCss)} KB | ${fmt(prSiteCss)} KB | ${delta(mainSiteCss, prSiteCss)} |`,
-            ].filter(Boolean).join("\n");
+            ].join("\n");
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
