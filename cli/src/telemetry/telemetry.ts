@@ -121,9 +121,11 @@ export function showFirstRunNotice(config: Config): void {
     if (config.telemetry_notice_shown) {
       return;
     }
-    process.stderr.write(
-      "\noru collects anonymous usage data to improve the tool.\nTo disable: oru telemetry disable (or set DO_NOT_TRACK=1)\n\n",
-    );
+    if (process.stderr.isTTY) {
+      process.stderr.write(
+        "\noru collects anonymous usage data to improve the tool.\nTo disable: oru telemetry disable (or set DO_NOT_TRACK=1)\n\n",
+      );
+    }
     setConfigValue("telemetry_notice_shown", "true");
   } catch {
     // Never let notice errors affect CLI
