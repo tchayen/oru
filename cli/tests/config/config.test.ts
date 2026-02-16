@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { getConfigPath, loadConfig } from "../../src/config/config.js";
+import { getConfigPath, loadConfig, setConfigValue } from "../../src/config/config.js";
 
 describe("config", () => {
   let tmpDir: string;
@@ -265,5 +265,100 @@ describe("getConfigPath", () => {
     process.env.ORU_CONFIG_PATH = "/tmp/explicit.toml";
     process.env.ORU_CONFIG_DIR = "/tmp/custom-dir";
     expect(getConfigPath()).toBe("/tmp/explicit.toml");
+  });
+});
+
+describe("setConfigValue", () => {
+  let tmpDir: string;
+  let configPath: string;
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-config-set-test-"));
+    configPath = path.join(tmpDir, "config.toml");
+    process.env.ORU_CONFIG_PATH = configPath;
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true });
+    process.env = { ...originalEnv };
+  });
+
+  it("creates a new key in an empty file", () => {
+    fs.writeFileSync(configPath, "");
+    setConfigValue("date_format", '"dmy"');
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toContain('date_format = "dmy"');
+    const config = loadConfig(configPath);
+    expect(config.date_format).toBe("dmy");
+  });
+
+  it("updates an existing key", () => {
+    fs.writeFileSync(configPath, 'date_format = "mdy"\n');
+    setConfigValue("date_format", '"dmy"');
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toBe('date_format = "dmy"\n');
+    const config = loadConfig(configPath);
+    expect(config.date_format).toBe("dmy");
+  });
+
+  it("preserves other keys when updating", () => {
+    fs.writeFileSync(
+      configPath,
+      `date_format = "mdy"
+first_day_of_week = "sunday"
+`,
+    );
+    setConfigValue("date_format", '"dmy"');
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toContain('date_format = "dmy"');
+    expect(content).toContain('first_day_of_week = "sunday"');
+  });
+
+  it("handles keys with regex special characters without crashing", () => {
+    fs.writeFileSync(configPath, "");
+    const keyWithSpecialChars = "test.key[0]+name*";
+    expect(() => {
+      setConfigValue(keyWithSpecialChars, "value");
+    }).not.toThrow();
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toContain(`${keyWithSpecialChars} = value`);
+  });
+
+  it("correctly updates a key that looks like a regex pattern", () => {
+    const specialKey = "log.level";
+    fs.writeFileSync(configPath, `${specialKey} = "info"\n`);
+    setConfigValue(specialKey, '"debug"');
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toBe(`${specialKey} = "debug"\n`);
+    // Verify the old value is not present
+    expect(content).not.toContain('log.level = "info"');
+  });
+
+  it("handles keys with dot notation without matching unintended lines", () => {
+    fs.writeFileSync(
+      configPath,
+      `backup_path = "/backups"
+backup_path_old = "/old-backups"
+`,
+    );
+    setConfigValue("backup_path", '"/new-backups"');
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toContain('backup_path = "/new-backups"');
+    expect(content).toContain('backup_path_old = "/old-backups"');
+  });
+
+  it("handles keys with brackets in them", () => {
+    fs.writeFileSync(configPath, "");
+    setConfigValue("array[0]", '"value"');
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toContain('array[0] = "value"');
+  });
+
+  it("handles keys with parentheses in them", () => {
+    fs.writeFileSync(configPath, "");
+    setConfigValue("func()", '"value"');
+    const content = fs.readFileSync(configPath, "utf-8");
+    expect(content).toContain('func() = "value"');
   });
 });

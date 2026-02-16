@@ -167,7 +167,8 @@ export function setConfigValue(key: string, value: string): void {
   if (fs.existsSync(configPath)) {
     content = fs.readFileSync(configPath, "utf-8");
   }
-  const pattern = new RegExp(`^${key}\\s*=\\s*.*`, "m");
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`^${escapedKey}\\s*=\\s*.*`, "m");
   if (pattern.test(content)) {
     content = content.replace(pattern, `${key} = ${value}`);
   } else {
