@@ -49,6 +49,12 @@ function formatDue(dueAt: string, now?: Date): string {
   return text;
 }
 
+function formatDueText(dueAt: string): string {
+  const date = dueAt.slice(0, 10);
+  const time = dueAt.slice(11, 16);
+  return time === "00:00" ? date : `${date} ${time}`;
+}
+
 function colorPriority(p: string): string {
   switch (p) {
     case "urgent":
@@ -164,11 +170,14 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
   const rows = tasks.map((t) => {
     const check = colorCheck(t.status);
     const ownerStr = t.owner ?? "";
-    const due = t.due_at ? formatDue(t.due_at, now) : "";
+    const dueText = t.due_at ? formatDueText(t.due_at) : "";
+    const dueOverdue = t.due_at ? isOverdue(t.due_at, now) : false;
     const labels = t.labels.length > 0 ? t.labels.join(", ") : "";
     const metaKeys = Object.keys(t.metadata);
     const meta = metaKeys.length > 0 ? metaKeys.map((k) => `${k}=${t.metadata[k]}`).join(", ") : "";
-    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${ownerStr.padEnd(ownerW)}  ${due.padEnd(dueW)}  ${cyan(labels.padEnd(labelsW))}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
+    const duePadded = dueText.padEnd(dueW);
+    const dueCol = dueOverdue ? red(duePadded) : duePadded;
+    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${ownerStr.padEnd(ownerW)}  ${dueCol}  ${cyan(labels.padEnd(labelsW))}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
   });
   return [header, ...rows].join("\n");
 }
