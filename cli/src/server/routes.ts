@@ -10,16 +10,17 @@ import {
   type Priority,
 } from "../tasks/types.js";
 import { AmbiguousPrefixError } from "../tasks/repository.js";
-
-const MAX_TITLE_LENGTH = 1000;
-const MAX_NOTE_LENGTH = 10000;
-const MAX_LABEL_LENGTH = 200;
-const MAX_LABELS = 100;
-const MAX_BLOCKED_BY = 100;
-const MAX_NOTES = 100;
-const MAX_METADATA_KEYS = 50;
-const MAX_METADATA_KEY_LENGTH = 100;
-const MAX_METADATA_VALUE_LENGTH = 5000;
+import {
+  MAX_TITLE_LENGTH,
+  MAX_NOTE_LENGTH,
+  MAX_LABEL_LENGTH,
+  MAX_LABELS,
+  MAX_BLOCKED_BY,
+  MAX_NOTES,
+  MAX_METADATA_KEYS,
+  MAX_METADATA_KEY_LENGTH,
+  MAX_METADATA_VALUE_LENGTH,
+} from "../validation.js";
 
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);

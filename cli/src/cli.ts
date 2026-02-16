@@ -62,16 +62,15 @@ import {
   validateLabels as checkLabels,
   MAX_TITLE_LENGTH,
   MAX_NOTE_LENGTH,
+  MAX_LABELS,
+  MAX_BLOCKED_BY,
+  MAX_METADATA_KEYS,
+  MAX_METADATA_KEY_LENGTH,
+  MAX_METADATA_VALUE_LENGTH,
 } from "./validation.js";
 
 declare const __GIT_COMMIT__: string;
 declare const __VERSION__: string;
-
-const MAX_LABELS = 100;
-const MAX_BLOCKED_BY = 100;
-const MAX_METADATA_KEYS = 50;
-const MAX_METADATA_KEY_LENGTH = 100;
-const MAX_METADATA_VALUE_LENGTH = 5000;
 function parseMetadata(pairs: string[]): Record<string, string | null> {
   const meta: Record<string, string | null> = {};
   for (const pair of pairs) {

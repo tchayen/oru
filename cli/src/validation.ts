@@ -1,6 +1,12 @@
 export const MAX_TITLE_LENGTH = 1000;
 export const MAX_NOTE_LENGTH = 10000;
 export const MAX_LABEL_LENGTH = 200;
+export const MAX_LABELS = 100;
+export const MAX_BLOCKED_BY = 100;
+export const MAX_NOTES = 100;
+export const MAX_METADATA_KEYS = 50;
+export const MAX_METADATA_KEY_LENGTH = 100;
+export const MAX_METADATA_VALUE_LENGTH = 5000;
 
 export function sanitizeTitle(title: string): string {
   return title.replace(/[\r\n]+/g, " ").trim();
