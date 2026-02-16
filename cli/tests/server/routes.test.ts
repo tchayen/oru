@@ -152,6 +152,22 @@ describe("POST /tasks", () => {
     const task = await res.json();
     expect(task.owner).toBe("agent");
   });
+
+  it("returns 400 for invalid JSON body", async () => {
+    const init: RequestInit = {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: "{invalid json",
+    };
+    const res = await app.request("/tasks", init);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+    expect(body.message).toBe("Invalid JSON body");
+  });
 });
 
 describe("GET /tasks", () => {
@@ -457,6 +473,23 @@ describe("PATCH /tasks/:id", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.title).toBe("Test");
+  });
+
+  it("returns 400 for invalid JSON body", async () => {
+    const task = await service.add({ title: "Test" });
+    const init: RequestInit = {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: "{invalid json",
+    };
+    const res = await app.request(`/tasks/${task.id}`, init);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+    expect(body.message).toBe("Invalid JSON body");
   });
 });
 
