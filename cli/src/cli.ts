@@ -159,7 +159,7 @@ export function createProgram(
   const service = new TaskService(ky, deviceId);
   const program = new Command("oru")
     .description(
-      `${orange("oru")} — personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file.`,
+      `${orange("oru")} — personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file. Set ORU_DEBUG=1 for verbose error output.`,
     )
     .version(`${__VERSION__} (${__GIT_COMMIT__})`);
 
@@ -1283,7 +1283,11 @@ const isEntryPoint = process.argv[1] && currentFile === process.argv[1];
 
 if (isEntryPoint) {
   main().catch((err) => {
-    console.error(err instanceof Error ? err.message : String(err));
+    if (process.env.ORU_DEBUG === "1") {
+      console.error(err);
+    } else {
+      console.error(err instanceof Error ? err.message : String(err));
+    }
     process.exit(1);
   });
 }
