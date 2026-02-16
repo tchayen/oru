@@ -11,7 +11,7 @@ declare const __VERSION__: string;
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
 
-function sanitizeError(err: unknown): string {
+export function sanitizeError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
   if (msg.includes("SQLITE_") || msg.includes("constraint") || msg.includes("database")) {
     return "An internal error occurred. Please try again.";

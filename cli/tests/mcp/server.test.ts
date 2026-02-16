@@ -4,7 +4,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createTestDb } from "../helpers/test-db.js";
 import { createKysely } from "../../src/db/kysely.js";
 import { TaskService } from "../../src/main.js";
-import { createMcpServer } from "../../src/mcp/server.js";
+import { createMcpServer, sanitizeError } from "../../src/mcp/server.js";
 import type Database from "better-sqlite3";
 
 describe("MCP server", () => {
@@ -256,5 +256,39 @@ describe("MCP server", () => {
     });
     const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
     expect(tasks).toHaveLength(1);
+  });
+});
+
+describe("sanitizeError", () => {
+  it("sanitizes SQLITE_ errors", () => {
+    const err = new Error("SQLITE_CONSTRAINT: UNIQUE constraint failed: tasks.id");
+    expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
+  });
+
+  it("sanitizes constraint errors", () => {
+    const err = new Error("UNIQUE constraint failed: tasks.id");
+    expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
+  });
+
+  it("sanitizes database errors", () => {
+    const err = new Error("database is locked");
+    expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
+  });
+
+  it("passes through application-level errors unchanged", () => {
+    const err = new Error("Task not found: abc123");
+    expect(sanitizeError(err)).toBe("Task not found: abc123");
+  });
+
+  it("passes through generic errors unchanged", () => {
+    const err = new Error("Title cannot be empty");
+    expect(sanitizeError(err)).toBe("Title cannot be empty");
+  });
+
+  it("handles non-Error values", () => {
+    expect(sanitizeError("some string error")).toBe("some string error");
+    expect(sanitizeError("SQLITE_ERROR: something")).toBe(
+      "An internal error occurred. Please try again.",
+    );
   });
 });
