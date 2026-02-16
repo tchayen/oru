@@ -66,19 +66,19 @@ export class TaskService {
       }
 
       for (const [field, value] of Object.entries(input)) {
-        if (value !== undefined) {
-          await writeOp(
-            trx,
-            {
-              task_id: task.id,
-              device_id: this.deviceId,
-              op_type: "update",
-              field,
-              value: typeof value === "string" ? value : JSON.stringify(value),
-            },
-            now,
-          );
-        }
+        if (field === "note" || value === undefined) continue;
+        await writeOp(
+          trx,
+          {
+            task_id: task.id,
+            device_id: this.deviceId,
+            op_type: "update",
+            field,
+            value:
+              value === null ? null : typeof value === "string" ? value : JSON.stringify(value),
+          },
+          now,
+        );
       }
       return task;
     });
@@ -124,19 +124,19 @@ export class TaskService {
 
       const resolvedId = task.id;
       for (const [field, value] of Object.entries(input)) {
-        if (value !== undefined) {
-          await writeOp(
-            trx,
-            {
-              task_id: resolvedId,
-              device_id: this.deviceId,
-              op_type: "update",
-              field,
-              value: typeof value === "string" ? value : JSON.stringify(value),
-            },
-            now,
-          );
-        }
+        if (field === "note" || value === undefined) continue;
+        await writeOp(
+          trx,
+          {
+            task_id: resolvedId,
+            device_id: this.deviceId,
+            op_type: "update",
+            field,
+            value:
+              value === null ? null : typeof value === "string" ? value : JSON.stringify(value),
+          },
+          now,
+        );
       }
 
       const trimmed = note.trim();
