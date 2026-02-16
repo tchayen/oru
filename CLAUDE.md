@@ -108,7 +108,7 @@ Defaults to `~/.oru/oru.db`. Override with `ORU_DB_PATH` env var.
 ## Git & PR conventions
 
 - Create PRs with `gh pr create`
-- **PR title must have a scope prefix**: `cli:`, `app:`, or `infra:` (for CI, docs, repo config)
+- **PR title must have a scope prefix**: `cli:`, `app:`, or `infra:`, `site:`, `types:`
   - Examples: `cli: Add shell completions`, `app: Add due date picker`, `infra: Add bundle size CI`
 - PR description uses the template in `.github/pull_request_template.md` — fill in Why/How/Test plan and check all applicable checklist items
 - Delete checklist sections that don't apply (e.g. remove "If adding a new CLI command" for an app-only PR)

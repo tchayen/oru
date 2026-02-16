@@ -1,5 +1,6 @@
 # Tasks
 
+- [ ] Make imports skip file extension.
 - [~] Set up landing page with CloudFlare.
 - [x] Maybe consider a rename so that we can find both a domain and npm package that are available?
 - [x] Add colors to CLI help output. (PR #67)

@@ -15,7 +15,7 @@
 ## Always
 
 - [ ] `pnpm check` passes (lint, format, typecheck, tests)
-- [ ] PR title has scope prefix (`cli:`, `app:`, or `infra:`)
+- [ ] PR title has scope prefix (`cli:`, `app:`, `infra:`, `site:`, `types:`)
 
 ## If adding a new CLI command
 

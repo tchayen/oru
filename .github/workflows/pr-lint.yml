@@ -16,12 +16,12 @@ jobs:
         with:
           script: |
             const title = context.payload.pull_request.title;
-            const pattern = /^(cli|app|infra): .+/;
+            const pattern = /^(cli|app|infra|site|types): .+/;
 
             if (!pattern.test(title)) {
               core.setFailed(
                 `PR title must start with a scope prefix.\n\n` +
-                `Valid prefixes: cli:, app:, infra:\n` +
+                `Valid prefixes: cli:, app:, infra:, site:, types:\n` +
                 `Example: "cli: Add shell completions"\n\n` +
                 `Got: "${title}"`
               );
