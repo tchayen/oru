@@ -1,8 +1,112 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import type { TaskService } from "../main.js";
-import { VALID_STATUSES, VALID_PRIORITIES, type Status, type Priority } from "../tasks/types.js";
+import {
+  STATUSES,
+  PRIORITIES,
+  VALID_STATUSES,
+  VALID_PRIORITIES,
+  type Status,
+  type Priority,
+} from "../tasks/types.js";
 import { AmbiguousPrefixError } from "../tasks/repository.js";
-import { sanitizeTitle, validateTitle, validateNote, validateLabels } from "../validation.js";
+
+const MAX_TITLE_LENGTH = 1000;
+const MAX_NOTE_LENGTH = 10000;
+const MAX_LABEL_LENGTH = 200;
+const MAX_LABELS = 100;
+const MAX_BLOCKED_BY = 100;
+const MAX_NOTES = 100;
+const MAX_METADATA_KEYS = 50;
+const MAX_METADATA_KEY_LENGTH = 100;
+const MAX_METADATA_VALUE_LENGTH = 5000;
+
+const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
+const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
+
+const metadataSchema = z
+  .record(z.string(), z.unknown())
+  .refine(
+    (val) => Object.keys(val).length <= MAX_METADATA_KEYS,
+    `Metadata exceeds maximum of ${MAX_METADATA_KEYS} keys`,
+  )
+  .refine(
+    (val) => Object.keys(val).every((k) => k.length <= MAX_METADATA_KEY_LENGTH),
+    `Metadata key exceeds maximum length of ${MAX_METADATA_KEY_LENGTH} characters`,
+  )
+  .refine(
+    (val) =>
+      Object.values(val).every(
+        (v) => typeof v !== "string" || v.length <= MAX_METADATA_VALUE_LENGTH,
+      ),
+    `Metadata value exceeds maximum length of ${MAX_METADATA_VALUE_LENGTH} characters`,
+  );
+
+const createTaskSchema = z.object({
+  id: z.string().optional(),
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(MAX_TITLE_LENGTH, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`),
+  status: StatusEnum.optional(),
+  priority: PriorityEnum.optional(),
+  owner: z.string().nullable().optional(),
+  due_at: z.string().nullable().optional(),
+  blocked_by: z
+    .array(z.string())
+    .max(MAX_BLOCKED_BY, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items`)
+    .optional(),
+  labels: z
+    .array(
+      z
+        .string()
+        .max(MAX_LABEL_LENGTH, `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`),
+    )
+    .max(MAX_LABELS, `labels exceeds maximum of ${MAX_LABELS} items`)
+    .optional(),
+  notes: z
+    .array(
+      z
+        .string()
+        .max(MAX_NOTE_LENGTH, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`),
+    )
+    .max(MAX_NOTES, `notes exceeds maximum of ${MAX_NOTES} items`)
+    .optional(),
+  metadata: metadataSchema.optional(),
+});
+
+const updateTaskSchema = z.object({
+  title: z
+    .string()
+    .max(MAX_TITLE_LENGTH, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`)
+    .optional(),
+  status: StatusEnum.optional(),
+  priority: PriorityEnum.optional(),
+  owner: z.string().nullable().optional(),
+  due_at: z.string().nullable().optional(),
+  blocked_by: z
+    .array(z.string())
+    .max(MAX_BLOCKED_BY, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items`)
+    .optional(),
+  labels: z
+    .array(
+      z
+        .string()
+        .max(MAX_LABEL_LENGTH, `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`),
+    )
+    .max(MAX_LABELS, `labels exceeds maximum of ${MAX_LABELS} items`)
+    .optional(),
+  note: z
+    .string()
+    .max(MAX_NOTE_LENGTH, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`)
+    .optional(),
+  clear_notes: z.boolean().optional(),
+  metadata: metadataSchema.optional(),
+});
+
+function formatZodError(error: z.ZodError): string {
+  return error.issues.map((issue) => issue.message).join("; ");
+}
 
 export function createApp(service: TaskService, token: string, pairingCode: string): Hono {
   const app = new Hono();
@@ -106,30 +210,23 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
   });
 
   app.post("/tasks", async (c) => {
-    const body = await c.req.json();
-    let { title } = body;
-    const { status, priority, owner, due_at, blocked_by, labels, notes, metadata, id } = body;
-
-    if (!title || typeof title !== "string") {
-      return c.json({ error: "validation", message: "Title is required" }, 400);
+    const raw = await c.req.json();
+    // Sanitize title before validation
+    if (typeof raw.title === "string") {
+      raw.title = raw.title.replace(/[\r\n]+/g, " ").trim();
     }
-    title = sanitizeTitle(title);
-    const titleCheck = validateTitle(title, { required: true });
-    if (!titleCheck.valid) {
-      return c.json({ error: "validation", message: titleCheck.message }, 400);
+    const result = createTaskSchema.safeParse(raw);
+    if (!result.success) {
+      return c.json({ error: "validation", message: formatZodError(result.error) }, 400);
     }
-    if (status && !VALID_STATUSES.has(status)) {
-      return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
-    }
-    if (priority && !VALID_PRIORITIES.has(priority)) {
-      return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
-    }
+    const { title, status, priority, owner, due_at, blocked_by, labels, notes, metadata, id } =
+      result.data;
 
     const task = await service.add({
       id,
       title,
-      status,
-      priority,
+      status: status as Status | undefined,
+      priority: priority as Priority | undefined,
       owner,
       due_at,
       blocked_by,
@@ -142,26 +239,30 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
 
   app.patch("/tasks/:id", async (c) => {
     const id = c.req.param("id");
-    const body = await c.req.json();
-    let { title } = body;
-    const { status, priority, owner, due_at, blocked_by, labels, note, clear_notes, metadata } =
-      body;
+    const raw = await c.req.json();
+    // Sanitize title before validation
+    if (typeof raw.title === "string") {
+      raw.title = raw.title.replace(/[\r\n]+/g, " ").trim();
+    }
+    const result = updateTaskSchema.safeParse(raw);
+    if (!result.success) {
+      return c.json({ error: "validation", message: formatZodError(result.error) }, 400);
+    }
+    const {
+      title,
+      status,
+      priority,
+      owner,
+      due_at,
+      blocked_by,
+      labels,
+      note,
+      clear_notes,
+      metadata,
+    } = result.data;
 
-    if (title !== undefined) {
-      if (typeof title !== "string") {
-        return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
-      }
-      title = sanitizeTitle(title);
-      const titleCheck = validateTitle(title);
-      if (!titleCheck.valid) {
-        return c.json({ error: "validation", message: titleCheck.message }, 400);
-      }
-    }
-    if (status && !VALID_STATUSES.has(status)) {
-      return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
-    }
-    if (priority && !VALID_PRIORITIES.has(priority)) {
-      return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
+    if (title !== undefined && title.length === 0) {
+      return c.json({ error: "validation", message: "Title cannot be empty" }, 400);
     }
 
     try {

@@ -503,3 +503,137 @@ describe("authentication", () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe("input size limits", () => {
+  describe("POST /tasks", () => {
+    it("returns 400 for too many labels", async () => {
+      const labels = Array.from({ length: 101 }, (_, i) => `label-${i}`);
+      const res = await req("POST", "/tasks", { title: "Test", labels });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("labels exceeds maximum of 100 items");
+    });
+
+    it("returns 400 for too many blocked_by", async () => {
+      const blocked_by = Array.from({ length: 101 }, (_, i) => `id-${i}`);
+      const res = await req("POST", "/tasks", { title: "Test", blocked_by });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("blocked_by exceeds maximum of 100 items");
+    });
+
+    it("returns 400 for too many notes", async () => {
+      const notes = Array.from({ length: 101 }, (_, i) => `note-${i}`);
+      const res = await req("POST", "/tasks", { title: "Test", notes });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("notes exceeds maximum of 100 items");
+    });
+
+    it("returns 400 for too many metadata keys", async () => {
+      const metadata: Record<string, string> = {};
+      for (let i = 0; i < 51; i++) {
+        metadata[`key${i}`] = `value${i}`;
+      }
+      const res = await req("POST", "/tasks", { title: "Test", metadata });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("Metadata exceeds maximum of 50 keys");
+    });
+
+    it("returns 400 for metadata key that is too long", async () => {
+      const longKey = "k".repeat(101);
+      const res = await req("POST", "/tasks", {
+        title: "Test",
+        metadata: { [longKey]: "val" },
+      });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("Metadata key exceeds maximum length of 100 characters");
+    });
+
+    it("returns 400 for metadata value that is too long", async () => {
+      const longValue = "v".repeat(5001);
+      const res = await req("POST", "/tasks", { title: "Test", metadata: { key: longValue } });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("Metadata value exceeds maximum length of 5000 characters");
+    });
+
+    it("accepts exactly 100 labels", async () => {
+      const labels = Array.from({ length: 100 }, (_, i) => `label-${i}`);
+      const res = await req("POST", "/tasks", { title: "Test", labels });
+      expect(res.status).toBe(201);
+    });
+
+    it("accepts exactly 50 metadata keys", async () => {
+      const metadata: Record<string, string> = {};
+      for (let i = 0; i < 50; i++) {
+        metadata[`key${i}`] = `value${i}`;
+      }
+      const res = await req("POST", "/tasks", { title: "Test", metadata });
+      expect(res.status).toBe(201);
+    });
+  });
+
+  describe("PATCH /tasks/:id", () => {
+    it("returns 400 for too many labels", async () => {
+      const task = await service.add({ title: "Test" });
+      const labels = Array.from({ length: 101 }, (_, i) => `label-${i}`);
+      const res = await req("PATCH", `/tasks/${task.id}`, { labels });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("labels exceeds maximum of 100 items");
+    });
+
+    it("returns 400 for too many blocked_by", async () => {
+      const task = await service.add({ title: "Test" });
+      const blocked_by = Array.from({ length: 101 }, (_, i) => `id-${i}`);
+      const res = await req("PATCH", `/tasks/${task.id}`, { blocked_by });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("blocked_by exceeds maximum of 100 items");
+    });
+
+    it("returns 400 for too many metadata keys", async () => {
+      const task = await service.add({ title: "Test" });
+      const metadata: Record<string, string> = {};
+      for (let i = 0; i < 51; i++) {
+        metadata[`key${i}`] = `value${i}`;
+      }
+      const res = await req("PATCH", `/tasks/${task.id}`, { metadata });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("Metadata exceeds maximum of 50 keys");
+    });
+
+    it("returns 400 for metadata value that is too long", async () => {
+      const task = await service.add({ title: "Test" });
+      const longValue = "v".repeat(5001);
+      const res = await req("PATCH", `/tasks/${task.id}`, { metadata: { key: longValue } });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("Metadata value exceeds maximum length of 5000 characters");
+    });
+
+    it("returns 400 for note that is too long", async () => {
+      const task = await service.add({ title: "Test" });
+      const longNote = "n".repeat(10001);
+      const res = await req("PATCH", `/tasks/${task.id}`, { note: longNote });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("validation");
+      expect(body.message).toContain("Note exceeds maximum length of 10000 characters");
+    });
+  });
+});

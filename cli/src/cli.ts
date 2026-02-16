@@ -67,6 +67,11 @@ import {
 declare const __GIT_COMMIT__: string;
 declare const __VERSION__: string;
 
+const MAX_LABELS = 100;
+const MAX_BLOCKED_BY = 100;
+const MAX_METADATA_KEYS = 50;
+const MAX_METADATA_KEY_LENGTH = 100;
+const MAX_METADATA_VALUE_LENGTH = 5000;
 function parseMetadata(pairs: string[]): Record<string, string | null> {
   const meta: Record<string, string | null> = {};
   for (const pair of pairs) {
@@ -229,6 +234,10 @@ export function createProgram(
   }
 
   function validateLabels(labels: string[], json: boolean): boolean {
+    if (labels.length > MAX_LABELS) {
+      validationError(json, `labels exceeds maximum of ${MAX_LABELS} items`);
+      return false;
+    }
     const result = checkLabels(labels);
     if (!result.valid) {
       validationError(json, result.message);
@@ -257,6 +266,40 @@ export function createProgram(
       }
       throw err;
     }
+  }
+
+  function validateBlockedBy(blockedBy: string[], json: boolean): boolean {
+    if (blockedBy.length > MAX_BLOCKED_BY) {
+      validationError(json, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items`);
+      return false;
+    }
+    return true;
+  }
+
+  function validateMetadata(metadata: Record<string, unknown>, json: boolean): boolean {
+    if (Object.keys(metadata).length > MAX_METADATA_KEYS) {
+      validationError(json, `Metadata exceeds maximum of ${MAX_METADATA_KEYS} keys`);
+      return false;
+    }
+    for (const key of Object.keys(metadata)) {
+      if (key.length > MAX_METADATA_KEY_LENGTH) {
+        validationError(
+          json,
+          `Metadata key exceeds maximum length of ${MAX_METADATA_KEY_LENGTH} characters`,
+        );
+        return false;
+      }
+    }
+    for (const value of Object.values(metadata)) {
+      if (typeof value === "string" && value.length > MAX_METADATA_VALUE_LENGTH) {
+        validationError(
+          json,
+          `Metadata value exceeds maximum length of ${MAX_METADATA_VALUE_LENGTH} characters`,
+        );
+        return false;
+      }
+    }
+    return true;
   }
 
   // add
@@ -308,6 +351,9 @@ export function createProgram(
         if (opts.label && !validateLabels(opts.label, json)) {
           return;
         }
+        if (opts.blockedBy && !validateBlockedBy(opts.blockedBy, json)) {
+          return;
+        }
 
         // Idempotent create: if --id is given and task exists, return it
         if (opts.id) {
@@ -337,6 +383,9 @@ export function createProgram(
         }
 
         const metadata = opts.meta ? parseMetadata(opts.meta) : undefined;
+        if (metadata && !validateMetadata(metadata, json)) {
+          return;
+        }
 
         const task = await service.add({
           title,
@@ -521,6 +570,9 @@ export function createProgram(
         if (opts.label && !validateLabels(opts.label, json)) {
           return;
         }
+        if (opts.blockedBy && !validateBlockedBy(opts.blockedBy, json)) {
+          return;
+        }
 
         try {
           const updateFields: Record<string, unknown> = {};
@@ -578,6 +630,9 @@ export function createProgram(
             if (opts.unlabel) {
               labels = labels.filter((l) => !opts.unlabel!.includes(l));
             }
+            if (!validateLabels(labels, json)) {
+              return;
+            }
             updateFields.labels = labels;
           }
 
@@ -599,6 +654,9 @@ export function createProgram(
               } else {
                 merged[key] = value;
               }
+            }
+            if (!validateMetadata(merged, json)) {
+              return;
             }
             updateFields.metadata = merged;
           }
