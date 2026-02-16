@@ -151,6 +151,7 @@ export function createProgram(
   db: Database.Database,
   write: (text: string) => void = (t) => process.stdout.write(t + "\n"),
   config?: Config,
+  writeErr: (text: string) => void = (t) => process.stderr.write(t),
 ): Command {
   const resolvedConfig = config ?? loadConfig();
   const ky = createKysely(db);
@@ -770,12 +771,8 @@ export function createProgram(
           ({ fields, newNotes, removedNotes } = parseDocument(edited, task));
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          if (json) {
-            validationError(json, `${message} Your edits are saved at: ${tmpFile}`);
-          } else {
-            validationError(json, message);
-            process.stderr.write(`Your edits are saved at: ${tmpFile}\n`);
-          }
+          validationError(json, message);
+          writeErr(`Your edits are saved at: ${tmpFile}\n`);
           return;
         }
         cleanupTmpFile(tmpFile);
