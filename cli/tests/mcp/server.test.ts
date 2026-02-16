@@ -443,6 +443,257 @@ describe("MCP server", () => {
     expect(tasks).toHaveLength(1);
     expect(tasks[0].title).toBe("Completed task");
   });
+
+  describe("add_task validation edge cases", () => {
+    it("accepts empty title", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "" },
+      });
+      expect(result.isError).toBeFalsy();
+      const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(task.title).toBe("");
+    });
+
+    it("accepts very long title (over 1000 chars)", async () => {
+      const longTitle = "a".repeat(1500);
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: longTitle },
+      });
+      expect(result.isError).toBeFalsy();
+      const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(task.title).toBe(longTitle);
+    });
+
+    it("accepts empty notes array", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task with empty notes", notes: [] },
+      });
+      expect(result.isError).toBeFalsy();
+      const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(task.notes).toEqual([]);
+    });
+
+    it("rejects invalid status value", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", status: "invalid" },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects invalid priority value", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", priority: "critical" },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects null title", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: null },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects undefined title", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: {},
+      });
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  describe("update_task validation edge cases", () => {
+    it("rejects invalid status on update", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task to update" },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const result = await client.callTool({
+        name: "update_task",
+        arguments: { id: task.id, status: "invalid" },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects invalid priority on update", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task to update" },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const result = await client.callTool({
+        name: "update_task",
+        arguments: { id: task.id, priority: "critical" },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("accepts setting owner to empty string", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task", owner: "alice" },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const result = await client.callTool({
+        name: "update_task",
+        arguments: { id: task.id, owner: "" },
+      });
+      expect(result.isError).toBeFalsy();
+      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(updated.owner).toBe("");
+    });
+
+    it("accepts setting owner to null", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task", owner: "alice" },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const result = await client.callTool({
+        name: "update_task",
+        arguments: { id: task.id, owner: null },
+      });
+      expect(result.isError).toBeFalsy();
+      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(updated.owner).toBeNull();
+    });
+
+    it("update with no fields (just id) is a no-op", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Original", priority: "high" },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const result = await client.callTool({
+        name: "update_task",
+        arguments: { id: task.id },
+      });
+      expect(result.isError).toBeFalsy();
+      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(updated.title).toBe("Original");
+      expect(updated.priority).toBe("high");
+      expect(updated.updated_at).toBe(task.updated_at); // No change, so no timestamp update
+    });
+  });
+
+  describe("list_tasks validation edge cases", () => {
+    it("rejects invalid status filter", async () => {
+      const result = await client.callTool({
+        name: "list_tasks",
+        arguments: { status: "invalid" },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects invalid priority filter", async () => {
+      const result = await client.callTool({
+        name: "list_tasks",
+        arguments: { priority: "critical" },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects invalid sort value", async () => {
+      const result = await client.callTool({
+        name: "list_tasks",
+        arguments: { sort: "invalid" },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("accepts negative limit", async () => {
+      await client.callTool({ name: "add_task", arguments: { title: "Task 1" } });
+      await client.callTool({ name: "add_task", arguments: { title: "Task 2" } });
+
+      const result = await client.callTool({
+        name: "list_tasks",
+        arguments: { limit: -1 },
+      });
+      expect(result.isError).toBeFalsy();
+      const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      // Negative limit behavior depends on repository implementation
+      // If no validation, may return empty or all tasks
+      expect(Array.isArray(tasks)).toBe(true);
+    });
+
+    it("accepts negative offset", async () => {
+      await client.callTool({ name: "add_task", arguments: { title: "Task 1" } });
+      await client.callTool({ name: "add_task", arguments: { title: "Task 2" } });
+
+      const result = await client.callTool({
+        name: "list_tasks",
+        arguments: { offset: -1 },
+      });
+      expect(result.isError).toBeFalsy();
+      const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      // Negative offset behavior depends on repository implementation
+      expect(Array.isArray(tasks)).toBe(true);
+    });
+  });
+
+  describe("add_note validation edge cases", () => {
+    it("handles empty note gracefully (no-op)", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task", notes: ["Existing note"] },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const result = await client.callTool({
+        name: "add_note",
+        arguments: { id: task.id, note: "" },
+      });
+      expect(result.isError).toBeFalsy();
+      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(updated.notes).toEqual(["Existing note"]);
+    });
+
+    it("handles whitespace-only note gracefully (no-op)", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task", notes: ["Existing note"] },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const result = await client.callTool({
+        name: "add_note",
+        arguments: { id: task.id, note: "   \t\n  " },
+      });
+      expect(result.isError).toBeFalsy();
+      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(updated.notes).toEqual(["Existing note"]);
+    });
+
+    it("accepts very long note", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task" },
+      });
+      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+      const longNote = "a".repeat(5000);
+      const result = await client.callTool({
+        name: "add_note",
+        arguments: { id: task.id, note: longNote },
+      });
+      expect(result.isError).toBeFalsy();
+      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      expect(updated.notes).toContain(longNote);
+    });
+  });
 });
 
 describe("sanitizeError", () => {
