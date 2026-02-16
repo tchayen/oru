@@ -63,7 +63,7 @@ export function getConfigPath(): string {
 }
 
 export const DEFAULT_CONFIG_TOML = `# oru configuration
-# Docs: https://github.com/tchayen/oru
+# Docs: https://github.com/tchayen/oru#configuration
 
 # Date input format for slash dates (e.g. 03/04/2026)
 # "mdy" = MM/DD/YYYY (US)
