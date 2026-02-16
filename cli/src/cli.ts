@@ -390,10 +390,7 @@ export function createProgram(
         }
 
         // Normalize empty/whitespace owner to null
-        const owner =
-          opts.assign !== undefined && opts.assign.trim() === ""
-            ? null
-            : opts.assign;
+        const owner = opts.assign !== undefined && opts.assign.trim() === "" ? null : opts.assign;
 
         const task = await service.add({
           title,
