@@ -1,38 +1,5 @@
-export type Status = "todo" | "in_progress" | "in_review" | "done";
-export type Priority = "low" | "medium" | "high" | "urgent";
-
-export interface Task {
-  id: string;
-  title: string;
-  status: Status;
-  priority: Priority;
-  owner: string | null;
-  labels: string[];
-  notes: string[];
-  due_at: string | null;
-  metadata: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-export interface CreateTaskInput {
-  title: string;
-  status?: Status;
-  priority?: Priority;
-  owner?: string | null;
-  due_at?: string | null;
-}
-
-export interface UpdateTaskInput {
-  title?: string;
-  status?: Status;
-  priority?: Priority;
-  owner?: string | null;
-  labels?: string[];
-  note?: string;
-  due_at?: string | null;
-}
+export type { Status, Priority, Task, CreateTaskInput, UpdateTaskInput } from "@oru/types";
+import type { Priority, Task, CreateTaskInput, UpdateTaskInput } from "@oru/types";
 
 const PRIORITY_ORDER: Record<Priority, number> = {
   urgent: 0,
@@ -54,6 +21,7 @@ let mockTasks: Task[] = [
     status: "in_progress",
     priority: "urgent",
     owner: null,
+    blocked_by: [],
     labels: ["mobile", "design"],
     notes: ["Started with Figma mockups"],
     due_at: "2026-02-18T00:00:00",
@@ -68,6 +36,7 @@ let mockTasks: Task[] = [
     status: "todo",
     priority: "high",
     owner: null,
+    blocked_by: [],
     labels: ["infra"],
     notes: [],
     due_at: "2026-02-10T00:00:00",
@@ -82,6 +51,7 @@ let mockTasks: Task[] = [
     status: "in_progress",
     priority: "high",
     owner: null,
+    blocked_by: [],
     labels: ["bug"],
     notes: ["Happens when two clients sync simultaneously"],
     due_at: "2026-02-20T00:00:00",
@@ -96,6 +66,7 @@ let mockTasks: Task[] = [
     status: "todo",
     priority: "medium",
     owner: null,
+    blocked_by: [],
     labels: ["testing"],
     notes: [],
     due_at: null,
@@ -110,6 +81,7 @@ let mockTasks: Task[] = [
     status: "todo",
     priority: "low",
     owner: null,
+    blocked_by: [],
     labels: ["docs"],
     notes: [],
     due_at: null,
@@ -124,6 +96,7 @@ let mockTasks: Task[] = [
     status: "done",
     priority: "high",
     owner: null,
+    blocked_by: [],
     labels: ["sync"],
     notes: ["Completed and tested"],
     due_at: "2026-02-13T00:00:00",
@@ -191,6 +164,7 @@ export async function createTask(
       status: input.status ?? "todo",
       priority: input.priority ?? "medium",
       owner: input.owner ?? null,
+      blocked_by: [],
       labels: [],
       notes: [],
       due_at: input.due_at ?? null,

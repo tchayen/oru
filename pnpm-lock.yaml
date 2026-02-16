@@ -20,6 +20,9 @@ importers:
       '@expo/ui':
         specifier: 0.2.0-beta.9
         version: 0.2.0-beta.9(expo@55.0.0-preview.10)(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+      '@oru/types':
+        specifier: workspace:*
+        version: link:../types
       expo:
         specifier: ^55.0.0-preview.10
         version: 55.0.0-preview.10(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@55.0.5)(expo-router@55.0.0-preview.7)(react-dom@19.2.4(react@19.2.4))(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
@@ -72,6 +75,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.26.0
         version: 1.26.0(zod@4.3.6)
+      '@oru/types':
+        specifier: workspace:*
+        version: link:../types
       better-sqlite3:
         specifier: ^12.6.2
         version: 12.6.2
@@ -136,6 +142,12 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
+
+  types:
+    devDependencies:
+      '@typescript/native-preview':
+        specifier: ^7.0.0-dev.20260214.1
+        version: 7.0.0-dev.20260214.1
 
 packages:
 
