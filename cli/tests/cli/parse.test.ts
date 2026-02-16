@@ -1541,6 +1541,28 @@ describe("CLI parse", () => {
     expect(parsed.error).toBe("ambiguous_prefix");
   });
 
+  // Prefix matching edge cases
+  it("get with empty ID matches a task via LIKE wildcard", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "get", ""]);
+    // Empty prefix with LIKE '%' matches the single task
+    expect(output).toContain("Task");
+  });
+
+  it("get --json with empty ID returns the task", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task", "--json"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "get", "", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    // Empty prefix with LIKE '%' matches the single task
+    expect(parsed.title).toBe("Task");
+  });
+
   // Multi-value filter tests
   it("list -s with comma-separated statuses filters correctly", async () => {
     const p1 = createProgram(db, capture());
