@@ -4,7 +4,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createTestDb } from "../helpers/test-db.js";
 import { createKysely } from "../../src/db/kysely.js";
 import { TaskService } from "../../src/main.js";
-import { createMcpServer } from "../../src/mcp/server.js";
+import { createMcpServer, sanitizeError } from "../../src/mcp/server.js";
 import type Database from "better-sqlite3";
 
 describe("MCP server", () => {
@@ -234,6 +234,31 @@ describe("MCP server", () => {
     expect(context.in_progress).toHaveLength(1);
   });
 
+  it("does not leak raw SQLite errors to MCP clients", async () => {
+    // Closing the DB triggers a real SQLite error when the service tries to write.
+    // First, prove the raw error contains internal details:
+    db.close();
+    let rawError: string | undefined;
+    try {
+      db.prepare("SELECT 1").get();
+    } catch (e) {
+      rawError = (e as Error).message;
+    }
+    expect(rawError).toContain("database");
+
+    // Now call through MCP — the same kind of error hits service.add(),
+    // but sanitizeError should replace it before it reaches the client.
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Should fail" },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
   it("supports idempotent creates with --id", async () => {
     const customId = "0196b8e0-0000-7000-8000-000000000001";
     await client.callTool({
@@ -256,5 +281,39 @@ describe("MCP server", () => {
     });
     const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
     expect(tasks).toHaveLength(1);
+  });
+});
+
+describe("sanitizeError", () => {
+  it("sanitizes SQLITE_ errors", () => {
+    const err = new Error("SQLITE_CONSTRAINT: UNIQUE constraint failed: tasks.id");
+    expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
+  });
+
+  it("sanitizes constraint errors", () => {
+    const err = new Error("UNIQUE constraint failed: tasks.id");
+    expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
+  });
+
+  it("sanitizes database errors", () => {
+    const err = new Error("database is locked");
+    expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
+  });
+
+  it("passes through application-level errors unchanged", () => {
+    const err = new Error("Task not found: abc123");
+    expect(sanitizeError(err)).toBe("Task not found: abc123");
+  });
+
+  it("passes through generic errors unchanged", () => {
+    const err = new Error("Title cannot be empty");
+    expect(sanitizeError(err)).toBe("Title cannot be empty");
+  });
+
+  it("handles non-Error values", () => {
+    expect(sanitizeError("some string error")).toBe("some string error");
+    expect(sanitizeError("SQLITE_ERROR: something")).toBe(
+      "An internal error occurred. Please try again.",
+    );
   });
 });
