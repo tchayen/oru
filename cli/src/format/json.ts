@@ -3,10 +3,26 @@ import type { OplogEntry } from "../oplog/types.js";
 import type { ContextSections } from "./text.js";
 
 export function formatContextJson(sections: ContextSections): string {
-  const result: Record<string, Task[]> = {};
-  for (const [key, tasks] of Object.entries(sections)) {
-    if ((tasks as Task[]).length > 0) {
-      result[key] = tasks as Task[];
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(sections)) {
+    if (key === "blockerTitles") {
+      continue;
+    }
+    if (Array.isArray(value) && value.length > 0) {
+      result[key] = value;
+    }
+  }
+  if (sections.blockerTitles && sections.blocked.length > 0) {
+    const referenced = new Set(sections.blocked.flatMap((t) => t.blocked_by));
+    const titles: Record<string, string> = {};
+    for (const id of referenced) {
+      const title = sections.blockerTitles.get(id);
+      if (title) {
+        titles[id] = title;
+      }
+    }
+    if (Object.keys(titles).length > 0) {
+      result.blocker_titles = titles;
     }
   }
   return JSON.stringify(result, null, 2);

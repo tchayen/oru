@@ -1087,6 +1087,12 @@ export function createProgram(
         }
       }
 
+      const blockerTitles = new Map<string, string>();
+      for (const t of [...allTasks, ...doneTasks]) {
+        blockerTitles.set(t.id, t.title);
+      }
+      sections.blockerTitles = blockerTitles;
+
       if (useJson(opts)) {
         write(formatContextJson(sections));
       } else {
