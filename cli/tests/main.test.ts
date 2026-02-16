@@ -376,4 +376,78 @@ describe("TaskService", () => {
       expect(fields).not.toContain("note");
     });
   });
+
+  describe("whitespace edge cases", () => {
+    it("add with whitespace-only title creates task (no validation at service layer)", async () => {
+      // Service layer does not validate - validation happens in CLI layer
+      const task = await service.add({ title: "   " });
+      expect(task.title).toBe("   ");
+    });
+
+    it("addNote with empty string is a no-op", async () => {
+      const task = await service.add({ title: "Task" });
+      const result = await service.addNote(task.id, "");
+      // service.addNote() trims and returns early if empty
+      expect(result!.notes).toEqual([]);
+
+      const log = await service.log(task.id);
+      const noteOps = log!.filter((e) => e.field === "notes");
+      // No note op should be written
+      expect(noteOps).toHaveLength(0);
+    });
+
+    it("addNote with whitespace-only string is a no-op", async () => {
+      const task = await service.add({ title: "Task" });
+      const result = await service.addNote(task.id, "   \t\n  ");
+      // service.addNote() trims to empty and returns early
+      expect(result!.notes).toEqual([]);
+
+      const log = await service.log(task.id);
+      const noteOps = log!.filter((e) => e.field === "notes");
+      expect(noteOps).toHaveLength(0);
+    });
+
+    it("addNote with whitespace-only duplicate is a no-op", async () => {
+      const task = await service.add({ title: "Task" });
+      await service.addNote(task.id, "Note");
+      const result = await service.addNote(task.id, "  Note  ");
+      // Trimmed duplicate is detected and skipped
+      expect(result!.notes).toEqual(["Note"]);
+
+      const log = await service.log(task.id);
+      const noteOps = log!.filter((e) => e.field === "notes");
+      // Only the first note should be written
+      expect(noteOps).toHaveLength(1);
+    });
+
+    it("addNote trims before storing", async () => {
+      const task = await service.add({ title: "Task" });
+      await service.addNote(task.id, "  padded note  ");
+      const result = await service.get(task.id);
+      expect(result!.notes).toEqual(["padded note"]);
+    });
+
+    it("updateWithNote with empty note string is a no-op for note", async () => {
+      const task = await service.add({ title: "Task" });
+      const result = await service.updateWithNote(task.id, { status: "done" }, "");
+      // Status update happens, but empty note is skipped
+      expect(result!.status).toBe("done");
+      expect(result!.notes).toEqual([]);
+
+      const log = await service.log(task.id);
+      const noteOps = log!.filter((e) => e.field === "notes");
+      expect(noteOps).toHaveLength(0);
+    });
+
+    it("updateWithNote with whitespace-only note is a no-op for note", async () => {
+      const task = await service.add({ title: "Task" });
+      const result = await service.updateWithNote(task.id, { status: "done" }, "   ");
+      expect(result!.status).toBe("done");
+      expect(result!.notes).toEqual([]);
+
+      const log = await service.log(task.id);
+      const noteOps = log!.filter((e) => e.field === "notes");
+      expect(noteOps).toHaveLength(0);
+    });
+  });
 });

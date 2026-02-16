@@ -567,4 +567,51 @@ describe("task repository", () => {
       expect(found).toBeNull();
     });
   });
+
+  // Whitespace edge case tests
+  it("createTask with empty title stores it as-is (no validation)", async () => {
+    // Repository layer does not validate - it stores whatever is passed
+    const task = await createTask(ky, { title: "" });
+    expect(task.title).toBe("");
+  });
+
+  it("createTask with owner empty string stores empty string (not null)", async () => {
+    const task = await createTask(ky, { title: "Task", owner: "" });
+    // Repository layer stores empty string as-is, doesn't convert to null
+    expect(task.owner).toBe("");
+  });
+
+  it("createTask with owner null stores null", async () => {
+    const task = await createTask(ky, { title: "Task", owner: null });
+    expect(task.owner).toBeNull();
+  });
+
+  it("updateTask with owner empty string stores empty string", async () => {
+    const task = await createTask(ky, { title: "Task", owner: "alice" });
+    const updated = await updateTask(ky, task.id, { owner: "" });
+    // Repository treats empty string differently from null
+    expect(updated!.owner).toBe("");
+  });
+
+  it("appendNote with empty string is a no-op", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    const result = await appendNote(ky, task.id, "");
+    // appendNote() trims to empty and returns early without modifying
+    expect(result!.notes).toEqual([]);
+  });
+
+  it("appendNote with whitespace-only string is a no-op", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    const result = await appendNote(ky, task.id, "   \t\n  ");
+    // appendNote() trims to empty and returns early
+    expect(result!.notes).toEqual([]);
+  });
+
+  it("appendNote with whitespace-only duplicate is a no-op", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Note");
+    const result = await appendNote(ky, task.id, "  Note  ");
+    // Trimmed duplicate is detected and skipped
+    expect(result!.notes).toEqual(["Note"]);
+  });
 });
