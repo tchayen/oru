@@ -152,7 +152,7 @@ export function createProgram(
   const service = new TaskService(ky, deviceId);
   const program = new Command("oru")
     .description(
-      `${orange("oru")} — agent-friendly todo CLI with offline sync\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file.`,
+      `${orange("oru")} — personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file.`,
     )
     .version(`${__VERSION__} (${__GIT_COMMIT__})`);
 
@@ -1026,8 +1026,8 @@ export function createProgram(
   // context
   program
     .command("context")
-    .description("Show agent briefing of current task status")
-    .option("--owner <owner>", "Scope briefing to a specific owner")
+    .description("Show a summary of what needs your attention")
+    .option("--owner <owner>", "Scope to a specific owner")
     .option("-l, --label <labels...>", "Filter by labels")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
@@ -1233,7 +1233,9 @@ export function createProgram(
     });
 
   // server
-  const server = program.command("server").description("Manage the HTTP server for mobile clients");
+  const server = program
+    .command("server")
+    .description("Manage the HTTP server for accessing tasks from your phone");
 
   server
     .command("start")
