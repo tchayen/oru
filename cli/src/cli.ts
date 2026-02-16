@@ -38,7 +38,7 @@ import {
   type Config,
 } from "./config/config.js";
 import { parseDate } from "./dates/parse.js";
-import { serializeTask, parseDocument, openInEditor } from "./edit.js";
+import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "./edit.js";
 import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
 import { SHOW_SERVER } from "./flags.js";
 import { AmbiguousPrefixError, SORT_FIELDS, type SortField } from "./tasks/repository.js";
@@ -690,7 +690,7 @@ export function createProgram(
         }
 
         const document = serializeTask(task);
-        const edited = await openInEditor(document);
+        const { edited, tmpFile } = await openInEditor(document);
 
         let fields: ReturnType<typeof parseDocument>["fields"];
         let newNotes: ReturnType<typeof parseDocument>["newNotes"];
@@ -699,9 +699,15 @@ export function createProgram(
           ({ fields, newNotes, removedNotes } = parseDocument(edited, task));
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          validationError(json, message);
+          if (json) {
+            validationError(json, `${message} Your edits are saved at: ${tmpFile}`);
+          } else {
+            validationError(json, message);
+            process.stderr.write(`Your edits are saved at: ${tmpFile}\n`);
+          }
           return;
         }
+        cleanupTmpFile(tmpFile);
 
         const hasFields = Object.keys(fields).length > 0;
         const hasNotes = newNotes.length > 0;
