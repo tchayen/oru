@@ -108,7 +108,15 @@ export function loadConfig(configPath?: string): Config {
   }
 
   const raw = fs.readFileSync(resolved, "utf-8");
-  const parsed = parse(raw);
+  let parsed;
+  try {
+    parsed = parse(raw);
+  } catch (err) {
+    process.stderr.write(
+      `Warning: Could not parse config file at ${resolved}: ${err instanceof Error ? err.message : String(err)}. Using defaults.\n`,
+    );
+    return { ...DEFAULTS };
+  }
   const config = { ...DEFAULTS };
 
   if (typeof parsed.date_format === "string" && VALID_DATE_FORMATS.has(parsed.date_format)) {
