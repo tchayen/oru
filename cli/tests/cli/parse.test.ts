@@ -2127,4 +2127,76 @@ describe("CLI parse", () => {
       fs.rmSync(tmpDir, { recursive: true });
     }
   });
+
+  // Whitespace edge case tests
+  it("add with whitespace-only title is rejected after sanitization", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "oru", "add", "   ", "--json"]);
+    // sanitizeTitle() trims to empty string, validateTitle() rejects it
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message).toContain("cannot be empty");
+  });
+
+  it("add with control chars in title is rejected after sanitization", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "oru", "add", "\t\n", "--json"]);
+    // sanitizeTitle() replaces newlines with spaces and trims, leaving empty string
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(parsed.message).toContain("cannot be empty");
+  });
+
+  it("update with --note empty string is a no-op", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--note", "", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    // Empty note gets trimmed and is skipped by service.addNote()
+    expect(parsed.notes).toEqual([]);
+  });
+
+  it("update with --note whitespace-only is a no-op", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--note", "   ", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    // Whitespace-only note gets trimmed to empty and skipped
+    expect(parsed.notes).toEqual([]);
+  });
+
+  it("update --assign with empty string sets owner to empty string (not null)", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task", "--assign", "alice", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--assign", "", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    // BUG: empty string "" sets owner to empty string, not null like "none" does
+    // This is actual behavior: cli.ts:621-626 only checks for "none" to set null
+    expect(parsed.owner).toBe("");
+  });
+
+  it("add with title containing newlines gets sanitized to spaces", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "oru", "add", "First line\nSecond line", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    // sanitizeTitle() replaces newlines with spaces
+    expect(parsed.title).toBe("First line Second line");
+  });
+
+  it("add with leading/trailing whitespace in title gets trimmed", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "oru", "add", "  Valid title  ", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    // sanitizeTitle() trims after replacing newlines
+    expect(parsed.title).toBe("Valid title");
+  });
 });
