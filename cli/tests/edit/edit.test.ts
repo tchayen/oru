@@ -328,6 +328,31 @@ describe("parseDocument", () => {
     expect(fields.status).toBe("done");
     expect(fields.priority).toBe("high");
   });
+
+  it("rejects semantically invalid date like 9999-99-99", () => {
+    const task = makeTask({ due_at: "2026-03-15T00:00:00" });
+    const doc = serializeTask(task).replace("2026-03-15T00:00:00", "9999-99-99");
+    expect(() => parseDocument(doc, task)).toThrow("Invalid due date");
+  });
+
+  it("rejects month 13", () => {
+    const task = makeTask({ due_at: "2026-03-15T00:00:00" });
+    const doc = serializeTask(task).replace("2026-03-15T00:00:00", "2026-13-01");
+    expect(() => parseDocument(doc, task)).toThrow("Invalid due date");
+  });
+
+  it("rejects day 32", () => {
+    const task = makeTask({ due_at: "2026-03-15T00:00:00" });
+    const doc = serializeTask(task).replace("2026-03-15T00:00:00", "2026-01-32");
+    expect(() => parseDocument(doc, task)).toThrow("Invalid due date");
+  });
+
+  it("accepts valid future date", () => {
+    const task = makeTask({ due_at: "2026-03-15T00:00:00" });
+    const doc = serializeTask(task).replace("2026-03-15T00:00:00", "2026-06-15");
+    const { fields } = parseDocument(doc, task);
+    expect(fields.due_at).toBe("2026-06-15");
+  });
 });
 
 describe("openInEditor", () => {
