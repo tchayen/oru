@@ -259,6 +259,116 @@ describe("MCP server", () => {
     expect(text).not.toContain("database");
   });
 
+  it("does not leak raw SQLite errors from update_task", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Will update" },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    db.close();
+
+    const result = await client.callTool({
+      name: "update_task",
+      arguments: { id: created.id, title: "New title" },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
+  it("does not leak raw SQLite errors from delete_task", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Will delete" },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    db.close();
+
+    const result = await client.callTool({
+      name: "delete_task",
+      arguments: { id: created.id },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
+  it("does not leak raw SQLite errors from list_tasks", async () => {
+    db.close();
+
+    const result = await client.callTool({
+      name: "list_tasks",
+      arguments: {},
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
+  it("does not leak raw SQLite errors from get_task", async () => {
+    db.close();
+
+    const result = await client.callTool({
+      name: "get_task",
+      arguments: { id: "some-id" },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
+  it("does not leak raw SQLite errors from get_context", async () => {
+    db.close();
+
+    const result = await client.callTool({
+      name: "get_context",
+      arguments: {},
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
+  it("does not leak raw SQLite errors from add_note", async () => {
+    db.close();
+
+    const result = await client.callTool({
+      name: "add_note",
+      arguments: { id: "some-id", note: "A note" },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
+  it("does not leak raw SQLite errors from list_labels", async () => {
+    db.close();
+
+    const result = await client.callTool({
+      name: "list_labels",
+      arguments: {},
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
   it("supports idempotent creates with --id", async () => {
     const customId = "0196b8e0-0000-7000-8000-000000000001";
     await client.callTool({

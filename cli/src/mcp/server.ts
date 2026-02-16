@@ -129,14 +129,18 @@ export function createMcpServer(service: TaskService): McpServer {
       }),
     },
     async (input) => {
-      const { id, note, ...fields } = input;
-      const task = note
-        ? await service.updateWithNote(id, fields as UpdateTaskInput, note)
-        : await service.update(id, fields as UpdateTaskInput);
-      if (!task) {
-        return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+      try {
+        const { id, note, ...fields } = input;
+        const task = note
+          ? await service.updateWithNote(id, fields as UpdateTaskInput, note)
+          : await service.update(id, fields as UpdateTaskInput);
+        if (!task) {
+          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+        }
+        return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
-      return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
     },
   );
 
@@ -151,11 +155,15 @@ export function createMcpServer(service: TaskService): McpServer {
       }),
     },
     async ({ id }) => {
-      const ok = await service.delete(id);
-      if (!ok) {
-        return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+      try {
+        const ok = await service.delete(id);
+        if (!ok) {
+          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+        }
+        return { content: [{ type: "text", text: `Deleted ${id}` }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
-      return { content: [{ type: "text", text: `Deleted ${id}` }] };
     },
   );
 
@@ -197,13 +205,17 @@ export function createMcpServer(service: TaskService): McpServer {
       }),
     },
     async (input) => {
-      const { all, ...filters } = input;
-      let tasks = await service.list(filters as ListFilters);
-      // Hide done tasks unless all is true or an explicit status filter is provided
-      if (!all && !filters.status) {
-        tasks = tasks.filter((t) => t.status !== "done");
+      try {
+        const { all, ...filters } = input;
+        let tasks = await service.list(filters as ListFilters);
+        // Hide done tasks unless all is true or an explicit status filter is provided
+        if (!all && !filters.status) {
+          tasks = tasks.filter((t) => t.status !== "done");
+        }
+        return { content: [{ type: "text", text: JSON.stringify(tasks, null, 2) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
-      return { content: [{ type: "text", text: JSON.stringify(tasks, null, 2) }] };
     },
   );
 
@@ -218,11 +230,15 @@ export function createMcpServer(service: TaskService): McpServer {
       }),
     },
     async ({ id }) => {
-      const task = await service.get(id);
-      if (!task) {
-        return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+      try {
+        const task = await service.get(id);
+        if (!task) {
+          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+        }
+        return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
-      return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
     },
   );
 
@@ -238,61 +254,69 @@ export function createMcpServer(service: TaskService): McpServer {
       }),
     },
     async (opts) => {
-      const now = new Date();
-      const tasks = await service.list({ sort: "priority", owner: opts.owner, label: opts.label });
-      const doneTasks = await service.list({
-        status: "done",
-        sort: "priority",
-        owner: opts.owner,
-        label: opts.label,
-      });
+      try {
+        const now = new Date();
+        const tasks = await service.list({
+          sort: "priority",
+          owner: opts.owner,
+          label: opts.label,
+        });
+        const doneTasks = await service.list({
+          status: "done",
+          sort: "priority",
+          owner: opts.owner,
+          label: opts.label,
+        });
 
-      const sections: ContextSections = {
-        overdue: [],
-        due_soon: [],
-        in_progress: [],
-        actionable: [],
-        blocked: [],
-        recently_completed: [],
-      };
+        const sections: ContextSections = {
+          overdue: [],
+          due_soon: [],
+          in_progress: [],
+          actionable: [],
+          blocked: [],
+          recently_completed: [],
+        };
 
-      const nonDoneIds = new Set(tasks.filter((t) => t.status !== "done").map((t) => t.id));
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+        const nonDoneIds = new Set(tasks.filter((t) => t.status !== "done").map((t) => t.id));
+        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 
-      for (const t of doneTasks) {
-        if (t.updated_at >= oneDayAgo) {
-          sections.recently_completed.push(t);
+        for (const t of doneTasks) {
+          if (t.updated_at >= oneDayAgo) {
+            sections.recently_completed.push(t);
+          }
         }
+
+        for (const t of tasks) {
+          if (t.status === "done") {
+            continue;
+          }
+          if (t.due_at && isOverdue(t.due_at, now)) {
+            sections.overdue.push(t);
+          } else if (t.due_at && isDueSoon(t.due_at, now)) {
+            sections.due_soon.push(t);
+          } else if (t.status === "in_progress" || t.status === "in_review") {
+            sections.in_progress.push(t);
+          } else if (t.blocked_by.some((id) => nonDoneIds.has(id))) {
+            sections.blocked.push(t);
+          } else if (t.status === "todo") {
+            sections.actionable.push(t);
+          }
+        }
+
+        const summary = {
+          overdue: sections.overdue.length,
+          due_soon: sections.due_soon.length,
+          in_progress: sections.in_progress.length,
+          actionable: sections.actionable.length,
+          blocked: sections.blocked.length,
+          recently_completed: sections.recently_completed.length,
+        };
+
+        const result = { summary, ...sections };
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
-
-      for (const t of tasks) {
-        if (t.status === "done") {
-          continue;
-        }
-        if (t.due_at && isOverdue(t.due_at, now)) {
-          sections.overdue.push(t);
-        } else if (t.due_at && isDueSoon(t.due_at, now)) {
-          sections.due_soon.push(t);
-        } else if (t.status === "in_progress" || t.status === "in_review") {
-          sections.in_progress.push(t);
-        } else if (t.blocked_by.some((id) => nonDoneIds.has(id))) {
-          sections.blocked.push(t);
-        } else if (t.status === "todo") {
-          sections.actionable.push(t);
-        }
-      }
-
-      const summary = {
-        overdue: sections.overdue.length,
-        due_soon: sections.due_soon.length,
-        in_progress: sections.in_progress.length,
-        actionable: sections.actionable.length,
-        blocked: sections.blocked.length,
-        recently_completed: sections.recently_completed.length,
-      };
-
-      const result = { summary, ...sections };
-      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     },
   );
 
@@ -308,11 +332,15 @@ export function createMcpServer(service: TaskService): McpServer {
       }),
     },
     async ({ id, note }) => {
-      const task = await service.addNote(id, note);
-      if (!task) {
-        return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+      try {
+        const task = await service.addNote(id, note);
+        if (!task) {
+          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+        }
+        return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
-      return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
     },
   );
 
@@ -325,8 +353,12 @@ export function createMcpServer(service: TaskService): McpServer {
       inputSchema: z.object({}),
     },
     async () => {
-      const labels = await service.listLabels();
-      return { content: [{ type: "text", text: JSON.stringify(labels) }] };
+      try {
+        const labels = await service.listLabels();
+        return { content: [{ type: "text", text: JSON.stringify(labels) }] };
+      } catch (err: unknown) {
+        return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
+      }
     },
   );
 
