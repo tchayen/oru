@@ -5,6 +5,7 @@ import { getDeviceId } from "../../src/device.js";
 import { createApp } from "../../src/server/routes.js";
 import type { Hono } from "hono";
 
+const token = "test-token";
 let app: Hono;
 let service: TaskService;
 
@@ -13,11 +14,14 @@ beforeEach(() => {
   const ky = createTestKysely(db);
   const deviceId = getDeviceId(db);
   service = new TaskService(ky, deviceId);
-  app = createApp(service);
+  app = createApp(service, token);
 });
 
 function req(method: string, path: string, body?: unknown) {
-  const init: RequestInit = { method, headers: {} };
+  const init: RequestInit = {
+    method,
+    headers: { Authorization: `Bearer ${token}` },
+  };
   if (body) {
     init.body = JSON.stringify(body);
     (init.headers as Record<string, string>)["Content-Type"] = "application/json";
@@ -417,5 +421,30 @@ describe("DELETE /tasks/:id", () => {
   it("returns 404 for missing task", async () => {
     const res = await req("DELETE", "/tasks/nonexistent");
     expect(res.status).toBe(404);
+  });
+});
+
+describe("authentication", () => {
+  it("returns 401 for missing Authorization header", async () => {
+    const res = await app.request("/tasks", { method: "GET" });
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error).toBe("unauthorized");
+  });
+
+  it("returns 401 for wrong token", async () => {
+    const res = await app.request("/tasks", {
+      method: "GET",
+      headers: { Authorization: "Bearer wrong-token" },
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 401 for malformed Authorization header", async () => {
+    const res = await app.request("/tasks", {
+      method: "GET",
+      headers: { Authorization: "Basic dXNlcjpwYXNz" },
+    });
+    expect(res.status).toBe(401);
   });
 });

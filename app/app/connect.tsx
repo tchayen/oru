@@ -18,10 +18,25 @@ export default function ConnectScreen() {
       return;
     }
 
+    let url: string;
+    let token: string | null = null;
+
     try {
-      new URL(data);
+      const parsed = JSON.parse(data);
+      if (typeof parsed.url === "string") {
+        url = parsed.url;
+        token = typeof parsed.token === "string" ? parsed.token : null;
+      } else {
+        return;
+      }
     } catch {
-      return;
+      // Fall back to plain URL for backward compat
+      try {
+        new URL(data);
+        url = data;
+      } catch {
+        return;
+      }
     }
 
     setScanned(true);
@@ -29,7 +44,14 @@ export default function ConnectScreen() {
     setError(null);
 
     try {
-      const res = await fetch(`${data}/tasks`, { signal: AbortSignal.timeout(5000) });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const res = await fetch(`${url}/tasks`, { signal: controller.signal, headers });
+      clearTimeout(timeout);
       if (!res.ok) {
         throw new Error(`Server responded with ${res.status}`);
       }
@@ -46,7 +68,7 @@ export default function ConnectScreen() {
     if (process.env.EXPO_OS === "ios") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    await connect(data);
+    await connect(url, token);
     router.replace("/");
   };
 

@@ -6,6 +6,8 @@ import os from "os";
 
 const SERVER_PATH = path.resolve(__dirname, "../../dist/server/index.js");
 
+const E2E_TOKEN = "e2e-test-token";
+
 let tmpDir: string;
 let dbPath: string;
 
@@ -19,11 +21,17 @@ function cli(args: string[], env?: Record<string, string>): string {
   return result.trim();
 }
 
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return { Authorization: `Bearer ${E2E_TOKEN}`, ...extra };
+}
+
 async function waitForServer(port: number, timeoutMs = 5000): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const res = await fetch(`http://localhost:${port}/tasks`);
+      const res = await fetch(`http://localhost:${port}/tasks`, {
+        headers: authHeaders(),
+      });
       if (res.ok) {
         return;
       }
@@ -52,7 +60,12 @@ describe("server process e2e", () => {
 
     // Start server directly (not via CLI, to have more control)
     const serverProc = spawn("node", [SERVER_PATH], {
-      env: { ...process.env, ORU_DB_PATH: dbPath, ORU_PORT: String(port) },
+      env: {
+        ...process.env,
+        ORU_DB_PATH: dbPath,
+        ORU_PORT: String(port),
+        ORU_AUTH_TOKEN: E2E_TOKEN,
+      },
       stdio: "pipe",
     });
 
@@ -62,7 +75,7 @@ describe("server process e2e", () => {
       // Create a task
       const createRes = await fetch(`http://localhost:${port}/tasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ title: "E2E task", priority: "high" }),
       });
       expect(createRes.status).toBe(201);
@@ -72,14 +85,18 @@ describe("server process e2e", () => {
       expect(created.id).toBeDefined();
 
       // List tasks
-      const listRes = await fetch(`http://localhost:${port}/tasks`);
+      const listRes = await fetch(`http://localhost:${port}/tasks`, {
+        headers: authHeaders(),
+      });
       expect(listRes.status).toBe(200);
       const tasks = await listRes.json();
       expect(tasks).toHaveLength(1);
       expect(tasks[0].id).toBe(created.id);
 
       // Get task
-      const getRes = await fetch(`http://localhost:${port}/tasks/${created.id}`);
+      const getRes = await fetch(`http://localhost:${port}/tasks/${created.id}`, {
+        headers: authHeaders(),
+      });
       expect(getRes.status).toBe(200);
       const got = await getRes.json();
       expect(got.title).toBe("E2E task");
@@ -87,7 +104,7 @@ describe("server process e2e", () => {
       // Update task
       const patchRes = await fetch(`http://localhost:${port}/tasks/${created.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ status: "done", note: "Finished" }),
       });
       expect(patchRes.status).toBe(200);
@@ -98,14 +115,21 @@ describe("server process e2e", () => {
       // Delete task
       const delRes = await fetch(`http://localhost:${port}/tasks/${created.id}`, {
         method: "DELETE",
+        headers: authHeaders(),
       });
       expect(delRes.status).toBe(200);
       const deleted = await delRes.json();
       expect(deleted.deleted).toBe(true);
 
       // Verify 404
-      const notFoundRes = await fetch(`http://localhost:${port}/tasks/${created.id}`);
+      const notFoundRes = await fetch(`http://localhost:${port}/tasks/${created.id}`, {
+        headers: authHeaders(),
+      });
       expect(notFoundRes.status).toBe(404);
+
+      // Verify unauthenticated request returns 401
+      const noAuthRes = await fetch(`http://localhost:${port}/tasks`);
+      expect(noAuthRes.status).toBe(401);
     } finally {
       serverProc.kill("SIGTERM");
       await new Promise<void>((r) => {
@@ -124,7 +148,12 @@ describe("server process e2e", () => {
 
     // Start server pointing at same DB
     const serverProc = spawn("node", [SERVER_PATH], {
-      env: { ...process.env, ORU_DB_PATH: dbPath, ORU_PORT: String(port) },
+      env: {
+        ...process.env,
+        ORU_DB_PATH: dbPath,
+        ORU_PORT: String(port),
+        ORU_AUTH_TOKEN: E2E_TOKEN,
+      },
       stdio: "pipe",
     });
 
@@ -132,7 +161,9 @@ describe("server process e2e", () => {
       await waitForServer(port);
 
       // Server should see the CLI-created task
-      const listRes = await fetch(`http://localhost:${port}/tasks`);
+      const listRes = await fetch(`http://localhost:${port}/tasks`, {
+        headers: authHeaders(),
+      });
       const tasks = await listRes.json();
       expect(tasks).toHaveLength(1);
       expect(tasks[0].title).toBe("CLI task");
@@ -140,7 +171,7 @@ describe("server process e2e", () => {
       // Create via server
       const createRes = await fetch(`http://localhost:${port}/tasks`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ title: "Server task" }),
       });
       expect(createRes.status).toBe(201);

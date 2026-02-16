@@ -140,31 +140,49 @@ function getMockTasks(): Task[] {
 
 // --- API client ---
 
-export async function fetchTasks(serverUrl: string | null): Promise<Task[]> {
+function authHeaders(token: string | null): Record<string, string> {
+  if (!token) {
+    return {};
+  }
+  return { Authorization: `Bearer ${token}` };
+}
+
+export async function fetchTasks(
+  serverUrl: string | null,
+  authToken: string | null,
+): Promise<Task[]> {
   if (!serverUrl) {
     return getMockTasks();
   }
 
-  const res = await fetch(`${serverUrl}/tasks`);
+  const res = await fetch(`${serverUrl}/tasks`, { headers: authHeaders(authToken) });
   if (!res.ok) {
     throw new Error(`Failed to fetch tasks: ${res.status}`);
   }
   return res.json();
 }
 
-export async function fetchTask(serverUrl: string | null, id: string): Promise<Task | null> {
+export async function fetchTask(
+  serverUrl: string | null,
+  authToken: string | null,
+  id: string,
+): Promise<Task | null> {
   if (!serverUrl) {
     return mockTasks.find((t) => t.id === id) ?? null;
   }
 
-  const res = await fetch(`${serverUrl}/tasks/${id}`);
+  const res = await fetch(`${serverUrl}/tasks/${id}`, { headers: authHeaders(authToken) });
   if (!res.ok) {
     throw new Error(`Failed to fetch task: ${res.status}`);
   }
   return res.json();
 }
 
-export async function createTask(serverUrl: string | null, input: CreateTaskInput): Promise<Task> {
+export async function createTask(
+  serverUrl: string | null,
+  authToken: string | null,
+  input: CreateTaskInput,
+): Promise<Task> {
   if (!serverUrl) {
     const now = new Date().toISOString();
     const task: Task = {
@@ -187,7 +205,7 @@ export async function createTask(serverUrl: string | null, input: CreateTaskInpu
 
   const res = await fetch(`${serverUrl}/tasks`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders(authToken) },
     body: JSON.stringify(input),
   });
   if (!res.ok) {
@@ -198,6 +216,7 @@ export async function createTask(serverUrl: string | null, input: CreateTaskInpu
 
 export async function updateTask(
   serverUrl: string | null,
+  authToken: string | null,
   id: string,
   input: UpdateTaskInput,
 ): Promise<Task> {
@@ -222,7 +241,7 @@ export async function updateTask(
 
   const res = await fetch(`${serverUrl}/tasks/${id}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders(authToken) },
     body: JSON.stringify(input),
   });
   if (!res.ok) {
@@ -231,7 +250,11 @@ export async function updateTask(
   return res.json();
 }
 
-export async function deleteTask(serverUrl: string | null, id: string): Promise<void> {
+export async function deleteTask(
+  serverUrl: string | null,
+  authToken: string | null,
+  id: string,
+): Promise<void> {
   if (!serverUrl) {
     mockTasks = mockTasks.map((t) =>
       t.id === id ? { ...t, deleted_at: new Date().toISOString() } : t,
@@ -239,7 +262,10 @@ export async function deleteTask(serverUrl: string | null, id: string): Promise<
     return;
   }
 
-  const res = await fetch(`${serverUrl}/tasks/${id}`, { method: "DELETE" });
+  const res = await fetch(`${serverUrl}/tasks/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(authToken),
+  });
   if (!res.ok) {
     throw new Error(`Failed to delete task: ${res.status}`);
   }

@@ -40,7 +40,7 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { serverUrl } = use(ConnectionContext);
+  const { serverUrl, authToken } = use(ConnectionContext);
   const router = useRouter();
   const [task, setTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,11 +51,11 @@ export default function TaskDetailScreen() {
   const [newLabel, setNewLabel] = useState("");
 
   useEffect(() => {
-    fetchTask(serverUrl, id).then((t) => {
+    fetchTask(serverUrl, authToken, id).then((t) => {
       setTask(t);
       setIsLoading(false);
     });
-  }, [serverUrl, id]);
+  }, [serverUrl, authToken, id]);
 
   const handleStatusChange = useCallback(
     async (event: { nativeEvent: { index: number; label: string } }) => {
@@ -63,10 +63,10 @@ export default function TaskDetailScreen() {
         return;
       }
       const status = STATUSES[event.nativeEvent.index];
-      const updated = await updateTask(serverUrl, task.id, { status });
+      const updated = await updateTask(serverUrl, authToken, task.id, { status });
       setTask(updated);
     },
-    [task, serverUrl],
+    [task, serverUrl, authToken],
   );
 
   const handlePriorityChange = useCallback(
@@ -74,10 +74,10 @@ export default function TaskDetailScreen() {
       if (!task) {
         return;
       }
-      const updated = await updateTask(serverUrl, task.id, { priority: newPriority });
+      const updated = await updateTask(serverUrl, authToken, task.id, { priority: newPriority });
       setTask(updated);
     },
-    [task, serverUrl],
+    [task, serverUrl, authToken],
   );
 
   const handleTitleSave = useCallback(async () => {
@@ -89,10 +89,10 @@ export default function TaskDetailScreen() {
       setIsEditingTitle(false);
       return;
     }
-    const updated = await updateTask(serverUrl, task.id, { title: trimmed });
+    const updated = await updateTask(serverUrl, authToken, task.id, { title: trimmed });
     setTask(updated);
     setIsEditingTitle(false);
-  }, [task, editedTitle, serverUrl]);
+  }, [task, editedTitle, serverUrl, authToken]);
 
   const handleAddNote = useCallback(async () => {
     if (!task) {
@@ -102,10 +102,10 @@ export default function TaskDetailScreen() {
     if (!trimmed) {
       return;
     }
-    const updated = await updateTask(serverUrl, task.id, { note: trimmed });
+    const updated = await updateTask(serverUrl, authToken, task.id, { note: trimmed });
     setTask(updated);
     setNewNote("");
-  }, [task, newNote, serverUrl]);
+  }, [task, newNote, serverUrl, authToken]);
 
   const handleAddLabel = useCallback(async () => {
     if (!task) {
@@ -117,23 +117,25 @@ export default function TaskDetailScreen() {
       setNewLabel("");
       return;
     }
-    const updated = await updateTask(serverUrl, task.id, { labels: [...task.labels, trimmed] });
+    const updated = await updateTask(serverUrl, authToken, task.id, {
+      labels: [...task.labels, trimmed],
+    });
     setTask(updated);
     setIsAddingLabel(false);
     setNewLabel("");
-  }, [task, newLabel, serverUrl]);
+  }, [task, newLabel, serverUrl, authToken]);
 
   const handleRemoveLabel = useCallback(
     async (label: string) => {
       if (!task) {
         return;
       }
-      const updated = await updateTask(serverUrl, task.id, {
+      const updated = await updateTask(serverUrl, authToken, task.id, {
         labels: task.labels.filter((l) => l !== label),
       });
       setTask(updated);
     },
-    [task, serverUrl],
+    [task, serverUrl, authToken],
   );
 
   const handleDueDateChange = useCallback(
@@ -142,19 +144,19 @@ export default function TaskDetailScreen() {
         return;
       }
       const due_at = date.toISOString().split("T")[0] + "T00:00:00";
-      const updated = await updateTask(serverUrl, task.id, { due_at });
+      const updated = await updateTask(serverUrl, authToken, task.id, { due_at });
       setTask(updated);
     },
-    [task, serverUrl],
+    [task, serverUrl, authToken],
   );
 
   const handleClearDueDate = useCallback(async () => {
     if (!task) {
       return;
     }
-    const updated = await updateTask(serverUrl, task.id, { due_at: null });
+    const updated = await updateTask(serverUrl, authToken, task.id, { due_at: null });
     setTask(updated);
-  }, [task, serverUrl]);
+  }, [task, serverUrl, authToken]);
 
   const handleDelete = useCallback(() => {
     if (!task) {
@@ -166,12 +168,12 @@ export default function TaskDetailScreen() {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          await deleteTask(serverUrl, task.id);
+          await deleteTask(serverUrl, authToken, task.id);
           router.back();
         },
       },
     ]);
-  }, [task, serverUrl, router]);
+  }, [task, serverUrl, authToken, router]);
 
   if (isLoading || !task) {
     return (

@@ -11,7 +11,7 @@ import {
   sortTasks,
 } from "@/utils/api";
 
-export function useTasks(serverUrl: string | null) {
+export function useTasks(serverUrl: string | null, authToken: string | null) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -20,7 +20,7 @@ export function useTasks(serverUrl: string | null) {
 
   const load = useCallback(async () => {
     try {
-      const data = await fetchTasks(serverUrl);
+      const data = await fetchTasks(serverUrl, authToken);
       setTasks(sortTasks(data.filter((t) => t.status !== "done")));
       setError(null);
     } catch {
@@ -29,7 +29,7 @@ export function useTasks(serverUrl: string | null) {
     } finally {
       setIsLoading(false);
     }
-  }, [serverUrl]);
+  }, [serverUrl, authToken]);
 
   useEffect(() => {
     load();
@@ -49,30 +49,30 @@ export function useTasks(serverUrl: string | null) {
 
   const add = useCallback(
     async (input: CreateTaskInput) => {
-      const task = await createTask(serverUrl, input);
+      const task = await createTask(serverUrl, authToken, input);
       setTasks((prev) => sortTasks([task, ...prev]));
       return task;
     },
-    [serverUrl],
+    [serverUrl, authToken],
   );
 
   const update = useCallback(
     async (id: string, input: UpdateTaskInput) => {
-      const updated = await updateTask(serverUrl, id, input);
+      const updated = await updateTask(serverUrl, authToken, id, input);
       setTasks((prev) =>
         sortTasks(prev.map((t) => (t.id === id ? updated : t)).filter((t) => t.status !== "done")),
       );
       return updated;
     },
-    [serverUrl],
+    [serverUrl, authToken],
   );
 
   const remove = useCallback(
     async (id: string) => {
-      await deleteTask(serverUrl, id);
+      await deleteTask(serverUrl, authToken, id);
       setTasks((prev) => prev.filter((t) => t.id !== id));
     },
-    [serverUrl],
+    [serverUrl, authToken],
   );
 
   return { tasks, isLoading, isRefreshing, error, refresh, add, update, remove };
