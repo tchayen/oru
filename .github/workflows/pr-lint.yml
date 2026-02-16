@@ -1,0 +1,69 @@
+name: PR Lint
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  pr-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            const pattern = /^(cli|app|infra): .+/;
+
+            if (!pattern.test(title)) {
+              core.setFailed(
+                `PR title must start with a scope prefix.\n\n` +
+                `Valid prefixes: cli:, app:, infra:\n` +
+                `Example: "cli: Add shell completions"\n\n` +
+                `Got: "${title}"`
+              );
+            }
+
+      - name: Validate PR description
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            const required = ["# Why", "# How", "# Test plan"];
+            const missing = [];
+            const empty = [];
+
+            for (const heading of required) {
+              const idx = body.indexOf(heading);
+              if (idx === -1) {
+                missing.push(heading);
+                continue;
+              }
+
+              // Extract content between this heading and the next heading (or end of string).
+              const afterHeading = body.slice(idx + heading.length);
+              const nextHeading = afterHeading.search(/^# /m);
+              const section = nextHeading === -1
+                ? afterHeading
+                : afterHeading.slice(0, nextHeading);
+
+              // Strip HTML comments and whitespace.
+              const content = section.replace(/<!--[\s\S]*?-->/g, "").trim();
+              if (!content) {
+                empty.push(heading);
+              }
+            }
+
+            if (missing.length || empty.length) {
+              const lines = ["PR description is incomplete.\n"];
+              if (missing.length) {
+                lines.push(`Missing sections: ${missing.join(", ")}`);
+              }
+              if (empty.length) {
+                lines.push(`Empty sections (fill in content below the heading): ${empty.join(", ")}`);
+              }
+              core.setFailed(lines.join("\n"));
+            }
