@@ -2199,4 +2199,171 @@ describe("CLI parse", () => {
     // sanitizeTitle() trims after replacing newlines
     expect(parsed.title).toBe("Valid title");
   });
+
+  // Special characters tests
+  it("add task with double quotes in title", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", 'Task with "quotes"', "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe('Task with "quotes"');
+  });
+
+  it("add task with single quotes in title", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", "Task with 'quotes'", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Task with 'quotes'");
+  });
+
+  it("add task with backslashes in title", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", "Path\\to\\file", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Path\\to\\file");
+  });
+
+  it("add task with SQL injection attempt in title", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "'; DROP TABLE tasks; --", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("'; DROP TABLE tasks; --");
+    expect(parsed.id).toBeTruthy();
+
+    // Verify tasks table still works
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "list", "--json"]);
+    const tasks = JSON.parse(output.trim());
+    expect(Array.isArray(tasks)).toBe(true);
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("'; DROP TABLE tasks; --");
+  });
+
+  it("add task with label containing equals sign", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", "Task", "--label", "key=value", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toContain("key=value");
+  });
+
+  it("add task with note containing special characters", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "Task",
+      "--note",
+      "Note with \"quotes\" and 'apostrophes'",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.notes).toContain("Note with \"quotes\" and 'apostrophes'");
+  });
+
+  it("add task with note containing unicode", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", "Task", "--note", "emoji 🚀 and 中文", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.notes).toContain("emoji 🚀 and 中文");
+  });
+
+  it("update --note with special characters", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "oru",
+      "update",
+      id,
+      "--note",
+      'Special: <html> & "quotes"',
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.notes).toContain('Special: <html> & "quotes"');
+  });
+
+  it("add task with label containing comma", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", "Task", "--label", "key,value", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toContain("key,value");
+  });
+
+  it("add task with label containing semicolon", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", "Task", "--label", "key;value", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toContain("key;value");
+  });
+
+  it("add task with label containing brackets", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "add", "Task", "--label", "key[0]", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.labels).toContain("key[0]");
+  });
+
+  it("add task with newline in note via update", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--note", "Line 1\nLine 2", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.notes).toContain("Line 1\nLine 2");
+  });
+
+  it("add task with metadata value containing special characters", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "oru",
+      "update",
+      id,
+      "--meta",
+      "url=http://example.com?a=1&b=2",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.metadata.url).toBe("http://example.com?a=1&b=2");
+  });
+
+  it("list --search finds task with special characters", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", 'Task with "quotes"']);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "list", "--search", "quotes", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].title).toBe('Task with "quotes"');
+  });
+
+  it("update task title to include special characters", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Original", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "oru",
+      "update",
+      id,
+      "--title",
+      "Updated with 'apostrophe'",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Updated with 'apostrophe'");
+  });
 });

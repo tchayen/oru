@@ -614,4 +614,170 @@ describe("task repository", () => {
     // Trimmed duplicate is detected and skipped
     expect(result!.notes).toEqual(["Note"]);
   });
+
+  // Special characters tests
+  it("creates task with double quotes in title", async () => {
+    const task = await createTask(ky, { title: 'Task with "quotes"' });
+    expect(task.title).toBe('Task with "quotes"');
+    const found = await getTask(ky, task.id);
+    expect(found!.title).toBe('Task with "quotes"');
+  });
+
+  it("creates task with single quotes in title", async () => {
+    const task = await createTask(ky, { title: "Task with 'quotes'" });
+    expect(task.title).toBe("Task with 'quotes'");
+    const found = await getTask(ky, task.id);
+    expect(found!.title).toBe("Task with 'quotes'");
+  });
+
+  it("creates task with backslashes in title", async () => {
+    const task = await createTask(ky, { title: "Path\\to\\file" });
+    expect(task.title).toBe("Path\\to\\file");
+    const found = await getTask(ky, task.id);
+    expect(found!.title).toBe("Path\\to\\file");
+  });
+
+  it("creates task with SQL injection attempt in title", async () => {
+    const task = await createTask(ky, { title: "'; DROP TABLE tasks; --" });
+    expect(task.title).toBe("'; DROP TABLE tasks; --");
+
+    // Verify tasks table still works
+    const tasks = await listTasks(ky);
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("'; DROP TABLE tasks; --");
+  });
+
+  it("search filter treats percent sign as literal character", async () => {
+    await createTask(ky, { title: "100% complete" });
+    await createTask(ky, { title: "50 percent done" });
+    await createTask(ky, { title: "Almost done" });
+
+    const tasks = await listTasks(ky, { search: "%" });
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("100% complete");
+  });
+
+  it("search filter treats underscore as literal character", async () => {
+    await createTask(ky, { title: "snake_case_name" });
+    await createTask(ky, { title: "regular name" });
+
+    const tasks = await listTasks(ky, { search: "_" });
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("snake_case_name");
+  });
+
+  it("creates task with labels containing commas", async () => {
+    const task = await createTask(ky, { title: "Task", labels: ["key,value", "normal"] });
+    expect(task.labels).toEqual(["key,value", "normal"]);
+    const found = await getTask(ky, task.id);
+    expect(found!.labels).toEqual(["key,value", "normal"]);
+  });
+
+  it("creates task with labels containing semicolons", async () => {
+    const task = await createTask(ky, { title: "Task", labels: ["key;value"] });
+    expect(task.labels).toEqual(["key;value"]);
+    const found = await getTask(ky, task.id);
+    expect(found!.labels).toEqual(["key;value"]);
+  });
+
+  it("creates task with labels containing brackets", async () => {
+    const task = await createTask(ky, { title: "Task", labels: ["key[0]", "arr[i]"] });
+    expect(task.labels).toEqual(["key[0]", "arr[i]"]);
+    const found = await getTask(ky, task.id);
+    expect(found!.labels).toEqual(["key[0]", "arr[i]"]);
+  });
+
+  it("creates task with notes containing special characters", async () => {
+    const task = await createTask(ky, {
+      title: "Task",
+      notes: ['Note with "quotes"', "Note with 'apostrophes'", "Note with <html>"],
+    });
+    expect(task.notes).toEqual([
+      'Note with "quotes"',
+      "Note with 'apostrophes'",
+      "Note with <html>",
+    ]);
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual([
+      'Note with "quotes"',
+      "Note with 'apostrophes'",
+      "Note with <html>",
+    ]);
+  });
+
+  it("creates task with unicode in title", async () => {
+    const task = await createTask(ky, { title: "Task with emoji 🚀 and 中文" });
+    expect(task.title).toBe("Task with emoji 🚀 and 中文");
+    const found = await getTask(ky, task.id);
+    expect(found!.title).toBe("Task with emoji 🚀 and 中文");
+  });
+
+  it("appends note with special characters", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Special: <html> & \"quotes\" and 'apostrophes'");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Special: <html> & \"quotes\" and 'apostrophes'"]);
+  });
+
+  it("appends note with unicode", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Unicode: 🎉 日本語 العربية");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Unicode: 🎉 日本語 العربية"]);
+  });
+
+  it("updates task with special characters in title", async () => {
+    const task = await createTask(ky, { title: "Original" });
+    const updated = await updateTask(ky, task.id, {
+      title: "Updated with \"quotes\" & 'apostrophes'",
+    });
+    expect(updated!.title).toBe("Updated with \"quotes\" & 'apostrophes'");
+  });
+
+  it("filters by label containing special characters", async () => {
+    await createTask(ky, { title: "Task A", labels: ["key=value"] });
+    await createTask(ky, { title: "Task B", labels: ["normal"] });
+
+    const tasks = await listTasks(ky, { label: "key=value" });
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("Task A");
+  });
+
+  it("search finds tasks with special characters", async () => {
+    await createTask(ky, { title: "Buy milk & eggs" });
+    await createTask(ky, { title: "Buy juice" });
+
+    const tasks = await listTasks(ky, { search: "&" });
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("Buy milk & eggs");
+  });
+
+  it("metadata can contain special characters", async () => {
+    const task = await createTask(ky, {
+      title: "Task",
+      metadata: {
+        url: "http://example.com?a=1&b=2",
+        path: "C:\\Users\\file.txt",
+        query: "SELECT * FROM table WHERE id='123'",
+      },
+    });
+    expect(task.metadata).toEqual({
+      url: "http://example.com?a=1&b=2",
+      path: "C:\\Users\\file.txt",
+      query: "SELECT * FROM table WHERE id='123'",
+    });
+    const found = await getTask(ky, task.id);
+    expect(found!.metadata).toEqual({
+      url: "http://example.com?a=1&b=2",
+      path: "C:\\Users\\file.txt",
+      query: "SELECT * FROM table WHERE id='123'",
+    });
+  });
+
+  it("notes with newlines are preserved", async () => {
+    const task = await createTask(ky, { title: "Task" });
+    await appendNote(ky, task.id, "Line 1\nLine 2\nLine 3");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["Line 1\nLine 2\nLine 3"]);
+  });
 });
