@@ -238,12 +238,26 @@ export function formatContextText(sections: ContextSections, now?: Date): string
     ["Recently Completed", sections.recently_completed],
   ];
 
+  const sectionNames: Record<string, string> = {
+    Overdue: "overdue",
+    "Due Soon": "due soon",
+    "In Progress": "in progress",
+    Actionable: "actionable",
+    Blocked: "blocked",
+    "Recently Completed": "recently completed",
+  };
+
   const nonEmpty = entries.filter(([, tasks]) => tasks.length > 0);
   if (nonEmpty.length === 0) {
     return dim("Nothing to report.");
   }
 
-  const parts: string[] = [];
+  const summaryParts = nonEmpty.map(
+    ([name, tasks]) => `${bold(String(tasks.length))} ${sectionNames[name]}`,
+  );
+  const summaryLine = dim(summaryParts.join(", "));
+
+  const parts: string[] = [summaryLine];
   for (const [name, tasks] of nonEmpty) {
     parts.push(`${orange(name)} ${dim(`(${tasks.length})`)}`);
     parts.push(formatTasksText(tasks, now));
