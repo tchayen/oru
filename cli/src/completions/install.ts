@@ -32,10 +32,7 @@ export function detectShell(): Shell | null {
   return null;
 }
 
-export function getInstallPaths(
-  shell: Shell,
-  homeDir: string = os.homedir(),
-): InstallPaths {
+export function getInstallPaths(shell: Shell, homeDir: string = os.homedir()): InstallPaths {
   switch (shell) {
     case "bash":
       return {
