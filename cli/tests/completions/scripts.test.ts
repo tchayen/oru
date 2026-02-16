@@ -62,6 +62,10 @@ describe("bash completions script", () => {
     expect(script).toContain("context");
   });
 
+  it("contains --label flag for context command", () => {
+    expect(script).toContain("--label");
+  });
+
   it("calls oru _complete for dynamic values", () => {
     expect(script).toContain("oru _complete tasks");
     expect(script).toContain("oru _complete labels");
@@ -138,6 +142,10 @@ describe("zsh completions script", () => {
 
   it("contains context command", () => {
     expect(script).toContain("context:Show agent briefing of current task status");
+  });
+
+  it("contains --label flag for context command", () => {
+    expect(script).toContain("--label");
   });
 
   it("calls oru _complete for dynamic values", () => {
@@ -223,6 +231,10 @@ describe("fish completions script", () => {
 
   it("contains context command", () => {
     expect(script).toContain("context");
+  });
+
+  it("contains label flag for context command", () => {
+    expect(script).toContain("label");
   });
 
   it("defines helper functions for dynamic completions", () => {

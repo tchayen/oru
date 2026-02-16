@@ -1848,4 +1848,44 @@ describe("CLI parse", () => {
     expect(parsed.due_soon).toHaveLength(1);
     expect(parsed.due_soon[0].title).toBe("Soon task");
   });
+
+  // context --label filter tests
+  it("context --label filters to tasks with that label", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "CLI task", "-l", "cli", "-p", "high"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "App task", "-l", "app", "-p", "high"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "context", "--label", "cli", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.actionable).toHaveLength(1);
+    expect(parsed.actionable[0].title).toBe("CLI task");
+  });
+
+  it("context --label excludes tasks without the label", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Unrelated task", "-p", "urgent"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context", "--label", "cli", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.actionable).toBeUndefined();
+  });
+
+  it("context --label filters done tasks in recently completed", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Done CLI task", "-l", "cli", "-s", "done"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Done app task", "-l", "app", "-s", "done"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "context", "--label", "cli", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    if (parsed.recently_completed) {
+      for (const t of parsed.recently_completed) {
+        expect(t.labels).toContain("cli");
+      }
+    }
+  });
 });

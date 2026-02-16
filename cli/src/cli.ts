@@ -1021,92 +1021,98 @@ export function createProgram(
     .command("context")
     .description("Show agent briefing of current task status")
     .option("--owner <owner>", "Scope briefing to a specific owner")
+    .option("-l, --label <labels...>", "Filter by labels")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
-    .action(async (opts: { owner?: string; json?: boolean; plaintext?: boolean }) => {
-      const now = new Date();
-      const tasks = await service.list({
-        sort: "priority",
-        owner: opts.owner,
-      });
+    .action(
+      async (opts: { owner?: string; label?: string[]; json?: boolean; plaintext?: boolean }) => {
+        const now = new Date();
+        const label = opts.label?.[0];
+        const tasks = await service.list({
+          sort: "priority",
+          owner: opts.owner,
+          label,
+        });
 
-      const allTasks = tasks;
-      // Also fetch done tasks for recently completed
-      const doneTasks = await service.list({
-        status: "done",
-        sort: "priority",
-        owner: opts.owner,
-      });
+        const allTasks = tasks;
+        // Also fetch done tasks for recently completed
+        const doneTasks = await service.list({
+          status: "done",
+          sort: "priority",
+          owner: opts.owner,
+          label,
+        });
 
-      const sections: ContextSections = {
-        overdue: [],
-        due_soon: [],
-        in_progress: [],
-        actionable: [],
-        blocked: [],
-        recently_completed: [],
-      };
+        const sections: ContextSections = {
+          overdue: [],
+          due_soon: [],
+          in_progress: [],
+          actionable: [],
+          blocked: [],
+          recently_completed: [],
+        };
 
-      // Build a set of non-done task IDs for blocker checking
-      const nonDoneIds = new Set(allTasks.filter((t) => t.status !== "done").map((t) => t.id));
+        // Build a set of non-done task IDs for blocker checking
+        const nonDoneIds = new Set(allTasks.filter((t) => t.status !== "done").map((t) => t.id));
 
-      // Recently completed: done within last 24 hours
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-      for (const t of doneTasks) {
-        if (t.updated_at >= oneDayAgo) {
-          sections.recently_completed.push(t);
-        }
-      }
-
-      for (const t of allTasks) {
-        if (t.status === "done") {
-          continue;
-        }
-
-        // Overdue takes priority
-        if (t.due_at && isOverdue(t.due_at, now)) {
-          sections.overdue.push(t);
-          continue;
+        // Recently completed: done within last 24 hours
+        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+        for (const t of doneTasks) {
+          if (t.updated_at >= oneDayAgo) {
+            sections.recently_completed.push(t);
+          }
         }
 
-        // Due within 48 hours but not yet overdue
-        if (t.due_at && isDueSoon(t.due_at, now)) {
-          sections.due_soon.push(t);
-          continue;
+        for (const t of allTasks) {
+          if (t.status === "done") {
+            continue;
+          }
+
+          // Overdue takes priority
+          if (t.due_at && isOverdue(t.due_at, now)) {
+            sections.overdue.push(t);
+            continue;
+          }
+
+          // Due within 48 hours but not yet overdue
+          if (t.due_at && isDueSoon(t.due_at, now)) {
+            sections.due_soon.push(t);
+            continue;
+          }
+
+          // In progress / in review
+          if (t.status === "in_progress" || t.status === "in_review") {
+            sections.in_progress.push(t);
+            continue;
+          }
+
+          // Blocked: has incomplete blockers
+          const hasIncompleteBlocker = t.blocked_by.some((id) => nonDoneIds.has(id));
+          if (hasIncompleteBlocker) {
+            sections.blocked.push(t);
+            continue;
+          }
+
+          // Actionable: all todo tasks that aren't blocked
+          if (t.status === "todo") {
+            sections.actionable.push(t);
+            continue;
+          }
         }
 
-        // In progress / in review
-        if (t.status === "in_progress" || t.status === "in_review") {
-          sections.in_progress.push(t);
-          continue;
+        const blockerTitles = new Map<string, string>();
+        for (const t of [...allTasks, ...doneTasks]) {
+          blockerTitles.set(t.id, t.title);
         }
+        sections.blockerTitles = blockerTitles;
 
-        // Blocked: has incomplete blockers
-        const hasIncompleteBlocker = t.blocked_by.some((id) => nonDoneIds.has(id));
-        if (hasIncompleteBlocker) {
-          sections.blocked.push(t);
-          continue;
+        if (useJson(opts)) {
+          write(formatContextJson(sections));
+        } else {
+          write(formatContextText(sections, now));
         }
-
-        // Actionable: all todo tasks that aren't blocked
-        if (t.status === "todo") {
-          sections.actionable.push(t);
-          continue;
-        }
-      }
-
-      const blockerTitles = new Map<string, string>();
-      for (const t of [...allTasks, ...doneTasks]) {
-        blockerTitles.set(t.id, t.title);
-      }
-      sections.blockerTitles = blockerTitles;
-
-      if (useJson(opts)) {
-        write(formatContextJson(sections));
-      } else {
-        write(formatContextText(sections, now));
-      }
-    });
+      },
+    );
 
   // delete
   program
