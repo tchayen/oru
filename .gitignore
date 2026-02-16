@@ -30,6 +30,11 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
 # Environment
 .env*.local
 
