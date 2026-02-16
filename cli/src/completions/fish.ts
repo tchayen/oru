@@ -1,5 +1,6 @@
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import { SORT_FIELDS } from "../tasks/repository.js";
+import { SHOW_SERVER } from "../flags.js";
 
 export function generateFishCompletions(): string {
   return `# oru shell completions for fish
@@ -49,7 +50,7 @@ complete -c oru -n __oru_needs_command -a log -d 'Show change history of a task'
 complete -c oru -n __oru_needs_command -a sync -d 'Sync with a filesystem remote'
 complete -c oru -n __oru_needs_command -a backup -d 'Create a database backup snapshot'
 complete -c oru -n __oru_needs_command -a config -d 'Manage configuration'
-complete -c oru -n __oru_needs_command -a server -d 'Manage the HTTP server'
+${SHOW_SERVER ? "complete -c oru -n __oru_needs_command -a server -d 'Manage the HTTP server'" : ""}
 complete -c oru -n __oru_needs_command -a completions -d 'Generate shell completions'
 complete -c oru -n __oru_needs_command -a self-update -d 'Update oru to the latest version'
 complete -c oru -n __oru_needs_command -a telemetry -d 'Manage anonymous usage telemetry'
@@ -58,12 +59,15 @@ complete -c oru -n __oru_needs_command -a telemetry -d 'Manage anonymous usage t
 complete -c oru -n '__oru_using_command config' -a init -d 'Create a default config file'
 complete -c oru -n '__oru_using_command config' -a path -d 'Print the config file path'
 
-# server subcommands
+${
+  SHOW_SERVER
+    ? `# server subcommands
 complete -c oru -n '__oru_using_command server' -a start -d 'Start the server'
 complete -c oru -n '__oru_using_subcommand server start' -l port -d 'Port to listen on' -r
 complete -c oru -n '__oru_using_subcommand server start' -l tunnel -d 'Create a public tunnel'
-
-# completions subcommands
+`
+    : ""
+}# completions subcommands
 complete -c oru -n '__oru_using_command completions' -a 'bash zsh fish'
 
 # telemetry subcommands

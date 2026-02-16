@@ -40,6 +40,7 @@ import {
 import { parseDate } from "./dates/parse.js";
 import { serializeTask, parseDocument, openInEditor } from "./edit.js";
 import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
+import { SHOW_SERVER } from "./flags.js";
 import { AmbiguousPrefixError, SORT_FIELDS, type SortField } from "./tasks/repository.js";
 import {
   resolveDynamic,
@@ -1233,42 +1234,44 @@ export function createProgram(
       write(getConfigPath());
     });
 
-  // server
-  const server = program
-    .command("server")
-    .description("Manage the HTTP server for accessing tasks from your phone");
+  // server (hidden behind feature flag until mobile app ships)
+  if (SHOW_SERVER) {
+    const server = program
+      .command("server")
+      .description("Manage the HTTP server for accessing tasks from your phone");
 
-  server
-    .command("start")
-    .description("Start the server (runs in foreground, Ctrl+C to stop)")
-    .option("--port <port>", "Port to listen on", "2358")
-    .option("--tunnel", "Create a public tunnel via Cloudflare")
-    .action((opts: { port: string; tunnel?: boolean }) => {
-      const serverScript = path.join(
-        path.dirname(fileURLToPath(import.meta.url)),
-        "server",
-        "index.js",
-      );
+    server
+      .command("start")
+      .description("Start the server (runs in foreground, Ctrl+C to stop)")
+      .option("--port <port>", "Port to listen on", "2358")
+      .option("--tunnel", "Create a public tunnel via Cloudflare")
+      .action((opts: { port: string; tunnel?: boolean }) => {
+        const serverScript = path.join(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "server",
+          "index.js",
+        );
 
-      const child = spawn("node", [serverScript], {
-        stdio: "inherit",
-        env: {
-          ...process.env,
-          ORU_PORT: opts.port,
-          ...(opts.tunnel ? { ORU_TUNNEL: "1" } : {}),
-        },
+        const child = spawn("node", [serverScript], {
+          stdio: "inherit",
+          env: {
+            ...process.env,
+            ORU_PORT: opts.port,
+            ...(opts.tunnel ? { ORU_TUNNEL: "1" } : {}),
+          },
+        });
+
+        const forward = (signal: NodeJS.Signals) => {
+          child.kill(signal);
+        };
+        process.on("SIGINT", () => forward("SIGINT"));
+        process.on("SIGTERM", () => forward("SIGTERM"));
+
+        child.on("exit", (code) => {
+          process.exit(code ?? 0);
+        });
       });
-
-      const forward = (signal: NodeJS.Signals) => {
-        child.kill(signal);
-      };
-      process.on("SIGINT", () => forward("SIGINT"));
-      process.on("SIGTERM", () => forward("SIGTERM"));
-
-      child.on("exit", (code) => {
-        process.exit(code ?? 0);
-      });
-    });
+  }
 
   // completions
   const completionsCmd = program

@@ -15,8 +15,11 @@ describe("bash completions script", () => {
     expect(script).toContain("delete");
     expect(script).toContain("sync");
     expect(script).toContain("config");
-    expect(script).toContain("server");
     expect(script).toContain("completions");
+  });
+
+  it("hides server command when SHOW_SERVER is false", () => {
+    expect(script).not.toContain("server");
   });
 
   it("contains log command", () => {
@@ -212,8 +215,11 @@ describe("fish completions script", () => {
     expect(script).toContain("delete");
     expect(script).toContain("sync");
     expect(script).toContain("config");
-    expect(script).toContain("server");
     expect(script).toContain("completions");
+  });
+
+  it("hides server command when SHOW_SERVER is false", () => {
+    expect(script).not.toContain("server");
   });
 
   it("contains log command", () => {

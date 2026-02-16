@@ -1,7 +1,61 @@
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import { SORT_FIELDS } from "../tasks/repository.js";
+import { SHOW_SERVER } from "../flags.js";
 
 export function generateBashCompletions(): string {
+  const commands = [
+    "add",
+    "list",
+    "labels",
+    "get",
+    "update",
+    "edit",
+    "delete",
+    "done",
+    "start",
+    "review",
+    "context",
+    "log",
+    "sync",
+    "config",
+    ...(SHOW_SERVER ? ["server"] : []),
+    "backup",
+    "completions",
+    "self-update",
+    "telemetry",
+  ].join(" ");
+  const casePatterns = [
+    "add",
+    "list",
+    "labels",
+    "get",
+    "update",
+    "edit",
+    "delete",
+    "done",
+    "start",
+    "review",
+    "context",
+    "log",
+    "sync",
+    "config",
+    ...(SHOW_SERVER ? ["server"] : []),
+    "backup",
+    "completions",
+    "self-update",
+    "telemetry",
+  ].join("|");
+
+  const serverBlock = SHOW_SERVER
+    ? `    server)
+      if [[ "$prev" == "start" ]] && [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "--port --tunnel" -- "$cur"))
+      else
+        COMPREPLY=($(compgen -W "$server_subcommands" -- "$cur"))
+      fi
+      ;;`
+    : "";
+
   return `# oru shell completions for bash
 # Install: oru completions bash >> ~/.bashrc
 
@@ -9,9 +63,8 @@ _oru_completions() {
   local cur prev words cword
   _init_completion || return
 
-  local commands="add list labels get update edit delete done start review context log sync config server backup completions self-update telemetry"
-  local config_subcommands="init path"
-  local server_subcommands="start"
+  local commands="${commands}"
+  local config_subcommands="init path"${SHOW_SERVER ? '\n  local server_subcommands="start"' : ""}
   local telemetry_subcommands="status enable disable"
   local completion_shells="bash zsh fish"
   local status_values="${STATUSES.join(" ")}"
@@ -23,7 +76,7 @@ _oru_completions() {
   local i
   for ((i = 1; i < cword; i++)); do
     case "\${words[i]}" in
-      add|list|labels|get|update|edit|delete|done|start|review|context|log|sync|config|server|backup|completions|self-update|telemetry)
+      ${casePatterns})
         subcmd="\${words[i]}"
         break
         ;;
@@ -59,13 +112,7 @@ _oru_completions() {
     config)
       COMPREPLY=($(compgen -W "$config_subcommands" -- "$cur"))
       ;;
-    server)
-      if [[ "$prev" == "start" ]] && [[ "$cur" == -* ]]; then
-        COMPREPLY=($(compgen -W "--port --tunnel" -- "$cur"))
-      else
-        COMPREPLY=($(compgen -W "$server_subcommands" -- "$cur"))
-      fi
-      ;;
+${serverBlock}
     completions)
       COMPREPLY=($(compgen -W "$completion_shells" -- "$cur"))
       ;;
