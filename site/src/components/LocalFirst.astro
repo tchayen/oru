@@ -9,7 +9,7 @@ import Terminal from "./ui/Terminal.astro";
     <div class="min-w-0">
       <div class="reveal">
         <p class="section-label">Local-first</p>
-        <h2 class="mb-4">Your data never leaves your machine.</h2>
+        <h2 class="mb-4">Your data stays on your machine.</h2>
         <p class="body-lg text-text-secondary mb-4">
           oru stores everything in a single SQLite database at
           <code
@@ -29,7 +29,10 @@ import Terminal from "./ui/Terminal.astro";
         <p class="body-sm text-text-tertiary mb-4">
           Install it. Use it. There is no onboarding flow, no email field, no
           OAuth redirect. The database is created on first run. That is the
-          entire setup.
+          entire setup. Want to leave? <code
+            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
+            >cp ~/.oru/oru.db</code
+          > and you have everything.
         </p>
         <Terminal title="getting started">
           <span class="line"><span class="prompt">$ </span><span class="cmd">npm</span> <span class="sub">install</span> <span class="flag">-g</span> <span class="val">oru-cli</span></span>

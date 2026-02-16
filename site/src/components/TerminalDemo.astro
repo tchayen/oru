@@ -2,18 +2,19 @@
 import Terminal from "./ui/Terminal.astro";
 ---
 
-<section class="relative pb-24 bg-bg-base">
+<section class="relative py-24 bg-bg-base">
   <div class="container">
     <div class="text-center mb-12 reveal">
-      <p class="section-label">Plan your day</p>
-      <h2 class="mb-4">See what matters right now.</h2>
+      <p class="section-label">Your daily snapshot</p>
+      <h2 class="mb-4">One command. Full picture.</h2>
       <p class="body-lg max-w-[640px] mx-auto text-text-secondary">
-        Ask your agent to check your tasks and plan your day. <code
+        <code
           class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-accent"
           >oru context</code
-        > gives a daily snapshot — overdue items, today's priorities, what is
-        coming up. Every operation is a single-digit millisecond read from a
-        local SQLite database. No spinners. No loading states.
+        > shows overdue items, today's priorities, and what is coming up.
+        Your agent runs it and reasons about your schedule, or you run it
+        yourself. Single-digit millisecond reads. No spinners. No loading
+        states.
       </p>
     </div>
     <div class="max-w-[720px] mx-auto reveal" data-delay="160" data-terminal-typing>

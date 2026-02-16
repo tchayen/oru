@@ -3,20 +3,22 @@ import Terminal from "./ui/Terminal.astro";
 import Badge from "./ui/Badge.astro";
 ---
 
-<section class="py-24 bg-bg-base">
+<section class="py-24 bg-bg-elevated">
   <div class="container">
     <div class="text-center mb-16 reveal">
-      <p class="section-label">Agent-powered</p>
-      <h2 class="mb-4">Tell your agent to manage your tasks.</h2>
+      <p class="section-label">Agent-native</p>
+      <h2 class="mb-4">Your agent already knows how to use it.</h2>
       <p class="body-lg max-w-[640px] mx-auto mb-4 text-text-secondary">
-        Ask your agent what to focus on today. Let it create tasks from a meeting,
-        flag what is overdue, or plan your week. oru gives agents a clean CLI
-        interface so they can help you stay organized — without you memorizing
-        commands.
+        Ask your agent what to focus on today. It runs <code
+          class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-accent"
+          >oru context</code
+        >, reads the JSON, and tells you Monday is your only free day to file
+        taxes before Thursday's deadline. Every command is a clean, parseable
+        CLI call — agents do not need a browser or an API token.
       </p>
       <p class="body max-w-[640px] mx-auto text-text-tertiary">
-        Every command returns JSON. Both you and your agent see the same data — one
-        formatted for humans, one structured for machines.
+        Human-readable tables when you run it. Machine-readable JSON when
+        your agent does. Same data, same source of truth.
       </p>
     </div>
 
@@ -56,9 +58,9 @@ import Badge from "./ui/Badge.astro";
 
     <div class="grid grid-cols-2 gap-6 max-md:grid-cols-1">
       <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
-        <h3 class="text-[22px]">Reliable, even when agents retry.</h3>
+        <h3 class="text-[22px]">Agents retry. oru handles it.</h3>
         <p class="body text-text-secondary">
-          Agents sometimes retry failed operations. The <code
+          The <code
             class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
             >--id</code
           > flag makes creates idempotent — your agent can safely retry without
@@ -76,7 +78,7 @@ import Badge from "./ui/Badge.astro";
       </div>
 
       <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="160">
-        <h3 class="text-[22px]">Attach any context you need.</h3>
+        <h3 class="text-[22px]">Key-value metadata on any task.</h3>
         <p class="body text-text-secondary">
           Link tasks to PRs, projects, sprints, or anything else. The <code
             class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
