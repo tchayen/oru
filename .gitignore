@@ -35,6 +35,9 @@ yarn-error.*
 *.tfstate.*
 .terraform/
 
+# Wrangler
+.wrangler/
+
 # Environment
 .env*.local
 
