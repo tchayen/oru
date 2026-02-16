@@ -1,10 +1,7 @@
 import { Hono } from "hono";
 import type { TaskService } from "../main.js";
-import { STATUSES, PRIORITIES, type Status, type Priority } from "../tasks/types.js";
+import { VALID_STATUSES, VALID_PRIORITIES, type Status, type Priority } from "../tasks/types.js";
 import { AmbiguousPrefixError } from "../tasks/repository.js";
-
-const validStatuses = new Set<string>(STATUSES);
-const validPriorities = new Set<string>(PRIORITIES);
 
 export function createApp(service: TaskService, token: string, pairingCode: string): Hono {
   const app = new Hono();
@@ -48,7 +45,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
     if (statusRaw) {
       const parts = statusRaw.split(",");
       for (const s of parts) {
-        if (!validStatuses.has(s)) {
+        if (!VALID_STATUSES.has(s)) {
           return c.json({ error: "validation", message: `Invalid status: ${s}` }, 400);
         }
       }
@@ -59,7 +56,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
     if (priorityRaw) {
       const parts = priorityRaw.split(",");
       for (const p of parts) {
-        if (!validPriorities.has(p)) {
+        if (!VALID_PRIORITIES.has(p)) {
           return c.json({ error: "validation", message: `Invalid priority: ${p}` }, 400);
         }
       }
@@ -125,10 +122,10 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
         400,
       );
     }
-    if (status && !validStatuses.has(status)) {
+    if (status && !VALID_STATUSES.has(status)) {
       return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
     }
-    if (priority && !validPriorities.has(priority)) {
+    if (priority && !VALID_PRIORITIES.has(priority)) {
       return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
     }
 
@@ -169,10 +166,10 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
         400,
       );
     }
-    if (status && !validStatuses.has(status)) {
+    if (status && !VALID_STATUSES.has(status)) {
       return c.json({ error: "validation", message: `Invalid status: ${status}` }, 400);
     }
-    if (priority && !validPriorities.has(priority)) {
+    if (priority && !VALID_PRIORITIES.has(priority)) {
       return c.json({ error: "validation", message: `Invalid priority: ${priority}` }, 400);
     }
 
