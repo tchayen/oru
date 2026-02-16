@@ -6,7 +6,6 @@ import { createTestDb, createTestKysely } from "./helpers/test-db.js";
 import { TaskService } from "../src/main.js";
 import { replayOps } from "../src/oplog/replay.js";
 import { getTask } from "../src/tasks/repository.js";
-import type { OplogEntry } from "../src/oplog/types.js";
 
 describe("TaskService", () => {
   let db: Database.Database;

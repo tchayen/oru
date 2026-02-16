@@ -66,7 +66,9 @@ export class TaskService {
       }
 
       for (const [field, value] of Object.entries(input)) {
-        if (field === "note" || value === undefined) continue;
+        if (field === "note" || value === undefined) {
+          continue;
+        }
         await writeOp(
           trx,
           {
@@ -124,7 +126,9 @@ export class TaskService {
 
       const resolvedId = task.id;
       for (const [field, value] of Object.entries(input)) {
-        if (field === "note" || value === undefined) continue;
+        if (field === "note" || value === undefined) {
+          continue;
+        }
         await writeOp(
           trx,
           {
