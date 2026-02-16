@@ -74,7 +74,7 @@ void main() {
     sin(t * 0.7) * 0.3 + cos(t * 0.3) * 0.1,
     cos(t * 0.5) * 0.2 + sin(t * 0.4) * 0.1
   );
-  float glow = exp(-length(p - glow_center) * 2.5);
+  float glow = exp(-length(p - glow_center) * 1.8);
 
   // Vignette
   float vignette = 1.0 - length(uv - 0.5) * 1.2;
@@ -87,12 +87,12 @@ void main() {
 
   float intensity = field * vignette;
   vec3 col = bg;
-  col += accent1 * intensity * 0.045;
-  col += accent2 * glow * 0.06 * vignette;
-  col += accent1 * pow(field, 3.0) * 0.03;
+  col += accent1 * intensity * 0.18;
+  col += accent2 * glow * 0.25 * vignette;
+  col += accent1 * pow(field, 3.0) * 0.12;
 
   // Subtle grain
-  float grain = (fract(sin(dot(uv * u_time, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.008;
+  float grain = (fract(sin(dot(uv * u_time, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.012;
   col += grain;
 
   fragColor = vec4(col, 1.0);
