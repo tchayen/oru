@@ -14,8 +14,6 @@ import {
   formatLabelsText,
   formatLogText,
   filterByDue,
-  isOverdue,
-  isDueSoon,
   formatContextText,
   type DueFilter,
   type ContextSections,
@@ -910,87 +908,13 @@ export function createProgram(
     )
     .action(
       async (opts: { owner?: string; label?: string; json?: boolean; plaintext?: boolean }) => {
-        const now = new Date();
-        const label = opts.label;
-        const tasks = await service.list({
-          sort: "priority",
+        const { sections } = await service.getContext({
           owner: opts.owner,
-          label,
+          label: opts.label,
         });
-
-        // Also fetch done tasks for recently completed
-        const doneTasks = await service.list({
-          status: "done",
-          sort: "priority",
-          owner: opts.owner,
-          label,
-        });
-
-        const sections: ContextSections = {
-          overdue: [],
-          due_soon: [],
-          in_progress: [],
-          actionable: [],
-          blocked: [],
-          recently_completed: [],
-        };
-
-        // Build a set of non-done task IDs for blocker checking
-        const nonDoneIds = new Set(tasks.filter((t) => t.status !== "done").map((t) => t.id));
-
-        // Recently completed: done within last 24 hours
-        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-        for (const t of doneTasks) {
-          if (t.updated_at >= oneDayAgo) {
-            sections.recently_completed.push(t);
-          }
-        }
-
-        for (const t of tasks) {
-          if (t.status === "done") {
-            continue;
-          }
-
-          // Overdue takes priority
-          if (t.due_at && isOverdue(t.due_at, now)) {
-            sections.overdue.push(t);
-            continue;
-          }
-
-          // Due within 48 hours but not yet overdue
-          if (t.due_at && isDueSoon(t.due_at, now)) {
-            sections.due_soon.push(t);
-            continue;
-          }
-
-          // In progress / in review
-          if (t.status === "in_progress" || t.status === "in_review") {
-            sections.in_progress.push(t);
-            continue;
-          }
-
-          // Blocked: has incomplete blockers
-          const hasIncompleteBlocker = t.blocked_by.some((id) => nonDoneIds.has(id));
-          if (hasIncompleteBlocker) {
-            sections.blocked.push(t);
-            continue;
-          }
-
-          // Actionable: all todo tasks that aren't blocked
-          if (t.status === "todo") {
-            sections.actionable.push(t);
-            continue;
-          }
-        }
-
-        const blockerTitles = new Map<string, string>();
-        for (const t of [...tasks, ...doneTasks]) {
-          blockerTitles.set(t.id, t.title);
-        }
-        sections.blockerTitles = blockerTitles;
 
         const json = useJson(opts);
-        write(json ? formatContextJson(sections) : formatContextText(sections, now));
+        write(json ? formatContextJson(sections) : formatContextText(sections, new Date()));
       },
     );
 

@@ -3,6 +3,7 @@ import type { DB } from "./db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types.js";
 import type { ListFilters } from "./tasks/repository.js";
 import type { OplogEntry } from "./oplog/types.js";
+import type { ContextSections } from "./format/text.js";
 import {
   createTask,
   listTasks,
@@ -13,6 +14,7 @@ import {
   deleteTask,
 } from "./tasks/repository.js";
 import { writeOp } from "./oplog/writer.js";
+import { isOverdue, isDueSoon } from "./format/text.js";
 
 export class TaskService {
   constructor(
@@ -236,6 +238,92 @@ export class TaskService {
       }
     }
     return [...labels].sort();
+  }
+
+  async getContext(opts?: { owner?: string; label?: string }): Promise<{
+    sections: ContextSections;
+    summary: Record<string, number>;
+  }> {
+    const now = new Date();
+    const tasks = await this.list({
+      sort: "priority",
+      owner: opts?.owner,
+      label: opts?.label,
+    });
+
+    const doneTasks = await this.list({
+      status: "done",
+      sort: "priority",
+      owner: opts?.owner,
+      label: opts?.label,
+    });
+
+    const sections: ContextSections = {
+      overdue: [],
+      due_soon: [],
+      in_progress: [],
+      actionable: [],
+      blocked: [],
+      recently_completed: [],
+    };
+
+    const nonDoneIds = new Set(tasks.filter((t) => t.status !== "done").map((t) => t.id));
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+
+    for (const t of doneTasks) {
+      if (t.updated_at >= oneDayAgo) {
+        sections.recently_completed.push(t);
+      }
+    }
+
+    for (const t of tasks) {
+      if (t.status === "done") {
+        continue;
+      }
+
+      if (t.due_at && isOverdue(t.due_at, now)) {
+        sections.overdue.push(t);
+        continue;
+      }
+
+      if (t.due_at && isDueSoon(t.due_at, now)) {
+        sections.due_soon.push(t);
+        continue;
+      }
+
+      if (t.status === "in_progress" || t.status === "in_review") {
+        sections.in_progress.push(t);
+        continue;
+      }
+
+      const hasIncompleteBlocker = t.blocked_by.some((id) => nonDoneIds.has(id));
+      if (hasIncompleteBlocker) {
+        sections.blocked.push(t);
+        continue;
+      }
+
+      if (t.status === "todo") {
+        sections.actionable.push(t);
+        continue;
+      }
+    }
+
+    const blockerTitles = new Map<string, string>();
+    for (const t of [...tasks, ...doneTasks]) {
+      blockerTitles.set(t.id, t.title);
+    }
+    sections.blockerTitles = blockerTitles;
+
+    const summary = {
+      overdue: sections.overdue.length,
+      due_soon: sections.due_soon.length,
+      in_progress: sections.in_progress.length,
+      actionable: sections.actionable.length,
+      blocked: sections.blocked.length,
+      recently_completed: sections.recently_completed.length,
+    };
+
+    return { sections, summary };
   }
 
   async log(id: string): Promise<OplogEntry[] | null> {

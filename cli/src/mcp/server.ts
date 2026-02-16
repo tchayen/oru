@@ -4,7 +4,7 @@ import type { TaskService } from "../main.js";
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import type { CreateTaskInput, UpdateTaskInput } from "../tasks/types.js";
 import type { ListFilters } from "../tasks/repository.js";
-import { isOverdue, isDueSoon, type ContextSections } from "../format/text.js";
+import type { ContextSections } from "../format/text.js";
 
 declare const __VERSION__: string;
 
@@ -255,62 +255,10 @@ export function createMcpServer(service: TaskService): McpServer {
     },
     async (opts) => {
       try {
-        const now = new Date();
-        const tasks = await service.list({
-          sort: "priority",
+        const { sections, summary } = await service.getContext({
           owner: opts.owner,
           label: opts.label,
         });
-        const doneTasks = await service.list({
-          status: "done",
-          sort: "priority",
-          owner: opts.owner,
-          label: opts.label,
-        });
-
-        const sections: ContextSections = {
-          overdue: [],
-          due_soon: [],
-          in_progress: [],
-          actionable: [],
-          blocked: [],
-          recently_completed: [],
-        };
-
-        const nonDoneIds = new Set(tasks.filter((t) => t.status !== "done").map((t) => t.id));
-        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-
-        for (const t of doneTasks) {
-          if (t.updated_at >= oneDayAgo) {
-            sections.recently_completed.push(t);
-          }
-        }
-
-        for (const t of tasks) {
-          if (t.status === "done") {
-            continue;
-          }
-          if (t.due_at && isOverdue(t.due_at, now)) {
-            sections.overdue.push(t);
-          } else if (t.due_at && isDueSoon(t.due_at, now)) {
-            sections.due_soon.push(t);
-          } else if (t.status === "in_progress" || t.status === "in_review") {
-            sections.in_progress.push(t);
-          } else if (t.blocked_by.some((id) => nonDoneIds.has(id))) {
-            sections.blocked.push(t);
-          } else if (t.status === "todo") {
-            sections.actionable.push(t);
-          }
-        }
-
-        const summary = {
-          overdue: sections.overdue.length,
-          due_soon: sections.due_soon.length,
-          in_progress: sections.in_progress.length,
-          actionable: sections.actionable.length,
-          blocked: sections.blocked.length,
-          recently_completed: sections.recently_completed.length,
-        };
 
         const result = { summary, ...sections };
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
