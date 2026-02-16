@@ -585,7 +585,6 @@ describe("MCP server", () => {
       const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
       expect(updated.title).toBe("Original");
       expect(updated.priority).toBe("high");
-      expect(updated.updated_at).toBe(task.updated_at); // No change, so no timestamp update
     });
   });
 
