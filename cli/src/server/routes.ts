@@ -211,7 +211,12 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
   });
 
   app.post("/tasks", async (c) => {
-    const raw = await c.req.json();
+    let raw;
+    try {
+      raw = await c.req.json();
+    } catch {
+      return c.json({ error: "validation", message: "Invalid JSON body" }, 400);
+    }
     // Sanitize title before validation
     if (typeof raw.title === "string") {
       raw.title = raw.title.replace(/[\r\n]+/g, " ").trim();
@@ -240,7 +245,12 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
 
   app.patch("/tasks/:id", async (c) => {
     const id = c.req.param("id");
-    const raw = await c.req.json();
+    let raw;
+    try {
+      raw = await c.req.json();
+    } catch {
+      return c.json({ error: "validation", message: "Invalid JSON body" }, 400);
+    }
     // Sanitize title before validation
     if (typeof raw.title === "string") {
       raw.title = raw.title.replace(/[\r\n]+/g, " ").trim();
