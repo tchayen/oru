@@ -280,6 +280,10 @@ export function createProgram(
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText(
+      "after",
+      '\nExamples:\n  $ oru add "Fix login bug"\n  $ oru add "Fix login bug" -p high -d friday\n  $ oru add "Write docs" -l docs -n "Include API section"\n  $ oru add "Deploy v2" -s todo -d 2026-03-01 --assign alice',
+    )
     .action(
       async (
         title: string,
@@ -396,6 +400,10 @@ export function createProgram(
     .option("--offset <n>", "Number of tasks to skip", Number)
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText(
+      "after",
+      '\nExamples:\n  $ oru list\n  $ oru list -s in_progress -p high\n  $ oru list -l backend --sort due --actionable\n  $ oru list --search "login" --all',
+    )
     .action(
       async (opts: {
         status?: Status | Status[];
@@ -457,6 +465,7 @@ export function createProgram(
     .description("Get a task by ID")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText("after", "\nExamples:\n  $ oru get 019414a3\n  $ oru get 019414a3 --json")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const json = useJson(opts);
       await withTaskLookup(
@@ -489,6 +498,10 @@ export function createProgram(
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText(
+      "after",
+      '\nExamples:\n  $ oru update 019414a3 -s in_progress\n  $ oru update 019414a3 -l urgent -d tomorrow\n  $ oru update 019414a3 -n "Blocked on API review"\n  $ oru update 019414a3 -t "New title" -p high',
+    )
     .action(
       async (
         id: string,
@@ -680,6 +693,7 @@ export function createProgram(
     .description("Open task in $EDITOR for complex edits")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText("after", "\nExamples:\n  $ oru edit 019414a3\n  $ EDITOR=nano oru edit 019414a3")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const json = useJson(opts);
       try {
@@ -774,12 +788,18 @@ export function createProgram(
       }
     });
 
-  function addStatusShortcut(name: string, status: Status, description: string): void {
+  function addStatusShortcut(
+    name: string,
+    status: Status,
+    description: string,
+    examples: string,
+  ): void {
     program
       .command(`${name} <id...>`)
       .description(description)
       .option("--json", "Output as JSON")
       .option("--plaintext", "Output as plain text (overrides config)")
+      .addHelpText("after", examples)
       .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
         const json = useJson(opts);
         for (const id of ids) {
@@ -795,16 +815,23 @@ export function createProgram(
       });
   }
 
-  addStatusShortcut("done", "done", "Mark one or more tasks as done (shortcut for update -s done)");
+  addStatusShortcut(
+    "done",
+    "done",
+    "Mark one or more tasks as done (shortcut for update -s done)",
+    "\nExamples:\n  $ oru done 019414a3\n  $ oru done 019414a3 019414b7",
+  );
   addStatusShortcut(
     "start",
     "in_progress",
     "Start one or more tasks (shortcut for update -s in_progress)",
+    "\nExamples:\n  $ oru start 019414a3\n  $ oru start 019414a3 019414b7",
   );
   addStatusShortcut(
     "review",
     "in_review",
     "Mark one or more tasks as in_review (shortcut for update -s in_review)",
+    "\nExamples:\n  $ oru review 019414a3\n  $ oru review 019414a3 019414b7",
   );
 
   // context
@@ -817,6 +844,10 @@ export function createProgram(
     .option("-l, --label <labels...>", "Filter by labels")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  $ oru context\n  $ oru context --owner alice\n  $ oru context -l backend",
+    )
     .action(
       async (opts: { owner?: string; label?: string[]; json?: boolean; plaintext?: boolean }) => {
         const now = new Date();
@@ -909,6 +940,7 @@ export function createProgram(
     .description("Delete one or more tasks permanently")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText("after", "\nExamples:\n  $ oru delete 019414a3\n  $ oru delete 019414a3 019414b7")
     .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
       const json = useJson(opts);
       for (const id of ids) {
@@ -929,6 +961,7 @@ export function createProgram(
     .description("Show change history of a task")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText("after", "\nExamples:\n  $ oru log 019414a3\n  $ oru log 019414a3 --json")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const json = useJson(opts);
       await withTaskLookup(
@@ -947,6 +980,10 @@ export function createProgram(
     .description("Sync with a filesystem remote")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  $ oru sync /mnt/shared/oru\n  $ oru sync ~/Dropbox/oru-sync",
+    )
     .action(async (remotePath: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const remote = new FsRemote(remotePath);
       try {
