@@ -637,6 +637,44 @@ describe("oplog replay", () => {
     expect(task!.notes).toEqual(["Hello"]);
   });
 
+  it("stores notes trimmed after replay", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+      makeOp({
+        id: "op-2",
+        task_id: "t1",
+        op_type: "update",
+        field: "notes",
+        value: "  Hello  ",
+        timestamp: "2024-01-01T00:01:00.000Z",
+      }),
+      makeOp({
+        id: "op-3",
+        task_id: "t1",
+        op_type: "update",
+        field: "notes",
+        value: "\tWorld\n",
+        timestamp: "2024-01-01T00:02:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    expect(task!.notes).toEqual(["Hello", "World"]);
+  });
+
   it("notes_clear removes all accumulated notes", async () => {
     replayOps(db, [
       makeOp({
