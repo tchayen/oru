@@ -912,6 +912,119 @@ describe("oplog replay", () => {
     expect(task!.blocked_by).toEqual(["dep-2", "dep-3"]);
   });
 
+  it("valid op is not blocked by a later invalid op (D-10 LWW poisoning)", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+      makeOp({
+        id: "op-2",
+        task_id: "t1",
+        op_type: "update",
+        field: "status",
+        value: "in_progress",
+        timestamp: "2024-01-01T00:01:00.000Z",
+      }),
+      makeOp({
+        id: "op-3",
+        task_id: "t1",
+        op_type: "update",
+        field: "status",
+        value: "invalid_xyz",
+        timestamp: "2024-01-01T00:02:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    // Op B (invalid) should not poison the LWW tiebreaker — Op A's valid value is preserved
+    expect(task!.status).toBe("in_progress");
+  });
+
+  it("after invalid op, earlier valid op value is preserved across replays", async () => {
+    // First replay: create + invalid op
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+      makeOp({
+        id: "op-3",
+        task_id: "t1",
+        op_type: "update",
+        field: "priority",
+        value: "not_a_priority",
+        timestamp: "2024-01-01T00:02:00.000Z",
+      }),
+    ]);
+    // Second replay: deliver the earlier valid op
+    replayOps(db, [
+      makeOp({
+        id: "op-2",
+        task_id: "t1",
+        op_type: "update",
+        field: "priority",
+        value: "high",
+        timestamp: "2024-01-01T00:01:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    // The valid op should win because the invalid op was never recorded as a field winner
+    expect(task!.priority).toBe("high");
+  });
+
+  it("metadata update with array value is rejected (D-9)", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          labels: [],
+          notes: [],
+          metadata: { key: "value" },
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+      makeOp({
+        id: "op-2",
+        task_id: "t1",
+        op_type: "update",
+        field: "metadata",
+        value: JSON.stringify(["not", "an", "object"]),
+        timestamp: "2024-01-01T00:01:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    // Array metadata should be rejected; original object metadata preserved
+    expect(task!.metadata).toEqual({ key: "value" });
+  });
+
   it("filters non-string blocked_by from create ops", async () => {
     replayOps(db, [
       makeOp({
