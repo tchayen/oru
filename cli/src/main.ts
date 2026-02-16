@@ -97,7 +97,7 @@ export class TaskService {
         return existing;
       }
 
-      const task = await appendNote(trx, existing.id, note, now);
+      const task = await appendNote(trx, existing.id, trimmed, now);
 
       await writeOp(
         trx,
@@ -106,7 +106,7 @@ export class TaskService {
           device_id: this.deviceId,
           op_type: "update",
           field: "notes",
-          value: note,
+          value: trimmed,
         },
         now,
       );
@@ -141,7 +141,7 @@ export class TaskService {
 
       const trimmed = note.trim();
       if (trimmed.length > 0 && !task.notes.some((n) => n.trim() === trimmed)) {
-        task = await appendNote(trx, resolvedId, note, now);
+        task = await appendNote(trx, resolvedId, trimmed, now);
 
         await writeOp(
           trx,
@@ -150,7 +150,7 @@ export class TaskService {
             device_id: this.deviceId,
             op_type: "update",
             field: "notes",
-            value: note,
+            value: trimmed,
           },
           now,
         );

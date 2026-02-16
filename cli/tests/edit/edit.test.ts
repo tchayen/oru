@@ -183,6 +183,25 @@ describe("parseDocument", () => {
     expect(fields.due_at).toBe("2026-04-01T00:00:00");
   });
 
+  it("rejects invalid due date string", () => {
+    const task = makeTask({ due_at: "2026-03-15T00:00:00" });
+    const doc = serializeTask(task).replace("2026-03-15T00:00:00", "banana");
+    expect(() => parseDocument(doc, task)).toThrow("Invalid due date");
+  });
+
+  it("rejects due date with garbage suffix", () => {
+    const task = makeTask({ due_at: "2026-03-15T00:00:00" });
+    const doc = serializeTask(task).replace("2026-03-15T00:00:00", "2026-03-15Tabc");
+    expect(() => parseDocument(doc, task)).toThrow("Invalid due date");
+  });
+
+  it("accepts due date without time component", () => {
+    const task = makeTask({ due_at: "2026-03-15T00:00:00" });
+    const doc = serializeTask(task).replace("2026-03-15T00:00:00", "2026-04-01");
+    const { fields } = parseDocument(doc, task);
+    expect(fields.due_at).toBe("2026-04-01");
+  });
+
   it("detects metadata change", () => {
     const task = makeTask({ metadata: { store: "Whole Foods" } });
     const doc = serializeTask(task).replace("Whole Foods", "Trader Joes");
