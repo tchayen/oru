@@ -237,6 +237,28 @@ export function createProgram(
     return true;
   }
 
+  async function withTaskLookup<T>(
+    id: string,
+    json: boolean,
+    operation: () => Promise<T | null>,
+    onSuccess: (result: T) => void,
+  ): Promise<void> {
+    try {
+      const result = await operation();
+      if (!result) {
+        notFoundError(json, id);
+        return;
+      }
+      onSuccess(result);
+    } catch (err) {
+      if (err instanceof AmbiguousPrefixError) {
+        handleAmbiguousPrefix(err, json);
+        return;
+      }
+      throw err;
+    }
+  }
+
   // add
   program
     .command("add <title>")
@@ -437,20 +459,14 @@ export function createProgram(
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const json = useJson(opts);
-      try {
-        const task = await service.get(id);
-        if (!task) {
-          notFoundError(json, id);
-          return;
-        }
-        write(json ? formatTaskJson(task) : formatTaskText(task));
-      } catch (err) {
-        if (err instanceof AmbiguousPrefixError) {
-          handleAmbiguousPrefix(err, json);
-          return;
-        }
-        throw err;
-      }
+      await withTaskLookup(
+        id,
+        json,
+        () => service.get(id),
+        (task) => {
+          write(json ? formatTaskJson(task) : formatTaskText(task));
+        },
+      );
     });
 
   // update
@@ -767,20 +783,14 @@ export function createProgram(
       .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
         const json = useJson(opts);
         for (const id of ids) {
-          try {
-            const task = await service.update(id, { status });
-            if (!task) {
-              notFoundError(json, id);
-              continue;
-            }
-            write(json ? formatTaskJson(task) : formatTaskText(task));
-          } catch (err) {
-            if (err instanceof AmbiguousPrefixError) {
-              handleAmbiguousPrefix(err, json);
-              continue;
-            }
-            throw err;
-          }
+          await withTaskLookup(
+            id,
+            json,
+            () => service.update(id, { status }),
+            (task) => {
+              write(json ? formatTaskJson(task) : formatTaskText(task));
+            },
+          );
         }
       });
   }
@@ -902,20 +912,14 @@ export function createProgram(
     .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
       const json = useJson(opts);
       for (const id of ids) {
-        try {
-          const result = await service.delete(id);
-          if (!result) {
-            notFoundError(json, id);
-            continue;
-          }
-          write(json ? JSON.stringify({ id, deleted: true }) : `Deleted ${id}`);
-        } catch (err) {
-          if (err instanceof AmbiguousPrefixError) {
-            handleAmbiguousPrefix(err, json);
-            continue;
-          }
-          throw err;
-        }
+        await withTaskLookup(
+          id,
+          json,
+          () => service.delete(id),
+          () => {
+            write(json ? JSON.stringify({ id, deleted: true }) : `Deleted ${id}`);
+          },
+        );
       }
     });
 
@@ -927,20 +931,14 @@ export function createProgram(
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const json = useJson(opts);
-      try {
-        const entries = await service.log(id);
-        if (!entries) {
-          notFoundError(json, id);
-          return;
-        }
-        write(json ? formatLogJson(entries) : formatLogText(entries));
-      } catch (err) {
-        if (err instanceof AmbiguousPrefixError) {
-          handleAmbiguousPrefix(err, json);
-          return;
-        }
-        throw err;
-      }
+      await withTaskLookup(
+        id,
+        json,
+        () => service.log(id),
+        (entries) => {
+          write(json ? formatLogJson(entries) : formatLogText(entries));
+        },
+      );
     });
 
   // sync
