@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { serializeTask, parseDocument } from "../../src/edit.js";
+import fs from "fs";
+import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "../../src/edit.js";
 import type { Task } from "../../src/tasks/types.js";
 
 function makeTask(overrides: Partial<Task> = {}): Task {
@@ -307,5 +308,59 @@ describe("parseDocument", () => {
     expect(fields.title).toBe("Buy vegetables");
     expect(fields.status).toBe("done");
     expect(fields.priority).toBe("high");
+  });
+});
+
+describe("openInEditor", () => {
+  it("returns edited content and temp file path", async () => {
+    const original = process.env.EDITOR;
+    process.env.EDITOR = "true";
+    try {
+      const content = "+++\ntest\n+++\n";
+      const { edited, tmpFile } = await openInEditor(content);
+      expect(edited).toBe(content);
+      expect(tmpFile).toMatch(/oru-edit-.*\.toml$/);
+      // Temp file should still exist — openInEditor no longer cleans up
+      expect(fs.existsSync(tmpFile)).toBe(true);
+      fs.unlinkSync(tmpFile);
+    } finally {
+      process.env.EDITOR = original;
+    }
+  });
+
+  it("does not delete temp file on successful return", async () => {
+    const original = process.env.EDITOR;
+    process.env.EDITOR = "true";
+    try {
+      const { tmpFile } = await openInEditor("content");
+      expect(fs.existsSync(tmpFile)).toBe(true);
+      cleanupTmpFile(tmpFile);
+    } finally {
+      process.env.EDITOR = original;
+    }
+  });
+
+  it("rejects when editor exits with non-zero code", async () => {
+    const original = process.env.EDITOR;
+    process.env.EDITOR = "false";
+    try {
+      await expect(openInEditor("content")).rejects.toThrow("Editor exited with code 1");
+    } finally {
+      process.env.EDITOR = original;
+    }
+  });
+});
+
+describe("cleanupTmpFile", () => {
+  it("deletes an existing file", () => {
+    const tmpFile = `/tmp/oru-test-cleanup-${Date.now()}.toml`;
+    fs.writeFileSync(tmpFile, "test");
+    expect(fs.existsSync(tmpFile)).toBe(true);
+    cleanupTmpFile(tmpFile);
+    expect(fs.existsSync(tmpFile)).toBe(false);
+  });
+
+  it("does not throw on non-existent file", () => {
+    expect(() => cleanupTmpFile("/tmp/oru-nonexistent-file.toml")).not.toThrow();
   });
 });
