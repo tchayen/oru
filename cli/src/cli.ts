@@ -1229,8 +1229,7 @@ export function createProgram(
         process.exitCode = 1;
         return;
       }
-      const dbPath = db.name;
-      const dest = performBackup(dbPath, backupDir);
+      const dest = performBackup(db, backupDir);
       write(`Backed up to ${dest}`);
     });
 
@@ -1260,7 +1259,7 @@ async function main() {
   // Auto-backup if configured
   if (config.backup_path) {
     const { autoBackup } = await import("./backup.js");
-    autoBackup(db.name, config.backup_path, config.backup_interval);
+    autoBackup(db, config.backup_path, config.backup_interval);
   }
 
   // Show first-run telemetry notice

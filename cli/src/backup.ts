@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import type Database from "better-sqlite3";
 
 let backupCounter = 0;
 
@@ -13,16 +14,18 @@ function backupFilename(): string {
 }
 
 /**
- * Copy the database file to the backup directory with a timestamp.
+ * Create a consistent backup of the database using VACUUM INTO.
+ * This is safe for WAL-mode databases — unlike fs.copyFileSync, it
+ * produces a self-contained copy that includes any in-flight WAL data.
  * Returns the full path of the backup file.
  */
-export function performBackup(dbPath: string, backupDir: string): string {
+export function performBackup(db: Database.Database, backupDir: string): string {
   const resolved = backupDir.startsWith("~")
     ? path.join(process.env.HOME ?? "", backupDir.slice(1))
     : backupDir;
   fs.mkdirSync(resolved, { recursive: true });
   const dest = path.join(resolved, backupFilename());
-  fs.copyFileSync(dbPath, dest);
+  db.exec(`VACUUM INTO '${dest.replace(/'/g, "''")}'`);
   return dest;
 }
 
@@ -52,10 +55,14 @@ export function shouldAutoBackup(backupDir: string, intervalMinutes: number): bo
  * Run auto-backup if configured and interval has elapsed.
  * Silent on success, logs warning to stderr on failure.
  */
-export function autoBackup(dbPath: string, backupPath: string, intervalMinutes: number): void {
+export function autoBackup(
+  db: Database.Database,
+  backupPath: string,
+  intervalMinutes: number,
+): void {
   try {
     if (shouldAutoBackup(backupPath, intervalMinutes)) {
-      performBackup(dbPath, backupPath);
+      performBackup(db, backupPath);
     }
   } catch {
     // Best-effort — never break the CLI
