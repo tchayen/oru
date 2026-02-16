@@ -14,7 +14,7 @@ let dbPath: string;
 function cli(args: string[], env?: Record<string, string>): string {
   const CLI_PATH = path.resolve(__dirname, "../../dist/cli.js");
   const result = execFileSync("node", [CLI_PATH, ...args], {
-    env: { ...process.env, ORU_DB_PATH: dbPath, ...env },
+    env: { ...process.env, DO_NOT_TRACK: "1", ORU_DB_PATH: dbPath, ...env },
     encoding: "utf-8",
     timeout: 5000,
   });
