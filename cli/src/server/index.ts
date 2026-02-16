@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import os from "os";
 import { serve } from "@hono/node-server";
-import qrcode from "qrcode-terminal";
+import qrcode from "qrcode";
 import { openDb } from "../db/connection.js";
 import { initSchema } from "../db/schema.js";
 import { createKysely } from "../db/kysely.js";
@@ -25,10 +25,9 @@ function getLocalIp(): string {
   return "127.0.0.1";
 }
 
-function printQr(data: string): void {
-  qrcode.generate(data, { small: true }, (code) => {
-    console.log(code);
-  });
+async function printQr(data: string): Promise<void> {
+  const code = await qrcode.toString(data, { type: "terminal", small: true });
+  console.log(code);
 }
 
 const port = parseInt(process.env.ORU_PORT ?? "2358", 10);
@@ -55,15 +54,15 @@ const server = serve({ fetch: app.fetch, port }, async (info) => {
       const { Tunnel } = await import("cloudflared");
       const tunnel = Tunnel.quick(`http://localhost:${info.port}`);
       tunnelStop = () => tunnel.stop();
-      tunnel.once("url", (tunnelUrl: string) => {
+      tunnel.once("url", async (tunnelUrl: string) => {
         console.log(`Tunnel: ${tunnelUrl}`);
-        printQr(`${tunnelUrl}/pair?code=${pairingCode}`);
+        await printQr(`${tunnelUrl}/pair?code=${pairingCode}`);
       });
     } catch (err) {
       console.error("Failed to start tunnel:", err);
     }
   } else {
-    printQr(`${localUrl}/pair?code=${pairingCode}`);
+    await printQr(`${localUrl}/pair?code=${pairingCode}`);
   }
 });
 
