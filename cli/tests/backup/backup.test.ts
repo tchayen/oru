@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -6,42 +7,64 @@ import { performBackup, shouldAutoBackup } from "../../src/backup.js";
 
 describe("performBackup", () => {
   let tmpDir: string;
-  let dbPath: string;
+  let db: Database.Database;
   let backupDir: string;
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-backup-test-"));
-    dbPath = path.join(tmpDir, "oru.db");
+    const dbPath = path.join(tmpDir, "oru.db");
     backupDir = path.join(tmpDir, "backups");
-    fs.writeFileSync(dbPath, "sqlite-data");
+    db = new Database(dbPath);
+    db.pragma("journal_mode = WAL");
+    db.exec("CREATE TABLE test (id INTEGER PRIMARY KEY, value TEXT)");
+    db.exec("INSERT INTO test (value) VALUES ('hello')");
   });
 
   afterEach(() => {
+    db.close();
     fs.rmSync(tmpDir, { recursive: true });
   });
 
-  it("copies the database to the backup directory", () => {
-    const dest = performBackup(dbPath, backupDir);
+  it("creates a valid SQLite backup via VACUUM INTO", () => {
+    const dest = performBackup(db, backupDir);
     expect(fs.existsSync(dest)).toBe(true);
-    expect(fs.readFileSync(dest, "utf-8")).toBe("sqlite-data");
+    // Open the backup and verify it contains the data
+    const backupDb = new Database(dest, { readonly: true });
+    const row = backupDb.prepare("SELECT value FROM test").get() as { value: string };
+    expect(row.value).toBe("hello");
+    backupDb.close();
   });
 
   it("creates the backup directory if it does not exist", () => {
     expect(fs.existsSync(backupDir)).toBe(false);
-    performBackup(dbPath, backupDir);
+    performBackup(db, backupDir);
     expect(fs.existsSync(backupDir)).toBe(true);
   });
 
   it("uses a timestamped filename", () => {
-    const dest = performBackup(dbPath, backupDir);
+    const dest = performBackup(db, backupDir);
     const filename = path.basename(dest);
     expect(filename).toMatch(/^oru-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}-\d+\.db$/);
   });
 
   it("creates unique filenames on successive calls", () => {
-    const dest1 = performBackup(dbPath, backupDir);
-    const dest2 = performBackup(dbPath, backupDir);
+    const dest1 = performBackup(db, backupDir);
+    const dest2 = performBackup(db, backupDir);
     expect(dest1).not.toBe(dest2);
+  });
+
+  it("captures uncommitted WAL data in the backup", () => {
+    // Insert more data (WAL may not be checkpointed yet)
+    db.exec("INSERT INTO test (value) VALUES ('world')");
+    const dest = performBackup(db, backupDir);
+    const backupDb = new Database(dest, { readonly: true });
+    const rows = backupDb.prepare("SELECT value FROM test ORDER BY id").all() as {
+      value: string;
+    }[];
+    expect(rows).toHaveLength(2);
+    expect(rows[0].value).toBe("hello");
+    expect(rows[1].value).toBe("world");
+    backupDb.close();
   });
 });
 
