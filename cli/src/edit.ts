@@ -103,6 +103,12 @@ export function parseDocument(
       fields.due_at = null;
     }
   } else if (typeof parsedDue === "string" && parsedDue !== existing.due_at) {
+    // Validate due date looks like an ISO date (YYYY-MM-DDTHH:MM:SS)
+    if (!/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/.test(parsedDue)) {
+      throw new Error(
+        `Invalid due date: ${parsedDue}. Expected format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS`,
+      );
+    }
     fields.due_at = parsedDue;
   }
 

@@ -136,7 +136,16 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
   const idW = Math.max(2, ...tasks.map((t) => t.id.length));
   const priW = Math.max(3, ...tasks.map((t) => t.priority.length));
   const ownerW = Math.max(5, ...tasks.map((t) => (t.owner ?? "").length));
-  const dueW = Math.max(3, ...tasks.map((t) => (t.due_at ? formatDue(t.due_at, now) : "").length));
+  const dueW = Math.max(
+    3,
+    ...tasks.map((t) => {
+      if (!t.due_at) {
+        return 0;
+      }
+      const time = t.due_at.slice(11, 16);
+      return time === "00:00" ? 10 : 16; // "YYYY-MM-DD" or "YYYY-MM-DD HH:MM"
+    }),
+  );
   const labelsW = Math.max(
     6,
     ...tasks.map((t) => (t.labels.length > 0 ? t.labels.join(", ") : "").length),

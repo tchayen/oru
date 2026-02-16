@@ -226,6 +226,37 @@ describe("overdue highlighting", () => {
     }
   });
 
+  it("overdue date ANSI codes do not inflate column width in list view", () => {
+    process.env.FORCE_COLOR = "1";
+    try {
+      const overdue: Task = {
+        ...sampleTask,
+        due_at: "2020-01-01T00:00:00",
+        labels: [],
+      };
+      const future: Task = {
+        ...sampleTask,
+        id: "def45678",
+        title: "Future task",
+        due_at: "2099-12-31T00:00:00",
+        labels: [],
+      };
+      const output = formatTasksText([overdue, future]);
+      const lines = output.split("\n");
+      // The header line has the DUE column; check that both date rows
+      // are aligned identically — the overdue red ANSI should NOT add extra padding
+      // Strip ANSI codes to compare raw column positions
+      const stripAnsi = (s: string) => s.replace(/\u001b\[\d+(;\d+)*m/g, "");
+      const overdueLine = stripAnsi(lines[1]);
+      const futureLine = stripAnsi(lines[2]);
+      const overduePos = overdueLine.indexOf("2020-01-01");
+      const futurePos = futureLine.indexOf("2099-12-31");
+      expect(overduePos).toBe(futurePos);
+    } finally {
+      delete process.env.FORCE_COLOR;
+    }
+  });
+
   it("does not highlight future due date in red", () => {
     process.env.FORCE_COLOR = "1";
     try {

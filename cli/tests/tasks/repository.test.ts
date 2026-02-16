@@ -447,4 +447,20 @@ describe("task repository", () => {
     expect(tasks).toHaveLength(2);
     expect(tasks.map((t) => t.title).sort()).toEqual(["High", "Urgent"]);
   });
+
+  it("appendNote stores the trimmed note, not original whitespace", async () => {
+    const task = await createTask(ky, { title: "Trim test" });
+    await appendNote(ky, task.id, "  padded note  ");
+    const found = await getTask(ky, task.id);
+    expect(found!.notes).toEqual(["padded note"]);
+  });
+
+  it("appendNote trims before dedup comparison and storage", async () => {
+    const task = await createTask(ky, { title: "Trim dedup" });
+    await appendNote(ky, task.id, "Hello");
+    await appendNote(ky, task.id, "  Hello  ");
+    const found = await getTask(ky, task.id);
+    // Only one note stored, and it should be trimmed
+    expect(found!.notes).toEqual(["Hello"]);
+  });
 });

@@ -288,7 +288,7 @@ export async function appendNote(
     return existing;
   }
 
-  const notes = [...existing.notes, note];
+  const notes = [...existing.notes, trimmed];
   const now = timestamp ?? new Date().toISOString();
   await db
     .updateTable("tasks")

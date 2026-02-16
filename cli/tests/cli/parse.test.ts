@@ -2059,6 +2059,19 @@ describe("CLI parse", () => {
     expect(output).toContain("No backup path");
   });
 
+  it("context --label accepts a single label and filters correctly", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Backend task", "-l", "backend", "-p", "high"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Frontend task", "-l", "frontend", "-p", "high"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "context", "--label", "backend", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.actionable).toHaveLength(1);
+    expect(parsed.actionable[0].title).toBe("Backend task");
+  });
+
   it("backup uses config backup_path when no argument given", async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-backup-cli-"));
     try {

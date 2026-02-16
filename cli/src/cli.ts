@@ -905,7 +905,7 @@ export function createProgram(
       "Show a summary of what needs your attention (overdue, due soon, in progress, actionable, blocked, recently completed)",
     )
     .option("--owner <owner>", "Scope to a specific owner")
-    .option("-l, --label <labels...>", "Filter by labels")
+    .option("-l, --label <label>", "Filter by label")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .addHelpText(
@@ -913,9 +913,9 @@ export function createProgram(
       "\nExamples:\n  $ oru context\n  $ oru context --owner alice\n  $ oru context -l backend",
     )
     .action(
-      async (opts: { owner?: string; label?: string[]; json?: boolean; plaintext?: boolean }) => {
+      async (opts: { owner?: string; label?: string; json?: boolean; plaintext?: boolean }) => {
         const now = new Date();
-        const label = opts.label?.[0];
+        const label = opts.label;
         const tasks = await service.list({
           sort: "priority",
           owner: opts.owner,
