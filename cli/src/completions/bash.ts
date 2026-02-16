@@ -94,7 +94,7 @@ _oru_completions() {
       ;;
     context)
       if [[ "$cur" == -* ]]; then
-        COMPREPLY=($(compgen -W "--owner --json --plaintext" -- "$cur"))
+        COMPREPLY=($(compgen -W "--owner -l --label --json --plaintext" -- "$cur"))
       fi
       ;;
     get|delete|done|start|review|log)

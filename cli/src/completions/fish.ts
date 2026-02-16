@@ -130,6 +130,7 @@ complete -c oru -n '__oru_using_command start' -l plaintext -d 'Output as plain 
 complete -c oru -n '__oru_using_command review' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command review' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command context' -l owner -d 'Scope briefing to a specific owner' -r
+complete -c oru -n '__oru_using_command context' -s l -l label -d 'Filter by labels' -r
 complete -c oru -n '__oru_using_command context' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command context' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command log' -l json -d 'Output as JSON'

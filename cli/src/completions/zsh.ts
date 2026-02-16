@@ -132,6 +132,7 @@ _oru() {
         context)
           _arguments \\
             '--owner[Scope briefing to a specific owner]:owner:' \\
+            '(-l --label)'{-l,--label}'[Filter by labels]:label:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]'
           ;;
