@@ -50,7 +50,7 @@ import {
   confirm,
   formatSuccessMessage,
 } from "./completions/index.js";
-import { dim, yellow, orange } from "./format/colors.js";
+import { dim, yellow, orange, white } from "./format/colors.js";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
 import { performBackup } from "./backup.js";
 import {
@@ -120,7 +120,7 @@ function colorizeHelp(text: string): string {
         if (term.startsWith("-")) {
           return indent + yellow(term) + pad + desc;
         }
-        return indent + orange(term) + pad + dim(highlightInlineCommands(desc));
+        return indent + white(term) + pad + dim(highlightInlineCommands(desc));
       }
       // Continuation lines (deeply indented) in the commands section
       if (section === "commands" && line.match(/^\s{4,}\S/)) {

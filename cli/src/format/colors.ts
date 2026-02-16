@@ -36,4 +36,5 @@ export const green = make(32, 39);
 export const yellow = make(33, 39);
 export const magenta = make(35, 39);
 export const cyan = make(36, 39);
+export const white = make(37, 39);
 export const orange = make("38;5;208", 39);
