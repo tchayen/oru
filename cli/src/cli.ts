@@ -891,7 +891,7 @@ export function createProgram(
   // delete
   program
     .command("delete <id...>")
-    .description("Delete one or more tasks")
+    .description("Delete one or more tasks permanently")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
