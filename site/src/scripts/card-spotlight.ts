@@ -5,10 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const cards = document.querySelectorAll(".feature-card, .card");
+  const cards = document.querySelectorAll<HTMLElement>(".feature-card, .card");
 
   cards.forEach((card) => {
-    card.addEventListener("mousemove", (e) => {
+    card.addEventListener("mousemove", (e: MouseEvent) => {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
