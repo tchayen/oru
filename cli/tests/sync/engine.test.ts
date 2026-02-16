@@ -11,6 +11,8 @@ import { SyncEngine } from "../../src/sync/engine.js";
 import { writeOp } from "../../src/oplog/writer.js";
 import { getTask } from "../../src/tasks/repository.js";
 import { createTask } from "../../src/tasks/repository.js";
+import type { RemoteBackend } from "../../src/sync/remote.js";
+import type { OplogEntry } from "../../src/oplog/types.js";
 
 describe("SyncEngine", () => {
   let tmpDir: string;
@@ -266,5 +268,44 @@ describe("SyncEngine", () => {
     expect(taskB!.priority).toBe("urgent");
 
     db2.close();
+  });
+
+  it("throws when pull loop exceeds max iterations", async () => {
+    // A buggy remote that always returns entries with an advancing cursor,
+    // which would cause an infinite loop without the guard.
+    let callCount = 0;
+    const buggyRemote: RemoteBackend = {
+      async push() {},
+      async pull(): Promise<{ entries: OplogEntry[]; cursor: string | null }> {
+        callCount++;
+        return {
+          entries: [
+            {
+              id: `op-stuck-${callCount}`,
+              task_id: "t-stuck",
+              device_id: "device-b",
+              op_type: callCount === 1 ? "create" : "update",
+              field: callCount === 1 ? null : "title",
+              value:
+                callCount === 1
+                  ? JSON.stringify({
+                      title: "Stuck",
+                      status: "todo",
+                      priority: "medium",
+                      labels: [],
+                      notes: [],
+                      metadata: {},
+                    })
+                  : JSON.stringify(`Stuck ${callCount}`),
+              timestamp: "2024-01-01T00:00:00.000Z",
+            },
+          ],
+          cursor: `cursor-${callCount}`,
+        };
+      },
+    };
+
+    const engine = new SyncEngine(db, buggyRemote, "device-a", 5);
+    await expect(engine.pull()).rejects.toThrow(/exceeded 5 iterations/);
   });
 });
