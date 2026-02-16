@@ -231,14 +231,14 @@ describe("overdue highlighting", () => {
     try {
       const overdue: Task = {
         ...sampleTask,
-        due_at: "2020-01-01T00:00:00",
+        due_at: "2020-01-01T00:00:00", // date-only (10 chars visual)
         labels: [],
       };
       const future: Task = {
         ...sampleTask,
         id: "def45678",
         title: "Future task",
-        due_at: "2099-12-31T00:00:00",
+        due_at: "2099-12-31T15:30:00", // datetime (16 chars visual) — forces dueW=16
         labels: [],
       };
       const output = formatTasksText([overdue, future]);
@@ -252,6 +252,10 @@ describe("overdue highlighting", () => {
       const overduePos = overdueLine.indexOf("2020-01-01");
       const futurePos = futureLine.indexOf("2099-12-31");
       expect(overduePos).toBe(futurePos);
+      // Also verify the TITLE columns are aligned (padding after DUE must match)
+      const overdueTitlePos = overdueLine.indexOf("Buy milk");
+      const futureTitlePos = futureLine.indexOf("Future task");
+      expect(overdueTitlePos).toBe(futureTitlePos);
     } finally {
       delete process.env.FORCE_COLOR;
     }
