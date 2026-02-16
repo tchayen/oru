@@ -130,7 +130,7 @@ export function formatLabelsText(labels: string[]): string {
 
 export function formatTasksText(tasks: Task[], now?: Date): string {
   if (tasks.length === 0) {
-    return dim("No tasks found.");
+    return dim("No tasks found.") + "\n" + dim('Create one with: oru add "Task title"');
   }
 
   const idW = Math.max(2, ...tasks.map((t) => t.id.length));
