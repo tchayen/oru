@@ -800,7 +800,9 @@ export function createProgram(
   // context
   program
     .command("context")
-    .description("Show a summary of what needs your attention")
+    .description(
+      "Show a summary of what needs your attention (overdue, due soon, in progress, actionable, blocked, recently completed)",
+    )
     .option("--owner <owner>", "Scope to a specific owner")
     .option("-l, --label <labels...>", "Filter by labels")
     .option("--json", "Output as JSON")
