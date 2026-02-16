@@ -192,6 +192,54 @@ export function createProgram(
     process.exitCode = 1;
   }
 
+  function validationError(json: boolean, message: string): void {
+    if (json) {
+      write(JSON.stringify({ error: "validation", message }));
+    } else {
+      write(message.endsWith(".") ? message : `${message}.`);
+    }
+    process.exitCode = 1;
+  }
+
+  function notFoundError(json: boolean, id: string): void {
+    if (json) {
+      write(JSON.stringify({ error: "not_found", id }));
+    } else {
+      write(`Task ${id} not found.`);
+    }
+    process.exitCode = 1;
+  }
+
+  function validateTitle(title: string, json: boolean): boolean {
+    if (title.length === 0) {
+      validationError(json, "Title cannot be empty");
+      return false;
+    }
+    if (title.length > MAX_TITLE_LENGTH) {
+      validationError(json, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`);
+      return false;
+    }
+    return true;
+  }
+
+  function validateNote(note: string, json: boolean): boolean {
+    if (note.length > MAX_NOTE_LENGTH) {
+      validationError(json, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`);
+      return false;
+    }
+    return true;
+  }
+
+  function validateLabels(labels: string[], json: boolean): boolean {
+    for (const l of labels) {
+      if (l.length > MAX_LABEL_LENGTH) {
+        validationError(json, `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`);
+        return false;
+      }
+    }
+    return true;
+  }
+
   // add
   program
     .command("add <title>")
@@ -231,71 +279,22 @@ export function createProgram(
         },
       ) => {
         title = sanitizeTitle(title);
-        if (title.length === 0) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
-          } else {
-            write("Title cannot be empty.");
-          }
-          process.exitCode = 1;
+        const json = useJson(opts);
+        if (!validateTitle(title, json)) {
           return;
         }
-        if (title.length > MAX_TITLE_LENGTH) {
-          if (useJson(opts)) {
-            write(
-              JSON.stringify({
-                error: "validation",
-                message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
-              }),
-            );
-          } else {
-            write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
-          }
-          process.exitCode = 1;
+        if (opts.note && !validateNote(opts.note, json)) {
           return;
         }
-        if (opts.note && opts.note.length > MAX_NOTE_LENGTH) {
-          if (useJson(opts)) {
-            write(
-              JSON.stringify({
-                error: "validation",
-                message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
-              }),
-            );
-          } else {
-            write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
-          }
-          process.exitCode = 1;
+        if (opts.label && !validateLabels(opts.label, json)) {
           return;
-        }
-        if (opts.label) {
-          for (const l of opts.label) {
-            if (l.length > MAX_LABEL_LENGTH) {
-              if (useJson(opts)) {
-                write(
-                  JSON.stringify({
-                    error: "validation",
-                    message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
-                  }),
-                );
-              } else {
-                write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
-              }
-              process.exitCode = 1;
-              return;
-            }
-          }
         }
 
         // Idempotent create: if --id is given and task exists, return it
         if (opts.id) {
           const existing = await service.get(opts.id);
           if (existing) {
-            if (useJson(opts)) {
-              write(formatTaskJson(existing));
-            } else {
-              write(formatTaskText(existing));
-            }
+            write(json ? formatTaskJson(existing) : formatTaskText(existing));
             return;
           }
         }
@@ -309,17 +308,7 @@ export function createProgram(
             resolvedConfig.next_month,
           );
           if (!parsed) {
-            if (useJson(opts)) {
-              write(
-                JSON.stringify({
-                  error: "validation",
-                  message: `Could not parse due date: ${opts.due}`,
-                }),
-              );
-            } else {
-              write(`Could not parse due date: ${opts.due}`);
-            }
-            process.exitCode = 1;
+            validationError(json, `Could not parse due date: ${opts.due}`);
             return;
           }
           dueAt = parsed;
@@ -339,11 +328,7 @@ export function createProgram(
           notes: opts.note ? [opts.note] : undefined,
           metadata,
         });
-        if (useJson(opts)) {
-          write(formatTaskJson(task));
-        } else {
-          write(formatTaskText(task));
-        }
+        write(json ? formatTaskJson(task) : formatTaskText(task));
       },
     );
 
@@ -427,11 +412,8 @@ export function createProgram(
         if (opts.overdue) {
           tasks = filterByDue(tasks, "overdue");
         }
-        if (useJson(opts)) {
-          write(formatTasksJson(tasks));
-        } else {
-          write(formatTasksText(tasks));
-        }
+        const json = useJson(opts);
+        write(json ? formatTasksJson(tasks) : formatTasksText(tasks));
       },
     );
 
@@ -443,11 +425,8 @@ export function createProgram(
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (opts: { json?: boolean; plaintext?: boolean }) => {
       const labels = await service.listLabels();
-      if (useJson(opts)) {
-        write(formatLabelsJson(labels));
-      } else {
-        write(formatLabelsText(labels));
-      }
+      const json = useJson(opts);
+      write(json ? formatLabelsJson(labels) : formatLabelsText(labels));
     });
 
   // get
@@ -457,25 +436,17 @@ export function createProgram(
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       try {
         const task = await service.get(id);
         if (!task) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "not_found", id }));
-          } else {
-            write(`Task ${id} not found.`);
-          }
-          process.exitCode = 1;
+          notFoundError(json, id);
           return;
         }
-        if (useJson(opts)) {
-          write(formatTaskJson(task));
-        } else {
-          write(formatTaskText(task));
-        }
+        write(json ? formatTaskJson(task) : formatTaskText(task));
       } catch (err) {
         if (err instanceof AmbiguousPrefixError) {
-          handleAmbiguousPrefix(err, useJson(opts));
+          handleAmbiguousPrefix(err, json);
           return;
         }
         throw err;
@@ -521,64 +492,18 @@ export function createProgram(
           plaintext?: boolean;
         },
       ) => {
+        const json = useJson(opts);
         if (opts.title !== undefined) {
           opts.title = sanitizeTitle(opts.title);
         }
-        if (opts.title !== undefined && opts.title.length === 0) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
-          } else {
-            write("Title cannot be empty.");
-          }
-          process.exitCode = 1;
+        if (opts.title !== undefined && !validateTitle(opts.title, json)) {
           return;
         }
-
-        if (opts.title && opts.title.length > MAX_TITLE_LENGTH) {
-          if (useJson(opts)) {
-            write(
-              JSON.stringify({
-                error: "validation",
-                message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
-              }),
-            );
-          } else {
-            write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
-          }
-          process.exitCode = 1;
+        if (opts.note && !validateNote(opts.note, json)) {
           return;
         }
-        if (opts.note && opts.note.length > MAX_NOTE_LENGTH) {
-          if (useJson(opts)) {
-            write(
-              JSON.stringify({
-                error: "validation",
-                message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
-              }),
-            );
-          } else {
-            write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
-          }
-          process.exitCode = 1;
+        if (opts.label && !validateLabels(opts.label, json)) {
           return;
-        }
-        if (opts.label) {
-          for (const l of opts.label) {
-            if (l.length > MAX_LABEL_LENGTH) {
-              if (useJson(opts)) {
-                write(
-                  JSON.stringify({
-                    error: "validation",
-                    message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
-                  }),
-                );
-              } else {
-                write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
-              }
-              process.exitCode = 1;
-              return;
-            }
-          }
         }
 
         try {
@@ -602,17 +527,7 @@ export function createProgram(
                 resolvedConfig.first_day_of_week,
               );
               if (!parsed) {
-                if (useJson(opts)) {
-                  write(
-                    JSON.stringify({
-                      error: "validation",
-                      message: `Could not parse due date: ${opts.due}`,
-                    }),
-                  );
-                } else {
-                  write(`Could not parse due date: ${opts.due}`);
-                }
-                process.exitCode = 1;
+                validationError(json, `Could not parse due date: ${opts.due}`);
                 return;
               }
               updateFields.due_at = parsed;
@@ -630,12 +545,7 @@ export function createProgram(
           if (opts.label || opts.unlabel) {
             const existing = await service.get(id);
             if (!existing) {
-              if (useJson(opts)) {
-                write(JSON.stringify({ error: "not_found", id }));
-              } else {
-                write(`Task ${id} not found.`);
-              }
-              process.exitCode = 1;
+              notFoundError(json, id);
               return;
             }
             let labels = [...existing.labels];
@@ -659,12 +569,7 @@ export function createProgram(
           if (opts.meta) {
             const existing = await service.get(id);
             if (!existing) {
-              if (useJson(opts)) {
-                write(JSON.stringify({ error: "not_found", id }));
-              } else {
-                write(`Task ${id} not found.`);
-              }
-              process.exitCode = 1;
+              notFoundError(json, id);
               return;
             }
             const parsed = parseMetadata(opts.meta);
@@ -685,12 +590,7 @@ export function createProgram(
           if (opts.clearNotes) {
             task = await service.clearNotes(id);
             if (!task) {
-              if (useJson(opts)) {
-                write(JSON.stringify({ error: "not_found", id }));
-              } else {
-                write(`Task ${id} not found.`);
-              }
-              process.exitCode = 1;
+              notFoundError(json, id);
               return;
             }
             if (opts.note) {
@@ -741,22 +641,13 @@ export function createProgram(
           }
 
           if (!task) {
-            if (useJson(opts)) {
-              write(JSON.stringify({ error: "not_found", id }));
-            } else {
-              write(`Task ${id} not found.`);
-            }
-            process.exitCode = 1;
+            notFoundError(json, id);
             return;
           }
-          if (useJson(opts)) {
-            write(formatTaskJson(task));
-          } else {
-            write(formatTaskText(task));
-          }
+          write(json ? formatTaskJson(task) : formatTaskText(task));
         } catch (err) {
           if (err instanceof AmbiguousPrefixError) {
-            handleAmbiguousPrefix(err, useJson(opts));
+            handleAmbiguousPrefix(err, json);
             return;
           }
           throw err;
@@ -771,15 +662,11 @@ export function createProgram(
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       try {
         const task = await service.get(id);
         if (!task) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "not_found", id }));
-          } else {
-            write(`Task ${id} not found.`);
-          }
-          process.exitCode = 1;
+          notFoundError(json, id);
           return;
         }
 
@@ -793,12 +680,7 @@ export function createProgram(
           ({ fields, newNotes, removedNotes } = parseDocument(edited, task));
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "validation", message }));
-          } else {
-            write(message);
-          }
-          process.exitCode = 1;
+          validationError(json, message);
           return;
         }
 
@@ -806,7 +688,7 @@ export function createProgram(
         const hasNotes = newNotes.length > 0;
 
         if (!hasFields && !hasNotes && !removedNotes) {
-          if (useJson(opts)) {
+          if (json) {
             write(formatTaskJson(task));
           } else {
             write("No changes.");
@@ -814,66 +696,19 @@ export function createProgram(
           return;
         }
 
-        // Validate
         if (fields.title !== undefined) {
           fields.title = sanitizeTitle(fields.title);
         }
-        if (fields.title !== undefined && fields.title.length === 0) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "validation", message: "Title cannot be empty" }));
-          } else {
-            write("Title cannot be empty.");
-          }
-          process.exitCode = 1;
-          return;
-        }
-        if (fields.title && fields.title.length > MAX_TITLE_LENGTH) {
-          if (useJson(opts)) {
-            write(
-              JSON.stringify({
-                error: "validation",
-                message: `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters`,
-              }),
-            );
-          } else {
-            write(`Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
-          }
-          process.exitCode = 1;
+        if (fields.title !== undefined && !validateTitle(fields.title, json)) {
           return;
         }
         for (const note of newNotes) {
-          if (note.length > MAX_NOTE_LENGTH) {
-            if (useJson(opts)) {
-              write(
-                JSON.stringify({
-                  error: "validation",
-                  message: `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters`,
-                }),
-              );
-            } else {
-              write(`Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
-            }
-            process.exitCode = 1;
+          if (!validateNote(note, json)) {
             return;
           }
         }
-        if (fields.labels) {
-          for (const l of fields.labels) {
-            if (l.length > MAX_LABEL_LENGTH) {
-              if (useJson(opts)) {
-                write(
-                  JSON.stringify({
-                    error: "validation",
-                    message: `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters`,
-                  }),
-                );
-              } else {
-                write(`Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`);
-              }
-              process.exitCode = 1;
-              return;
-            }
-          }
+        if (fields.labels && !validateLabels(fields.labels, json)) {
+          return;
         }
 
         let result;
@@ -910,120 +745,54 @@ export function createProgram(
           result = await service.get(id);
         }
 
-        if (useJson(opts)) {
-          write(formatTaskJson(result!));
-        } else {
-          write(formatTaskText(result!));
-        }
+        write(json ? formatTaskJson(result!) : formatTaskText(result!));
       } catch (err) {
         if (err instanceof AmbiguousPrefixError) {
-          handleAmbiguousPrefix(err, useJson(opts));
+          handleAmbiguousPrefix(err, json);
           return;
         }
         throw err;
       }
     });
 
-  // done (shortcut for update --status done)
-  program
-    .command("done <id...>")
-    .description("Mark one or more tasks as done (shortcut for update -s done)")
-    .option("--json", "Output as JSON")
-    .option("--plaintext", "Output as plain text (overrides config)")
-    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
-      for (const id of ids) {
-        try {
-          const task = await service.update(id, { status: "done" });
-          if (!task) {
-            if (useJson(opts)) {
-              write(JSON.stringify({ error: "not_found", id }));
-            } else {
-              write(`Task ${id} not found.`);
+  function addStatusShortcut(name: string, status: Status, description: string): void {
+    program
+      .command(`${name} <id...>`)
+      .description(description)
+      .option("--json", "Output as JSON")
+      .option("--plaintext", "Output as plain text (overrides config)")
+      .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
+        const json = useJson(opts);
+        for (const id of ids) {
+          try {
+            const task = await service.update(id, { status });
+            if (!task) {
+              notFoundError(json, id);
+              continue;
             }
-            process.exitCode = 1;
-            continue;
+            write(json ? formatTaskJson(task) : formatTaskText(task));
+          } catch (err) {
+            if (err instanceof AmbiguousPrefixError) {
+              handleAmbiguousPrefix(err, json);
+              continue;
+            }
+            throw err;
           }
-          if (useJson(opts)) {
-            write(formatTaskJson(task));
-          } else {
-            write(formatTaskText(task));
-          }
-        } catch (err) {
-          if (err instanceof AmbiguousPrefixError) {
-            handleAmbiguousPrefix(err, useJson(opts));
-            continue;
-          }
-          throw err;
         }
-      }
-    });
+      });
+  }
 
-  // start (shortcut for update --status in_progress)
-  program
-    .command("start <id...>")
-    .description("Start one or more tasks (shortcut for update -s in_progress)")
-    .option("--json", "Output as JSON")
-    .option("--plaintext", "Output as plain text (overrides config)")
-    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
-      for (const id of ids) {
-        try {
-          const task = await service.update(id, { status: "in_progress" });
-          if (!task) {
-            if (useJson(opts)) {
-              write(JSON.stringify({ error: "not_found", id }));
-            } else {
-              write(`Task ${id} not found.`);
-            }
-            process.exitCode = 1;
-            continue;
-          }
-          if (useJson(opts)) {
-            write(formatTaskJson(task));
-          } else {
-            write(formatTaskText(task));
-          }
-        } catch (err) {
-          if (err instanceof AmbiguousPrefixError) {
-            handleAmbiguousPrefix(err, useJson(opts));
-            continue;
-          }
-          throw err;
-        }
-      }
-    });
-  // review (shortcut for update --status in_review)
-  program
-    .command("review <id...>")
-    .description("Mark one or more tasks as in_review (shortcut for update -s in_review)")
-    .option("--json", "Output as JSON")
-    .option("--plaintext", "Output as plain text (overrides config)")
-    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
-      for (const id of ids) {
-        try {
-          const task = await service.update(id, { status: "in_review" });
-          if (!task) {
-            if (useJson(opts)) {
-              write(JSON.stringify({ error: "not_found", id }));
-            } else {
-              write(`Task ${id} not found.`);
-            }
-            process.exitCode = 1;
-            continue;
-          }
-          if (useJson(opts)) {
-            write(formatTaskJson(task));
-          } else {
-            write(formatTaskText(task));
-          }
-        } catch (err) {
-          if (err instanceof AmbiguousPrefixError) {
-            handleAmbiguousPrefix(err, useJson(opts));
-            continue;
-          }
-          throw err;
-        }
-      }
-    });
+  addStatusShortcut("done", "done", "Mark one or more tasks as done (shortcut for update -s done)");
+  addStatusShortcut(
+    "start",
+    "in_progress",
+    "Start one or more tasks (shortcut for update -s in_progress)",
+  );
+  addStatusShortcut(
+    "review",
+    "in_review",
+    "Mark one or more tasks as in_review (shortcut for update -s in_review)",
+  );
 
   // context
   program
@@ -1043,7 +812,6 @@ export function createProgram(
           label,
         });
 
-        const allTasks = tasks;
         // Also fetch done tasks for recently completed
         const doneTasks = await service.list({
           status: "done",
@@ -1062,7 +830,7 @@ export function createProgram(
         };
 
         // Build a set of non-done task IDs for blocker checking
-        const nonDoneIds = new Set(allTasks.filter((t) => t.status !== "done").map((t) => t.id));
+        const nonDoneIds = new Set(tasks.filter((t) => t.status !== "done").map((t) => t.id));
 
         // Recently completed: done within last 24 hours
         const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
@@ -1072,7 +840,7 @@ export function createProgram(
           }
         }
 
-        for (const t of allTasks) {
+        for (const t of tasks) {
           if (t.status === "done") {
             continue;
           }
@@ -1110,16 +878,13 @@ export function createProgram(
         }
 
         const blockerTitles = new Map<string, string>();
-        for (const t of [...allTasks, ...doneTasks]) {
+        for (const t of [...tasks, ...doneTasks]) {
           blockerTitles.set(t.id, t.title);
         }
         sections.blockerTitles = blockerTitles;
 
-        if (useJson(opts)) {
-          write(formatContextJson(sections));
-        } else {
-          write(formatContextText(sections, now));
-        }
+        const json = useJson(opts);
+        write(json ? formatContextJson(sections) : formatContextText(sections, now));
       },
     );
 
@@ -1130,25 +895,18 @@ export function createProgram(
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       for (const id of ids) {
         try {
           const result = await service.delete(id);
-          if (useJson(opts)) {
-            if (!result) {
-              write(JSON.stringify({ error: "not_found", id }));
-              process.exitCode = 1;
-            } else {
-              write(JSON.stringify({ id, deleted: true }));
-            }
-          } else if (result) {
-            write(`Deleted ${id}`);
-          } else {
-            write(`Task ${id} not found.`);
-            process.exitCode = 1;
+          if (!result) {
+            notFoundError(json, id);
+            continue;
           }
+          write(json ? JSON.stringify({ id, deleted: true }) : `Deleted ${id}`);
         } catch (err) {
           if (err instanceof AmbiguousPrefixError) {
-            handleAmbiguousPrefix(err, useJson(opts));
+            handleAmbiguousPrefix(err, json);
             continue;
           }
           throw err;
@@ -1163,25 +921,17 @@ export function createProgram(
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .action(async (id: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       try {
         const entries = await service.log(id);
         if (!entries) {
-          if (useJson(opts)) {
-            write(JSON.stringify({ error: "not_found", id }));
-          } else {
-            write(`Task ${id} not found.`);
-          }
-          process.exitCode = 1;
+          notFoundError(json, id);
           return;
         }
-        if (useJson(opts)) {
-          write(formatLogJson(entries));
-        } else {
-          write(formatLogText(entries));
-        }
+        write(json ? formatLogJson(entries) : formatLogText(entries));
       } catch (err) {
         if (err instanceof AmbiguousPrefixError) {
-          handleAmbiguousPrefix(err, useJson(opts));
+          handleAmbiguousPrefix(err, json);
           return;
         }
         throw err;
@@ -1200,11 +950,12 @@ export function createProgram(
         const engine = new SyncEngine(db, remote, deviceId);
         const result = await engine.sync();
 
-        if (useJson(opts)) {
-          write(JSON.stringify(result, null, 2));
-        } else {
-          write(`Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`);
-        }
+        const json = useJson(opts);
+        write(
+          json
+            ? JSON.stringify(result, null, 2)
+            : `Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`,
+        );
       } finally {
         remote.close();
       }
@@ -1441,11 +1192,10 @@ async function main() {
   try {
     const { extractCommandAndFlags, buildEvent, sendEvent } =
       await import("./telemetry/telemetry.js");
-    const { command } = extractCommandAndFlags(process.argv);
+    const { command, flags } = extractCommandAndFlags(process.argv);
     // Don't send telemetry for the telemetry command itself
     if (isTelemetryEnabled(config) && !command.startsWith("telemetry")) {
       const durationMs = Date.now() - startTime;
-      const { flags } = extractCommandAndFlags(process.argv);
       const event = buildEvent(command, flags, durationMs, Number(process.exitCode ?? 0));
       sendEvent(event);
     }

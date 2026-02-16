@@ -1,9 +1,6 @@
 import type Database from "better-sqlite3";
 import type { OplogEntry } from "./types.js";
-import { STATUSES, PRIORITIES } from "../tasks/types.js";
-
-const VALID_STATUSES = new Set<string>(STATUSES);
-const VALID_PRIORITIES = new Set<string>(PRIORITIES);
+import { VALID_STATUSES, VALID_PRIORITIES } from "../tasks/types.js";
 const VALID_OP_TYPES = new Set(["create", "update", "delete"]);
 const MAX_NOTES_PER_TASK = 1000;
 
@@ -78,7 +75,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   try {
     data = JSON.parse(createOp.value) as Record<string, unknown>;
   } catch {
-    return; // Malformed create op, skip this task
+    return;
   }
 
   // Start with created state
@@ -120,7 +117,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   for (const op of ops) {
     if (op.op_type === "create") {
       continue;
-    } // Already handled
+    }
 
     if (op.op_type === "delete") {
       // Updates beat deletes: only apply if no update exists at or after this delete
@@ -203,7 +200,6 @@ function rebuildTask(db: Database.Database, taskId: string): void {
           owner = op.value && op.value.trim().length > 0 ? op.value : null;
           break;
         case "due_at":
-          // null or empty string clears the due date
           dueAt = op.value && op.value.trim().length > 0 ? op.value : null;
           break;
         case "blocked_by":

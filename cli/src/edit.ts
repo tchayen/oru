@@ -4,16 +4,13 @@ import os from "os";
 import { spawn } from "child_process";
 import { stringify, parse } from "smol-toml";
 import {
-  STATUSES,
-  PRIORITIES,
+  VALID_STATUSES,
+  VALID_PRIORITIES,
   type Task,
   type UpdateTaskInput,
   type Status,
   type Priority,
 } from "./tasks/types.js";
-
-const VALID_STATUSES = new Set<string>(STATUSES);
-const VALID_PRIORITIES = new Set<string>(PRIORITIES);
 
 export function serializeTask(task: Task): string {
   const frontmatter: Record<string, unknown> = {
