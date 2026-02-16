@@ -234,6 +234,24 @@ describe("MCP server", () => {
     expect(context.in_progress).toHaveLength(1);
   });
 
+  it("sanitizes database errors in add_task responses", async () => {
+    // Close the database to simulate a real SQLite failure (e.g. "database is locked",
+    // corruption, or unexpected disconnection). Without sanitizeError, the raw error
+    // "attempt to use a closed database" would leak to the MCP client.
+    db.close();
+
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Should fail" },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as Array<{ text: string }>)[0].text;
+    // The raw error contains "database" — sanitizeError must replace it
+    expect(text).toBe("An internal error occurred. Please try again.");
+    expect(text).not.toContain("database");
+  });
+
   it("supports idempotent creates with --id", async () => {
     const customId = "0196b8e0-0000-7000-8000-000000000001";
     await client.callTool({
