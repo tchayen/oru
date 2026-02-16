@@ -15,7 +15,7 @@ const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 export default function AddTaskScreen() {
-  const { serverUrl } = use(ConnectionContext);
+  const { serverUrl, authToken } = use(ConnectionContext);
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
@@ -31,7 +31,12 @@ export default function AddTaskScreen() {
 
     setIsSaving(true);
     try {
-      await createTask(serverUrl, { title: trimmed, priority, status: "todo", due_at: dueAt });
+      await createTask(serverUrl, authToken, {
+        title: trimmed,
+        priority,
+        status: "todo",
+        due_at: dueAt,
+      });
       if (process.env.EXPO_OS === "ios") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }

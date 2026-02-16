@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import os from "os";
 import { serve } from "@hono/node-server";
 import qrcode from "qrcode-terminal";
@@ -24,8 +25,8 @@ function getLocalIp(): string {
   return "127.0.0.1";
 }
 
-function printQr(url: string): void {
-  qrcode.generate(url, { small: true }, (code) => {
+function printQr(data: string): void {
+  qrcode.generate(data, { small: true }, (code) => {
     console.log(code);
   });
 }
@@ -37,7 +38,8 @@ initSchema(db);
 const ky = createKysely(db);
 const deviceId = getDeviceId(db);
 const service = new TaskService(ky, deviceId);
-const app = createApp(service);
+const token = process.env.ORU_AUTH_TOKEN ?? crypto.randomBytes(32).toString("base64url");
+const app = createApp(service, token);
 
 let tunnelStop: (() => void) | undefined;
 
@@ -45,6 +47,7 @@ const server = serve({ fetch: app.fetch, port }, async (info) => {
   const localIp = getLocalIp();
   const localUrl = `http://${localIp}:${info.port}`;
   console.log(`${orange("oru")} server listening on ${localUrl}`);
+  console.log(`Token: ${token}`);
 
   if (process.env.ORU_TUNNEL === "1") {
     try {
@@ -53,13 +56,13 @@ const server = serve({ fetch: app.fetch, port }, async (info) => {
       tunnelStop = () => tunnel.stop();
       tunnel.once("url", (tunnelUrl: string) => {
         console.log(`Tunnel: ${tunnelUrl}`);
-        printQr(tunnelUrl);
+        printQr(JSON.stringify({ url: tunnelUrl, token }));
       });
     } catch (err) {
       console.error("Failed to start tunnel:", err);
     }
   } else {
-    printQr(localUrl);
+    printQr(JSON.stringify({ url: localUrl, token }));
   }
 });
 

@@ -6,8 +6,19 @@ import { AmbiguousPrefixError } from "../tasks/repository.js";
 const validStatuses = new Set<string>(STATUSES);
 const validPriorities = new Set<string>(PRIORITIES);
 
-export function createApp(service: TaskService): Hono {
+export function createApp(service: TaskService, token: string): Hono {
   const app = new Hono();
+
+  app.use("*", async (c, next) => {
+    const auth = c.req.header("Authorization");
+    if (!auth?.startsWith("Bearer ") || auth.slice(7) !== token) {
+      return c.json(
+        { error: "unauthorized", message: "Missing or invalid authentication token" },
+        401,
+      );
+    }
+    await next();
+  });
 
   app.get("/tasks", async (c) => {
     const statusRaw = c.req.query("status");

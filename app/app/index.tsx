@@ -23,8 +23,8 @@ const NEXT_STATUS: Record<Status, Status> = {
 };
 
 export default function TaskListScreen() {
-  const { serverUrl, disconnect } = use(ConnectionContext);
-  const { tasks, isLoading, isRefreshing, error, refresh, update } = useTasks(serverUrl);
+  const { serverUrl, authToken, disconnect } = use(ConnectionContext);
+  const { tasks, isLoading, isRefreshing, error, refresh, update } = useTasks(serverUrl, authToken);
   const router = useRouter();
 
   const handleToggleStatus = (task: Task) => {
