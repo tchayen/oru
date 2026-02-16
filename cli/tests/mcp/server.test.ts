@@ -693,6 +693,196 @@ describe("MCP server", () => {
       expect(updated.notes).toContain(longNote);
     });
   });
+
+  // Special characters tests
+  it("add_task with double quotes in title", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: 'Task with "quotes"' },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.title).toBe('Task with "quotes"');
+  });
+
+  it("add_task with single quotes in title", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task with 'quotes'" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.title).toBe("Task with 'quotes'");
+  });
+
+  it("add_task with backslashes in title", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Path\\to\\file" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.title).toBe("Path\\to\\file");
+  });
+
+  it("add_task with SQL injection attempt in title", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: "'; DROP TABLE tasks; --" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.title).toBe("'; DROP TABLE tasks; --");
+
+    // Verify tasks table still works
+    const listResult = await client.callTool({
+      name: "list_tasks",
+      arguments: {},
+    });
+    const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
+    expect(Array.isArray(tasks)).toBe(true);
+    expect(tasks[0].title).toBe("'; DROP TABLE tasks; --");
+  });
+
+  it("add_task with special characters in notes array", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: {
+        title: "Task",
+        notes: ['Note with "quotes"', "Note with 'apostrophes'", "Note with <html>"],
+      },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.notes).toEqual([
+      'Note with "quotes"',
+      "Note with 'apostrophes'",
+      "Note with <html>",
+    ]);
+  });
+
+  it("add_task with unicode in title", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task with emoji 🚀 and 中文" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.title).toBe("Task with emoji 🚀 and 中文");
+  });
+
+  it("add_task with labels containing special characters", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task", labels: ["key=value", "key,value", "key[0]"] },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.labels).toEqual(["key=value", "key,value", "key[0]"]);
+  });
+
+  it("add_task with metadata containing special characters", async () => {
+    const result = await client.callTool({
+      name: "add_task",
+      arguments: {
+        title: "Task",
+        metadata: {
+          url: "http://example.com?a=1&b=2",
+          path: "C:\\Users\\file.txt",
+        },
+      },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.metadata.url).toBe("http://example.com?a=1&b=2");
+    expect(task.metadata.path).toBe("C:\\Users\\file.txt");
+  });
+
+  it("update_task with special characters in note field", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task" },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const result = await client.callTool({
+      name: "update_task",
+      arguments: { id: created.id, note: "Note with \"quotes\" & 'apostrophes'" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.notes).toContain("Note with \"quotes\" & 'apostrophes'");
+  });
+
+  it("update_task with unicode in note", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task" },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const result = await client.callTool({
+      name: "update_task",
+      arguments: { id: created.id, note: "Unicode: 🎉 日本語 العربية" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.notes).toContain("Unicode: 🎉 日本語 العربية");
+  });
+
+  it("add_note with special characters", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task" },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const result = await client.callTool({
+      name: "add_note",
+      arguments: { id: created.id, note: 'Special: <html> & "quotes"' },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.notes).toContain('Special: <html> & "quotes"');
+  });
+
+  it("add_note with newlines", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task" },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const result = await client.callTool({
+      name: "add_note",
+      arguments: { id: created.id, note: "Line 1\nLine 2\nLine 3" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.notes).toContain("Line 1\nLine 2\nLine 3");
+  });
+
+  it("update_task with special characters in title", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Original" },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const result = await client.callTool({
+      name: "update_task",
+      arguments: { id: created.id, title: "Updated with \"quotes\" & 'apostrophes'" },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.title).toBe("Updated with \"quotes\" & 'apostrophes'");
+  });
+
+  it("get_task retrieves special characters correctly", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: {
+        title: 'Task with "quotes"',
+        notes: ["Note with special chars: <>&"],
+      },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const result = await client.callTool({
+      name: "get_task",
+      arguments: { id: created.id },
+    });
+    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    expect(task.title).toBe('Task with "quotes"');
+    expect(task.notes).toEqual(["Note with special chars: <>&"]);
+  });
 });
 
 describe("sanitizeError", () => {
