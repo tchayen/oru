@@ -8,9 +8,11 @@ import Card from "./ui/Card.astro";
       <p class="section-label">Sync</p>
       <h2 class="mb-4">Sync that actually works offline.</h2>
       <p class="body-lg max-w-[640px] mx-auto text-text-secondary">
-        oru does not sync tasks. It syncs operations. Every create, update, and
-        delete is appended to an oplog — an ordered, immutable log of everything
-        that happened.
+        oru does not sync task snapshots. It syncs operations. Every create,
+        update, and delete is appended to an oplog — an ordered, immutable log
+        of everything that happened. The CLI runs a lightweight HTTP server on
+        your machine. Your phone syncs over the local network. Nothing leaves
+        your LAN.
       </p>
     </div>
 
