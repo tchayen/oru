@@ -1085,6 +1085,13 @@ describe("CLI parse", () => {
     expect(parsed.owner).toBeNull();
   });
 
+  it("add --assign with empty string clears owner (sets to null)", async () => {
+    const program = createProgram(db, capture());
+    await program.parseAsync(["node", "oru", "add", "Task", "--assign", "", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.owner).toBeNull();
+  });
+
   it("list --owner filters by owner", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Agent task", "--assign", "agent"]);
@@ -2171,7 +2178,7 @@ describe("CLI parse", () => {
     expect(parsed.notes).toEqual([]);
   });
 
-  it("update --assign with empty string sets owner to empty string (not null)", async () => {
+  it("update --assign with empty string clears owner (sets to null)", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Task", "--assign", "alice", "--json"]);
     const id = JSON.parse(output.trim()).id;
@@ -2179,9 +2186,7 @@ describe("CLI parse", () => {
     const p2 = createProgram(db, capture());
     await p2.parseAsync(["node", "oru", "update", id, "--assign", "", "--json"]);
     const parsed = JSON.parse(output.trim());
-    // BUG: empty string "" sets owner to empty string, not null like "none" does
-    // This is actual behavior: cli.ts:621-626 only checks for "none" to set null
-    expect(parsed.owner).toBe("");
+    expect(parsed.owner).toBeNull();
   });
 
   it("add with title containing newlines gets sanitized to spaces", async () => {
