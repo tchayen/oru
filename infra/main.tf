@@ -80,14 +80,14 @@ resource "cloudflare_pages_project" "site" {
     production {
       fail_open = true
       environment_variables = {
-        NODE_VERSION            = "25"
+        NODE_VERSION            = "24"
         SKIP_DEPENDENCY_INSTALL = "true"
       }
     }
     preview {
       fail_open = true
       environment_variables = {
-        NODE_VERSION            = "25"
+        NODE_VERSION            = "24"
         SKIP_DEPENDENCY_INSTALL = "true"
       }
     }
