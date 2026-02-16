@@ -21,7 +21,7 @@ _oru() {
     'done:Mark one or more tasks as done'
     'start:Start one or more tasks'
     'review:Mark one or more tasks as in_review'
-    'context:Show agent briefing of current task status'
+    'context:Show a summary of what needs your attention'
     'log:Show change history of a task'
     'sync:Sync with a filesystem remote'
     'config:Manage configuration'
@@ -132,7 +132,7 @@ _oru() {
           ;;
         context)
           _arguments \\
-            '--owner[Scope briefing to a specific owner]:owner:' \\
+            '--owner[Scope to a specific owner]:owner:' \\
             '(-l --label)'{-l,--label}'[Filter by labels]:label:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]'

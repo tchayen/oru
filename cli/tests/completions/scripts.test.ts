@@ -146,7 +146,7 @@ describe("zsh completions script", () => {
   });
 
   it("contains context command", () => {
-    expect(script).toContain("context:Show agent briefing of current task status");
+    expect(script).toContain("context:Show a summary of what needs your attention");
   });
 
   it("contains --label flag for context command", () => {

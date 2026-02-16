@@ -44,7 +44,7 @@ complete -c oru -n __oru_needs_command -a delete -d 'Delete one or more tasks'
 complete -c oru -n __oru_needs_command -a done -d 'Mark one or more tasks as done'
 complete -c oru -n __oru_needs_command -a start -d 'Start one or more tasks'
 complete -c oru -n __oru_needs_command -a review -d 'Mark one or more tasks as in_review'
-complete -c oru -n __oru_needs_command -a context -d 'Show agent briefing of current task status'
+complete -c oru -n __oru_needs_command -a context -d 'Show a summary of what needs your attention'
 complete -c oru -n __oru_needs_command -a log -d 'Show change history of a task'
 complete -c oru -n __oru_needs_command -a sync -d 'Sync with a filesystem remote'
 complete -c oru -n __oru_needs_command -a config -d 'Manage configuration'
@@ -135,7 +135,7 @@ complete -c oru -n '__oru_using_command start' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command start' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command review' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command review' -l plaintext -d 'Output as plain text'
-complete -c oru -n '__oru_using_command context' -l owner -d 'Scope briefing to a specific owner' -r
+complete -c oru -n '__oru_using_command context' -l owner -d 'Scope to a specific owner' -r
 complete -c oru -n '__oru_using_command context' -s l -l label -d 'Filter by labels' -r
 complete -c oru -n '__oru_using_command context' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command context' -l plaintext -d 'Output as plain text'
