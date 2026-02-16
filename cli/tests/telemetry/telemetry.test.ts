@@ -185,6 +185,7 @@ describe("showFirstRunNotice", () => {
   let tmpDir: string;
   const originalEnv = { ...process.env };
   const originalWrite = process.stderr.write;
+  const originalIsTTY = process.stderr.isTTY;
   let stderrOutput: string;
 
   beforeEach(() => {
@@ -195,11 +196,13 @@ describe("showFirstRunNotice", () => {
       stderrOutput += chunk;
       return true;
     }) as typeof process.stderr.write;
+    Object.defineProperty(process.stderr, "isTTY", { value: true, configurable: true });
   });
 
   afterEach(() => {
     process.env = { ...originalEnv };
     process.stderr.write = originalWrite;
+    Object.defineProperty(process.stderr, "isTTY", { value: originalIsTTY, configurable: true });
     fs.rmSync(tmpDir, { recursive: true });
   });
 
@@ -217,6 +220,12 @@ describe("showFirstRunNotice", () => {
 
   it("does not print notice when already shown", () => {
     showFirstRunNotice(makeConfig({ telemetry_notice_shown: true }));
+    expect(stderrOutput).toBe("");
+  });
+
+  it("suppresses notice on non-TTY stderr", () => {
+    Object.defineProperty(process.stderr, "isTTY", { value: undefined, configurable: true });
+    showFirstRunNotice(makeConfig({ telemetry_notice_shown: false }));
     expect(stderrOutput).toBe("");
   });
 });
