@@ -68,6 +68,50 @@ oru update abc123 -s in_progress --meta pr=142 --json
 
 Set `ORU_FORMAT=json` or `output_format = "json"` in config to default to JSON output.
 
+## MCP server
+
+oru ships with an [MCP](https://modelcontextprotocol.io/) server so AI agents can manage tasks through the standardized protocol.
+
+### Claude Desktop / Claude Code
+
+Add to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "oru": {
+      "command": "npx",
+      "args": ["-p", "oru-cli@latest", "oru-mcp"]
+    }
+  }
+}
+```
+
+Or if oru is installed globally (`npm install -g oru-cli`):
+
+```json
+{
+  "mcpServers": {
+    "oru": {
+      "command": "oru-mcp"
+    }
+  }
+}
+```
+
+### Available tools
+
+| Tool | Description |
+| --- | --- |
+| `add_task` | Create a new task |
+| `update_task` | Update fields on an existing task |
+| `delete_task` | Delete a task by ID |
+| `list_tasks` | List tasks with optional filters |
+| `get_task` | Get a single task by ID |
+| `get_context` | Summary of what needs attention |
+| `add_note` | Append a note to a task |
+| `list_labels` | List all labels in use |
+
 ## Configuration
 
 ```bash
