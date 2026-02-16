@@ -6,10 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Architecture diagram animation (LocalFirst section)
-  const diagram = document.querySelector(".diagram");
+  const diagram = document.querySelector<HTMLElement>(".diagram");
   if (diagram) {
-    const nodes = diagram.querySelectorAll(".diagram-node");
-    const connectors = diagram.querySelectorAll(".diagram-connector");
+    const nodes = diagram.querySelectorAll<HTMLElement>(".diagram-node");
+    const connectors = diagram.querySelectorAll<HTMLElement>(".diagram-connector");
 
     // Set initial states
     nodes.forEach((node) => {
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     connectors.forEach((connector) => {
-      const line = connector.querySelector(".diagram-line");
+      const line = connector.querySelector<HTMLElement>(".diagram-line");
       if (line) {
         line.style.transformOrigin = "top";
         line.style.transform = "scaleY(0)";
@@ -43,8 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
     diagramObserver.observe(diagram);
   }
 
-  function animateDiagram(nodes, connectors) {
-    const allItems = [];
+  function animateDiagram(nodes: NodeListOf<HTMLElement>, connectors: NodeListOf<HTMLElement>) {
+    const allItems: Array<
+      { type: "node"; el: HTMLElement } | { type: "connector"; el: HTMLElement }
+    > = [];
     for (let i = 0; i < nodes.length; i++) {
       allItems.push({ type: "node", el: nodes[i] });
       if (i < connectors.length) {
@@ -63,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, delay);
         delay += 150;
       } else {
-        const line = item.el.querySelector(".diagram-line");
+        const line = item.el.querySelector<HTMLElement>(".diagram-line");
         if (line) {
           setTimeout(() => {
             line.style.transition = "transform 300ms cubic-bezier(0.16, 1, 0.3, 1)";
@@ -76,10 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Oplog timeline animation (SyncArchitecture section)
-  const timeline = document.querySelector(".oplog-timeline");
+  const timeline = document.querySelector<HTMLElement>(".oplog-timeline");
   if (timeline) {
-    const timelineLine = timeline.querySelector(".timeline-line");
-    const events = timeline.querySelectorAll(".timeline-event");
+    const timelineLine = timeline.querySelector<HTMLElement>(".timeline-line");
+    const events = timeline.querySelectorAll<HTMLElement>(".timeline-event");
 
     // Set initial states
     if (timelineLine) {
@@ -110,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     timelineObserver.observe(timeline);
   }
 
-  function animateTimeline(line, events) {
+  function animateTimeline(line: HTMLElement | null, events: NodeListOf<HTMLElement>) {
     // First draw the line
     setTimeout(() => {
       if (line) {

@@ -5,31 +5,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const container = document.querySelector("[data-terminal-typing]");
+  const container = document.querySelector<HTMLElement>("[data-terminal-typing]");
   if (!container) {
     return;
   }
 
-  const terminalBody = container.querySelector(".terminal-body");
+  const terminalBody = container.querySelector<HTMLElement>(".terminal-body");
   if (!terminalBody) {
     return;
   }
 
   // Collect all line/blank elements as an ordered sequence
-  const elements = Array.from(terminalBody.querySelectorAll(".line, .blank"));
+  const elements = Array.from(terminalBody.querySelectorAll<HTMLElement>(".line, .blank"));
   if (elements.length === 0) {
     return;
   }
 
+  type CommandGroup = {
+    type: "command";
+    command: HTMLElement;
+    outputLines: HTMLElement[];
+  };
+  type OutputGroup = { type: "output"; element: HTMLElement };
+  type Group = CommandGroup | OutputGroup;
+
   // Parse elements into commands and output groups
-  const groups = [];
+  const groups: Group[] = [];
   let i = 0;
   while (i < elements.length) {
     const el = elements[i];
     // A command line starts with a prompt
     if (el.classList.contains("line") && el.querySelector(".prompt")) {
       const command = el;
-      const outputLines = [];
+      const outputLines: HTMLElement[] = [];
       i++;
       // Collect all following non-command lines as output
       while (i < elements.length) {
@@ -77,30 +85,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   observer.observe(container);
 
-  function sleep(ms) {
+  function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
   }
 
-  function showElement(el) {
+  function showElement(el: HTMLElement) {
     el.style.opacity = "1";
     el.style.height = "";
     el.style.overflow = "";
   }
 
-  async function typeText(element) {
+  async function typeText(element: HTMLElement) {
     const promptEl = element.querySelector(".prompt");
     const childNodes = Array.from(element.childNodes);
     const originalHTML = element.innerHTML;
 
     // Get nodes after the prompt
-    const afterPrompt = [];
+    const afterPrompt: ChildNode[] = [];
     let foundPrompt = false;
     for (const node of childNodes) {
       if (
         node === promptEl ||
-        (node.nodeType === 1 && node.classList && node.classList.contains("prompt"))
+        (node.nodeType === 1 &&
+          (node as Element).classList &&
+          (node as Element).classList.contains("prompt"))
       ) {
         foundPrompt = true;
         continue;
@@ -111,16 +121,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Build a flat list of characters with their wrapping HTML
-    const charSequence = [];
+    type CharEntry = {
+      char: string;
+      wrapper: { tag: string; cls: string } | null;
+    };
+    const charSequence: CharEntry[] = [];
     for (const node of afterPrompt) {
       if (node.nodeType === 3) {
-        for (const ch of node.textContent) {
+        for (const ch of node.textContent!) {
           charSequence.push({ char: ch, wrapper: null });
         }
       } else if (node.nodeType === 1) {
-        const tag = node.tagName.toLowerCase();
-        const cls = node.className;
-        for (const ch of node.textContent) {
+        const el = node as HTMLElement;
+        const tag = el.tagName.toLowerCase();
+        const cls = el.className;
+        for (const ch of el.textContent!) {
           charSequence.push({ char: ch, wrapper: { tag, cls } });
         }
       }
@@ -135,8 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
     element.appendChild(cursor);
 
     // Type each character
-    let currentWrapper = null;
-    let currentSpan = null;
+    let currentWrapper: { tag: string; cls: string } | null = null;
+    let currentSpan: HTMLElement | null = null;
 
     for (let c = 0; c < charSequence.length; c++) {
       const { char, wrapper } = charSequence[c];

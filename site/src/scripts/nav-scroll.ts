@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const nav = document.querySelector(".nav");
+  const nav = document.querySelector<HTMLElement>(".nav");
   if (!nav) {
     return;
   }
@@ -13,15 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const threshold = 400; // roughly past hero
 
     if (scrollY > 10) {
-      nav.classList.add("nav-scrolled");
+      nav!.classList.add("nav-scrolled");
     } else {
-      nav.classList.remove("nav-scrolled");
+      nav!.classList.remove("nav-scrolled");
     }
 
     if (!prefersReducedMotion && scrollY > threshold) {
-      nav.classList.add("nav-past-hero");
+      nav!.classList.add("nav-past-hero");
     } else {
-      nav.classList.remove("nav-past-hero");
+      nav!.classList.remove("nav-past-hero");
     }
   }
 
