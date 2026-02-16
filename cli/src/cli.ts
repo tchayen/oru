@@ -804,6 +804,12 @@ export function createProgram(
         if (fields.labels && !validateLabels(fields.labels, json)) {
           return;
         }
+        if (fields.blocked_by && !validateBlockedBy(fields.blocked_by, json)) {
+          return;
+        }
+        if (fields.metadata && !validateMetadata(fields.metadata, json)) {
+          return;
+        }
 
         let result;
         if (removedNotes) {

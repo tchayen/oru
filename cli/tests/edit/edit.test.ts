@@ -353,6 +353,32 @@ describe("parseDocument", () => {
     const { fields } = parseDocument(doc, task);
     expect(fields.due_at).toBe("2026-06-15");
   });
+
+  it("detects blocked_by change to large array", () => {
+    const task = makeTask({ blocked_by: ["dep-1"] });
+    const ids = Array.from({ length: 150 }, (_, i) => `id-${i}`);
+    const doc = serializeTask(task).replace(
+      'blocked_by = [ "dep-1" ]',
+      "blocked_by = [ " + ids.map((id) => `"${id}"`).join(", ") + " ]",
+    );
+    const { fields } = parseDocument(doc, task);
+    expect(fields.blocked_by).toHaveLength(150);
+    expect(fields.blocked_by![0]).toBe("id-0");
+    expect(fields.blocked_by![149]).toBe("id-149");
+  });
+
+  it("detects metadata with many keys", () => {
+    const task = makeTask();
+    const entries: Record<string, string> = {};
+    for (let i = 0; i < 80; i++) {
+      entries[`key_${i}`] = `value_${i}`;
+    }
+    const task2 = makeTask({ metadata: entries });
+    const doc = serializeTask(task2);
+    const parsed = parseDocument(doc, task);
+    expect(parsed.fields.metadata).toBeDefined();
+    expect(Object.keys(parsed.fields.metadata!)).toHaveLength(80);
+  });
 });
 
 describe("openInEditor", () => {
