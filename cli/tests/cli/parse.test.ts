@@ -1888,4 +1888,70 @@ describe("CLI parse", () => {
       }
     }
   });
+
+  // Context summary tests
+  it("context text output starts with summary line showing counts", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Urgent task", "--priority", "urgent"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Active task", "--status", "in_progress"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "context"]);
+    const firstLine = output.trim().split("\n")[0];
+    expect(firstLine).toContain("1 in progress");
+    expect(firstLine).toContain("1 actionable");
+  });
+
+  it("context summary line only includes non-zero sections", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Active task", "--status", "in_progress"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context"]);
+    const firstLine = output.trim().split("\n")[0];
+    expect(firstLine).toContain("1 in progress");
+    expect(firstLine).not.toContain("overdue");
+    expect(firstLine).not.toContain("actionable");
+    expect(firstLine).not.toContain("blocked");
+    expect(firstLine).not.toContain("recently completed");
+  });
+
+  it("context --json includes summary object with all section counts", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Urgent task", "--priority", "urgent"]);
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Active task", "--status", "in_progress"]);
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.summary).toBeDefined();
+    expect(parsed.summary.actionable).toBe(1);
+    expect(parsed.summary.in_progress).toBe(1);
+  });
+
+  it("context --json summary includes zero counts for empty sections", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Active task", "--status", "in_progress"]);
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "context", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.summary.overdue).toBe(0);
+    expect(parsed.summary.actionable).toBe(0);
+    expect(parsed.summary.blocked).toBe(0);
+    expect(parsed.summary.recently_completed).toBe(0);
+    expect(parsed.summary.in_progress).toBe(1);
+  });
+
+  it("context with no tasks shows nothing to report without summary", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "context"]);
+    expect(output).toContain("Nothing to report");
+    expect(output).not.toContain("actionable");
+    expect(output).not.toContain("in progress");
+    expect(output).not.toContain("overdue");
+    expect(output).not.toContain("blocked");
+  });
 });
