@@ -4,6 +4,8 @@ import type { Kysely } from "kysely";
 import type { DB } from "../src/db/kysely.js";
 import { createTestDb, createTestKysely } from "./helpers/test-db.js";
 import { TaskService } from "../src/main.js";
+import { replayOps } from "../src/oplog/replay.js";
+import { getTask } from "../src/tasks/repository.js";
 
 describe("TaskService", () => {
   let db: Database.Database;
@@ -279,6 +281,99 @@ describe("TaskService", () => {
     it("returns null for missing task", async () => {
       const log = await service.log("nonexistent");
       expect(log).toBeNull();
+    });
+  });
+
+  describe("null value serialization", () => {
+    it("clearing owner produces null oplog value, not 'null' string", async () => {
+      const task = await service.add({ title: "Owner task", owner: "agent" });
+      await service.update(task.id, { owner: null });
+
+      const log = await service.log(task.id);
+      const ownerOps = log!.filter((e) => e.op_type === "update" && e.field === "owner");
+      expect(ownerOps).toHaveLength(1);
+      expect(ownerOps[0].value).toBeNull();
+    });
+
+    it("clearing due_at produces null oplog value, not 'null' string", async () => {
+      const task = await service.add({ title: "Due task", due_at: "2025-12-31T00:00:00.000Z" });
+      await service.update(task.id, { due_at: null });
+
+      const log = await service.log(task.id);
+      const dueOps = log!.filter((e) => e.op_type === "update" && e.field === "due_at");
+      expect(dueOps).toHaveLength(1);
+      expect(dueOps[0].value).toBeNull();
+    });
+
+    it("after replay, cleared owner is actually null", async () => {
+      const task = await service.add({ title: "Replay owner task", owner: "agent" });
+      await service.update(task.id, { owner: null });
+
+      // Get all oplog entries and replay them onto a fresh DB
+      const log = await service.log(task.id);
+      const freshDb = createTestDb();
+      const freshKy = createTestKysely(freshDb);
+      replayOps(freshDb, log!);
+
+      const replayed = await getTask(freshKy, task.id);
+      expect(replayed).toBeDefined();
+      expect(replayed!.owner).toBeNull();
+    });
+
+    it("after replay, cleared due_at is actually null", async () => {
+      const task = await service.add({
+        title: "Replay due task",
+        due_at: "2025-12-31T00:00:00.000Z",
+      });
+      await service.update(task.id, { due_at: null });
+
+      const log = await service.log(task.id);
+      const freshDb = createTestDb();
+      const freshKy = createTestKysely(freshDb);
+      replayOps(freshDb, log!);
+
+      const replayed = await getTask(freshKy, task.id);
+      expect(replayed).toBeDefined();
+      expect(replayed!.due_at).toBeNull();
+    });
+
+    it("clearing owner via updateWithNote produces null oplog value", async () => {
+      const task = await service.add({ title: "Combo null task", owner: "agent" });
+      await service.updateWithNote(task.id, { owner: null }, "clearing owner");
+
+      const log = await service.log(task.id);
+      const ownerOps = log!.filter((e) => e.op_type === "update" && e.field === "owner");
+      expect(ownerOps).toHaveLength(1);
+      expect(ownerOps[0].value).toBeNull();
+    });
+  });
+
+  describe("note field filtering", () => {
+    it("note field from UpdateTaskInput is not written to oplog", async () => {
+      const task = await service.add({ title: "Note field task" });
+      await service.update(task.id, { title: "Renamed", note: "a note" } as any);
+
+      const log = await service.log(task.id);
+      const updateOps = log!.filter((e) => e.op_type === "update");
+      const fields = updateOps.map((e) => e.field);
+      expect(fields).toContain("title");
+      expect(fields).not.toContain("note");
+    });
+
+    it("note field is not written via updateWithNote either", async () => {
+      const task = await service.add({ title: "Note field combo task" });
+      await service.updateWithNote(
+        task.id,
+        { status: "done", note: "inline note" } as any,
+        "real note",
+      );
+
+      const log = await service.log(task.id);
+      const updateOps = log!.filter((e) => e.op_type === "update");
+      const fields = updateOps.map((e) => e.field);
+      expect(fields).toContain("status");
+      expect(fields).toContain("notes");
+      expect(fields).not.toContain("note");
     });
   });
 });
