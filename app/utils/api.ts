@@ -41,7 +41,7 @@ export async function fetchTask(
   serverUrl: string | null,
   authToken: string | null,
   id: string,
-): Promise<Task | null> {
+): Promise<Task> {
   requireServer(serverUrl);
   const res = await fetch(`${serverUrl}/tasks/${id}`, { headers: authHeaders(authToken) });
   if (!res.ok) {
