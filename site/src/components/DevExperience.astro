@@ -82,6 +82,18 @@ import MiniCode from "./ui/MiniCode.astro";
         Compose with the Unix tools you already know. JSON output works with jq,
         grep, and scripts.
       </FeatureCard>
+
+      <FeatureCard title="Shell completions" class="reveal" data-delay="160">
+        <MiniCode slot="code">
+          <span class="prompt">$ </span><span class="cmd">oru</span>
+          <span class="sub">completions</span>
+          <span class="val">bash</span>
+          | <span class="val">zsh</span>
+          | <span class="val">fish</span>
+        </MiniCode>
+        Tab-complete commands, flags, and values. Ships with scripts for bash, zsh,
+        and fish.
+      </FeatureCard>
     </div>
   </div>
 </section>
