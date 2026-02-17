@@ -117,11 +117,11 @@ function colorizeHelp(text: string): string {
         if (term.startsWith("-")) {
           return indent + bold(term) + pad + desc;
         }
-        return indent + white(term) + pad + dim(highlightInlineCommands(desc));
+        return indent + white(term) + pad + white(highlightInlineCommands(desc));
       }
       // Continuation lines (deeply indented) in the commands section
       if (section === "commands" && line.match(/^\s{4,}\S/)) {
-        return dim(highlightInlineCommands(line));
+        return white(highlightInlineCommands(line));
       }
       return line;
     })
