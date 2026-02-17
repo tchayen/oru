@@ -189,6 +189,82 @@ export class TaskService {
     });
   }
 
+  async clearNotesAndUpdate(
+    id: string,
+    updates: UpdateTaskInput,
+    note?: string,
+  ): Promise<Task | null> {
+    return this.db.transaction().execute(async (trx) => {
+      const now = new Date().toISOString();
+
+      // 1. Clear notes
+      let task = await setNotes(trx, id, [], now);
+      if (!task) {
+        return null;
+      }
+
+      const resolvedId = task.id;
+
+      await writeOp(
+        trx,
+        {
+          task_id: resolvedId,
+          device_id: this.deviceId,
+          op_type: "update",
+          field: "notes_clear",
+          value: "",
+        },
+        now,
+      );
+
+      // 2. Add note if provided
+      if (note) {
+        const trimmed = note.trim();
+        if (trimmed.length > 0) {
+          task = await appendNote(trx, resolvedId, trimmed, now);
+
+          await writeOp(
+            trx,
+            {
+              task_id: resolvedId,
+              device_id: this.deviceId,
+              op_type: "update",
+              field: "notes",
+              value: trimmed,
+            },
+            now,
+          );
+        }
+      }
+
+      // 3. Apply field updates if any
+      const hasFields = Object.keys(updates).length > 0;
+      if (hasFields) {
+        task = await updateTask(trx, resolvedId, updates, now);
+
+        for (const [field, value] of Object.entries(updates)) {
+          if (field === "note" || value === undefined) {
+            continue;
+          }
+          await writeOp(
+            trx,
+            {
+              task_id: resolvedId,
+              device_id: this.deviceId,
+              op_type: "update",
+              field,
+              value:
+                value === null ? null : typeof value === "string" ? value : JSON.stringify(value),
+            },
+            now,
+          );
+        }
+      }
+
+      return task;
+    });
+  }
+
   async replaceNotes(id: string, notes: string[]): Promise<Task | null> {
     return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();

@@ -310,16 +310,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       let task;
 
       if (clear_notes) {
-        task = await service.clearNotes(id);
-        if (!task) {
-          return c.json({ error: "not_found", id }, 404);
-        }
-        if (note) {
-          task = await service.addNote(id, note);
-        }
-        if (hasFields) {
-          task = await service.update(id, updateFields);
-        }
+        task = await service.clearNotesAndUpdate(id, hasFields ? updateFields : {}, note);
       } else if (note && hasFields) {
         task = await service.updateWithNote(id, updateFields, note);
       } else if (note) {
