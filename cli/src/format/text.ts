@@ -1,7 +1,7 @@
 import type { Task } from "../tasks/types.js";
 import type { OplogEntry } from "../oplog/types.js";
 import type { Weekday } from "../config/config.js";
-import { bold, dim, italic, red, green, yellow, magenta, cyan, orange } from "./colors.js";
+import { bold, dim, italic, white } from "./colors.js";
 
 export function isOverdue(dueAt: string, now?: Date): boolean {
   const ref = now ?? new Date();
@@ -45,7 +45,7 @@ function formatDue(dueAt: string, now?: Date): string {
   const time = dueAt.slice(11, 16);
   const text = time === "00:00" ? date : `${date} ${time}`;
   if (isOverdue(dueAt, now)) {
-    return red(text);
+    return bold(text);
   }
   return text;
 }
@@ -59,9 +59,7 @@ function formatDueText(dueAt: string): string {
 function colorPriority(p: string): string {
   switch (p) {
     case "urgent":
-      return bold(red(p));
-    case "high":
-      return yellow(p);
+      return bold(p);
     case "low":
       return dim(p);
     default:
@@ -72,11 +70,11 @@ function colorPriority(p: string): string {
 function colorStatus(s: string): string {
   switch (s) {
     case "done":
-      return green(s);
+      return dim(s);
     case "in_progress":
-      return yellow(s);
+      return bold(s);
     case "in_review":
-      return magenta(s);
+      return italic(s);
     default:
       return s;
   }
@@ -85,11 +83,11 @@ function colorStatus(s: string): string {
 function colorCheck(status: string): string {
   switch (status) {
     case "done":
-      return green("[x]");
+      return dim("[x]");
     case "in_progress":
-      return yellow("[~]");
+      return bold("[~]");
     case "in_review":
-      return magenta("[r]");
+      return white("[r]");
     default:
       return dim("[ ]");
   }
@@ -110,7 +108,7 @@ export function formatTaskText(task: Task, now?: Date): string {
     lines.push(`  Blocked by: ${task.blocked_by.join(", ")}`);
   }
   if (task.labels.length > 0) {
-    lines.push(`  Labels: ${cyan(task.labels.join(", "))}`);
+    lines.push(`  Labels: ${task.labels.join(", ")}`);
   }
   if (task.notes.length > 0) {
     lines.push(`  ${dim("Notes:")}`);
@@ -132,7 +130,7 @@ export function formatLabelsText(labels: string[]): string {
   if (labels.length === 0) {
     return dim("No labels found.");
   }
-  return labels.map((l) => cyan(l)).join("\n");
+  return labels.join("\n");
 }
 
 export function formatTasksText(tasks: Task[], now?: Date): string {
@@ -177,8 +175,8 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
     const metaKeys = Object.keys(t.metadata);
     const meta = metaKeys.length > 0 ? metaKeys.map((k) => `${k}=${t.metadata[k]}`).join(", ") : "";
     const duePadded = dueText.padEnd(dueW);
-    const dueCol = dueOverdue ? red(duePadded) : duePadded;
-    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${ownerStr.padEnd(ownerW)}  ${dueCol}  ${cyan(labels.padEnd(labelsW))}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
+    const dueCol = dueOverdue ? bold(duePadded) : duePadded;
+    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${ownerStr.padEnd(ownerW)}  ${dueCol}  ${labels.padEnd(labelsW)}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
   });
   return [header, ...rows].join("\n");
 }
@@ -195,13 +193,13 @@ export function formatLogText(entries: OplogEntry[]): string {
     let opLabel: string;
     switch (entry.op_type) {
       case "create":
-        opLabel = green("CREATE");
+        opLabel = bold("CREATE");
         break;
       case "delete":
-        opLabel = red("DELETE");
+        opLabel = dim("DELETE");
         break;
       case "update":
-        opLabel = yellow("UPDATE");
+        opLabel = "UPDATE";
         break;
     }
 
@@ -278,7 +276,7 @@ export function formatContextText(sections: ContextSections, now?: Date): string
 
   const parts: string[] = [summaryLine];
   for (const [name, tasks] of nonEmpty) {
-    parts.push(`${orange(name)} ${dim(`(${tasks.length})`)}`);
+    parts.push(`${bold(name)} ${dim(`(${tasks.length})`)}`);
     parts.push(formatTasksText(tasks, now));
     if (name === "Blocked" && sections.blockerTitles) {
       for (const task of tasks) {

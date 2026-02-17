@@ -8,7 +8,7 @@ import { createKysely } from "../db/kysely.js";
 import { getDeviceId } from "../device.js";
 import { TaskService } from "../main.js";
 import { createApp } from "./routes.js";
-import { orange } from "../format/colors.js";
+import { bold } from "../format/colors.js";
 
 function getLocalIp(): string {
   const interfaces = os.networkInterfaces();
@@ -46,7 +46,7 @@ let tunnelStop: (() => void) | undefined;
 const server = serve({ fetch: app.fetch, port }, async (info) => {
   const localIp = getLocalIp();
   const localUrl = `http://${localIp}:${info.port}`;
-  console.log(`${orange("oru")} server listening on ${localUrl}`);
+  console.log(`${bold("oru")} server listening on ${localUrl}`);
 
   if (process.env.ORU_TUNNEL === "1") {
     try {

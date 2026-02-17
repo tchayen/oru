@@ -270,7 +270,7 @@ describe("filterByDue", () => {
 });
 
 describe("overdue highlighting", () => {
-  it("highlights overdue due date in red in single task view", () => {
+  it("highlights overdue due date in bold in single task view", () => {
     process.env.FORCE_COLOR = "1";
     try {
       const overdue: Task = {
@@ -278,14 +278,14 @@ describe("overdue highlighting", () => {
         due_at: "2020-01-01T00:00:00",
       };
       const output = formatTaskText(overdue);
-      // Red ANSI: \x1b[31m
-      expect(output).toContain("\x1b[31m2020-01-01\x1b[39m");
+      // Bold ANSI: \x1b[1m
+      expect(output).toContain("\x1b[1m2020-01-01\x1b[22m");
     } finally {
       delete process.env.FORCE_COLOR;
     }
   });
 
-  it("highlights overdue due date in red in list view", () => {
+  it("highlights overdue due date in bold in list view", () => {
     process.env.FORCE_COLOR = "1";
     try {
       const overdue: Task = {
@@ -293,7 +293,7 @@ describe("overdue highlighting", () => {
         due_at: "2020-01-01T00:00:00",
       };
       const output = formatTasksText([overdue]);
-      expect(output).toContain("\x1b[31m2020-01-01\x1b[39m");
+      expect(output).toContain("\x1b[1m2020-01-01");
     } finally {
       delete process.env.FORCE_COLOR;
     }
@@ -317,7 +317,7 @@ describe("overdue highlighting", () => {
       const output = formatTasksText([overdue, future]);
       const lines = output.split("\n");
       // The header line has the DUE column; check that both date rows
-      // are aligned identically — the overdue red ANSI should NOT add extra padding
+      // are aligned identically — the overdue bold ANSI should NOT add extra padding
       // Strip ANSI codes to compare raw column positions
       // eslint-disable-next-line no-control-regex
       const stripAnsi = (s: string) => s.replace(/\u001b\[\d+(;\d+)*m/g, "");
@@ -335,7 +335,7 @@ describe("overdue highlighting", () => {
     }
   });
 
-  it("does not highlight future due date in red", () => {
+  it("does not highlight future due date in bold", () => {
     process.env.FORCE_COLOR = "1";
     try {
       const future: Task = {
@@ -343,7 +343,7 @@ describe("overdue highlighting", () => {
         due_at: "2099-12-31T00:00:00",
       };
       const output = formatTaskText(future);
-      expect(output).not.toContain("\x1b[31m2099-12-31\x1b[39m");
+      expect(output).not.toContain("\x1b[1m2099-12-31\x1b[22m");
       expect(output).toContain("2099-12-31");
     } finally {
       delete process.env.FORCE_COLOR;

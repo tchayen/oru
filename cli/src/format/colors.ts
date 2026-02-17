@@ -4,7 +4,7 @@
  * - Respects NO_COLOR (https://no-color.org) and FORCE_COLOR env vars.
  * - Falls back to process.stdout.isTTY detection.
  * - Uses per-attribute close codes so styles can be nested:
- *     bold(red("hi"))  →  \x1b[1m\x1b[31mhi\x1b[39m\x1b[22m
+ *     bold("hi")  →  \x1b[1mhi\x1b[22m
  */
 
 function isEnabled(): boolean {
@@ -31,10 +31,4 @@ export const dim = make(2, 22);
 export const italic = make(3, 23);
 
 // Colors
-export const red = make(31, 39);
-export const green = make(32, 39);
-export const yellow = make(33, 39);
-export const magenta = make(35, 39);
-export const cyan = make(36, 39);
 export const white = make(37, 39);
-export const orange = make("38;5;208", 39);
