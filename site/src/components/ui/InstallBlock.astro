@@ -35,7 +35,7 @@ const { class: className = "" } = Astro.props;
       </code>
       <code class="install-cmd flex items-center gap-2.5 whitespace-nowrap col-start-1 row-start-1 invisible" data-cmd="npm" aria-hidden="true">
         <span class="text-text-muted select-none">$</span>
-        <span class="text-text-primary">npm install -g oru-cli</span>
+        <span class="text-text-primary">npm install -g @tchayen/oru</span>
       </code>
     </div>
     <button
@@ -64,7 +64,7 @@ const { class: className = "" } = Astro.props;
 <script>
   const COMMANDS: Record<string, string> = {
     curl: "curl -fsSL https://oru.sh/install | bash",
-    npm: "npm install -g oru-cli",
+    npm: "npm install -g @tchayen/oru",
   };
 
   document.addEventListener("DOMContentLoaded", () => {

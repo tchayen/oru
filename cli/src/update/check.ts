@@ -50,7 +50,7 @@ async function fetchLatestVersion(): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    const res = await fetch("https://registry.npmjs.org/oru-cli/latest", {
+    const res = await fetch("https://registry.npmjs.org/@tchayen/oru/latest", {
       signal: controller.signal,
     });
     clearTimeout(timer);

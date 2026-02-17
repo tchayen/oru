@@ -13,7 +13,7 @@ curl -fsSL https://oru.sh/install | bash
 Requires Node 22+. Or install via npm:
 
 ```bash
-npm install -g oru-cli
+npm install -g @tchayen/oru
 ```
 
 ## Quick start
@@ -81,13 +81,13 @@ Add to your MCP config:
   "mcpServers": {
     "oru": {
       "command": "npx",
-      "args": ["-p", "oru-cli@latest", "oru-mcp"]
+      "args": ["-p", "@tchayen/oru@latest", "oru-mcp"]
     }
   }
 }
 ```
 
-Or if oru is installed globally (`npm install -g oru-cli`):
+Or if oru is installed globally (`npm install -g @tchayen/oru`):
 
 ```json
 {

@@ -40,7 +40,7 @@ jobs:
           VERSION="${VERSION#v}"
           cd cli && npm version "$VERSION" --no-git-tag-version
 
-      - run: pnpm --filter oru-cli build
+      - run: pnpm --filter @tchayen/oru build
 
       - name: Create production deployment
         working-directory: cli
@@ -101,8 +101,8 @@ jobs:
           VERSION="${VERSION#v}"
           cd cli && npm version "$VERSION" --no-git-tag-version
 
-      - run: pnpm --filter oru-cli build
-      - run: pnpm --filter oru-cli publish --provenance --no-git-checks
+      - run: pnpm --filter @tchayen/oru build
+      - run: pnpm --filter @tchayen/oru publish --provenance --no-git-checks
 
   publish-gpr:
     needs: build
@@ -133,18 +133,8 @@ jobs:
           VERSION="${VERSION#v}"
           cd cli && npm version "$VERSION" --no-git-tag-version
 
-      - run: pnpm --filter oru-cli build
-
-      - name: Publish to GitHub Packages
-        working-directory: cli
-        run: |
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.name = '@tchayen/oru-cli';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
-          pnpm publish --no-git-checks
+      - run: pnpm --filter @tchayen/oru build
+      - run: pnpm --filter @tchayen/oru publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
