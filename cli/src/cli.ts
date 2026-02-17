@@ -87,7 +87,7 @@ function parseMetadata(pairs: string[]): Record<string, string | null> {
 
 function highlightInlineCommands(text: string): string {
   // Highlight command examples like "update -s done" in descriptions
-  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => bold(cmd));
+  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => white(cmd));
 }
 
 function colorizeHelp(text: string): string {
@@ -117,11 +117,11 @@ function colorizeHelp(text: string): string {
         if (term.startsWith("-")) {
           return indent + bold(term) + pad + desc;
         }
-        return indent + white(term) + pad + white(highlightInlineCommands(desc));
+        return indent + white(term) + pad + dim(highlightInlineCommands(desc));
       }
       // Continuation lines (deeply indented) in the commands section
       if (section === "commands" && line.match(/^\s{4,}\S/)) {
-        return white(highlightInlineCommands(line));
+        return dim(highlightInlineCommands(line));
       }
       return line;
     })
