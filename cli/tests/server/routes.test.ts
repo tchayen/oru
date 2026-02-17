@@ -166,7 +166,7 @@ describe("POST /tasks", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toBe("validation");
-    expect(body.message).toBe("Invalid JSON body");
+    expect(body.message).toBe("Invalid JSON body.");
   });
 });
 
@@ -489,7 +489,7 @@ describe("PATCH /tasks/:id", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toBe("validation");
-    expect(body.message).toBe("Invalid JSON body");
+    expect(body.message).toBe("Invalid JSON body.");
   });
 });
 

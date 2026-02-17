@@ -110,10 +110,16 @@ export function sendEvent(event: TelemetryEvent): void {
       body: JSON.stringify(event),
       signal: controller.signal,
     })
-      .catch(() => {})
+      .catch((err) => {
+        if (process.env.ORU_DEBUG === "1") {
+          console.error("Telemetry send failed:", err);
+        }
+      })
       .finally(() => clearTimeout(timer));
-  } catch {
-    // Never let telemetry errors affect CLI
+  } catch (err) {
+    if (process.env.ORU_DEBUG === "1") {
+      console.error("Telemetry send failed:", err);
+    }
   }
 }
 
@@ -128,8 +134,10 @@ export function showFirstRunNotice(config: Config): void {
       );
     }
     setConfigValue("telemetry_notice_shown", "true");
-  } catch {
-    // Never let notice errors affect CLI
+  } catch (err) {
+    if (process.env.ORU_DEBUG === "1") {
+      console.error("Telemetry notice failed:", err);
+    }
   }
 }
 

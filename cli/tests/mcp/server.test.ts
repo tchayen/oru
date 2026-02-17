@@ -907,8 +907,8 @@ describe("sanitizeError", () => {
   });
 
   it("passes through generic errors unchanged", () => {
-    const err = new Error("Title cannot be empty");
-    expect(sanitizeError(err)).toBe("Title cannot be empty");
+    const err = new Error("Title cannot be empty.");
+    expect(sanitizeError(err)).toBe("Title cannot be empty.");
   });
 
   it("handles non-Error values", () => {

@@ -56,7 +56,7 @@ export function parseDocument(
 ): { fields: UpdateTaskInput; newNotes: string[]; removedNotes: boolean } {
   const match = content.match(/^\+\+\+\n([\s\S]*?)\n\+\+\+/);
   if (!match) {
-    throw new Error("Invalid document format: missing +++ delimiters");
+    throw new Error("Invalid document format: missing +++ delimiters.");
   }
 
   const tomlBlock = match[1];
@@ -72,7 +72,7 @@ export function parseDocument(
   // Status
   if (typeof parsed.status === "string" && parsed.status !== existing.status) {
     if (!VALID_STATUSES.has(parsed.status)) {
-      throw new Error(`Invalid status: ${parsed.status}`);
+      throw new Error(`Invalid status: ${parsed.status}.`);
     }
     fields.status = parsed.status as Status;
   }
@@ -80,7 +80,7 @@ export function parseDocument(
   // Priority
   if (typeof parsed.priority === "string" && parsed.priority !== existing.priority) {
     if (!VALID_PRIORITIES.has(parsed.priority)) {
-      throw new Error(`Invalid priority: ${parsed.priority}`);
+      throw new Error(`Invalid priority: ${parsed.priority}.`);
     }
     fields.priority = parsed.priority as Priority;
   }
@@ -106,7 +106,7 @@ export function parseDocument(
     // Validate due date looks like an ISO date (YYYY-MM-DDTHH:MM:SS)
     if (!/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/.test(parsedDue)) {
       throw new Error(
-        `Invalid due date: ${parsedDue}. Expected format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS`,
+        `Invalid due date: ${parsedDue}. Expected format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.`,
       );
     }
     if (isNaN(new Date(parsedDue).getTime())) {

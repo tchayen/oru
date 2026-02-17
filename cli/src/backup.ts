@@ -3,15 +3,13 @@ import path from "path";
 import os from "node:os";
 import type Database from "better-sqlite3";
 
-let backupCounter = 0;
-
 /**
  * Generate a timestamped backup filename.
  */
 function backupFilename(): string {
   const now = new Date();
   const ts = now.toISOString().replace(/[:.]/g, "-").replace("Z", "");
-  return `oru-${ts}-${backupCounter++}.db`;
+  return `oru-${ts}.db`;
 }
 
 /**
@@ -65,7 +63,9 @@ export function autoBackup(
     if (shouldAutoBackup(backupPath, intervalMinutes)) {
       performBackup(db, backupPath);
     }
-  } catch {
-    // Best-effort — never break the CLI
+  } catch (err) {
+    if (process.env.ORU_DEBUG === "1") {
+      console.error("Auto-backup failed:", err);
+    }
   }
 }

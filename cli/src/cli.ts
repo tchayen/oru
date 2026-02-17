@@ -190,7 +190,7 @@ export function createProgram(
         }),
       );
     } else {
-      write(`Prefix '${err.prefix}' is ambiguous, matches: ${err.matches.join(", ")}`);
+      write(`Prefix '${err.prefix}' is ambiguous, matches: ${err.matches.join(", ")}.`);
     }
     process.exitCode = 1;
   }
@@ -199,7 +199,7 @@ export function createProgram(
     if (json) {
       write(JSON.stringify({ error: "validation", message }));
     } else {
-      write(message.endsWith(".") ? message : `${message}.`);
+      write(message);
     }
     process.exitCode = 1;
   }
@@ -233,7 +233,7 @@ export function createProgram(
 
   function validateLabels(labels: string[], json: boolean): boolean {
     if (labels.length > MAX_LABELS) {
-      validationError(json, `labels exceeds maximum of ${MAX_LABELS} items`);
+      validationError(json, `labels exceeds maximum of ${MAX_LABELS} items.`);
       return false;
     }
     const result = checkLabels(labels);
@@ -268,7 +268,7 @@ export function createProgram(
 
   function validateBlockedBy(blockedBy: string[], json: boolean): boolean {
     if (blockedBy.length > MAX_BLOCKED_BY) {
-      validationError(json, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items`);
+      validationError(json, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items.`);
       return false;
     }
     return true;
@@ -276,14 +276,14 @@ export function createProgram(
 
   function validateMetadata(metadata: Record<string, unknown>, json: boolean): boolean {
     if (Object.keys(metadata).length > MAX_METADATA_KEYS) {
-      validationError(json, `Metadata exceeds maximum of ${MAX_METADATA_KEYS} keys`);
+      validationError(json, `Metadata exceeds maximum of ${MAX_METADATA_KEYS} keys.`);
       return false;
     }
     for (const key of Object.keys(metadata)) {
       if (key.length > MAX_METADATA_KEY_LENGTH) {
         validationError(
           json,
-          `Metadata key exceeds maximum length of ${MAX_METADATA_KEY_LENGTH} characters`,
+          `Metadata key exceeds maximum length of ${MAX_METADATA_KEY_LENGTH} characters.`,
         );
         return false;
       }
@@ -292,7 +292,7 @@ export function createProgram(
       if (typeof value === "string" && value.length > MAX_METADATA_VALUE_LENGTH) {
         validationError(
           json,
-          `Metadata value exceeds maximum length of ${MAX_METADATA_VALUE_LENGTH} characters`,
+          `Metadata value exceeds maximum length of ${MAX_METADATA_VALUE_LENGTH} characters.`,
         );
         return false;
       }
@@ -377,7 +377,7 @@ export function createProgram(
           if (!parsed) {
             validationError(
               json,
-              `Could not parse due date: ${opts.due}. Try: today, tomorrow, next friday, 2026-03-01, or march 15`,
+              `Could not parse due date: ${opts.due}. Try: today, tomorrow, next friday, 2026-03-01, or march 15.`,
             );
             return;
           }
@@ -611,7 +611,7 @@ export function createProgram(
               if (!parsed) {
                 validationError(
                   json,
-                  `Could not parse due date: ${opts.due}. Try: today, tomorrow, next friday, 2026-03-01, or march 15`,
+                  `Could not parse due date: ${opts.due}. Try: today, tomorrow, next friday, 2026-03-01, or march 15.`,
                 );
                 return;
               }
@@ -1193,8 +1193,10 @@ async function main() {
   try {
     const { showFirstRunNotice } = await import("./telemetry/telemetry.js");
     showFirstRunNotice(config);
-  } catch {
-    // Never let telemetry errors affect CLI
+  } catch (err) {
+    if (process.env.ORU_DEBUG === "1") {
+      console.error("Telemetry notice failed:", err);
+    }
   }
 
   // Start non-blocking update check
@@ -1202,8 +1204,10 @@ async function main() {
   try {
     const { checkForUpdate } = await import("./update/check.js");
     updateCheckPromise = checkForUpdate(config);
-  } catch {
-    // Silently ignore if update check fails to load
+  } catch (err) {
+    if (process.env.ORU_DEBUG === "1") {
+      console.error("Update check failed:", err);
+    }
   }
 
   try {
@@ -1229,8 +1233,10 @@ async function main() {
       const event = buildEvent(command, flags, durationMs, Number(process.exitCode ?? 0));
       sendEvent(event);
     }
-  } catch {
-    // Never let telemetry errors affect CLI
+  } catch (err) {
+    if (process.env.ORU_DEBUG === "1") {
+      console.error("Telemetry send failed:", err);
+    }
   }
 
   // Print update notice after command completes
@@ -1241,8 +1247,10 @@ async function main() {
         const { printUpdateNotice } = await import("./update/check.js");
         printUpdateNotice(latestVersion);
       }
-    } catch {
-      // Never let update check errors affect CLI
+    } catch (err) {
+      if (process.env.ORU_DEBUG === "1") {
+        console.error("Update check failed:", err);
+      }
     }
   }
 }

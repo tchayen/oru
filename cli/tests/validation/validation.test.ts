@@ -48,7 +48,7 @@ describe("validateTitle", () => {
     const result = validateTitle("");
     expect(result.valid).toBe(false);
     if (!result.valid) {
-      expect(result.message).toBe("Title cannot be empty");
+      expect(result.message).toBe("Title cannot be empty.");
     }
   });
 
@@ -56,7 +56,7 @@ describe("validateTitle", () => {
     const result = validateTitle("", { required: true });
     expect(result.valid).toBe(false);
     if (!result.valid) {
-      expect(result.message).toBe("Title is required");
+      expect(result.message).toBe("Title is required.");
     }
   });
 
