@@ -5,10 +5,8 @@ import { SHOW_SERVER } from "../flags.js";
 export function generateZshCompletions(): string {
   return `#compdef oru
 # oru shell completions for zsh
-# Install:
-#   mkdir -p ~/.zsh/completions
-#   oru completions zsh > ~/.zsh/completions/_oru
-#   # Add to .zshrc before compinit: fpath=(~/.zsh/completions $fpath)
+# Install: oru completions zsh
+# Print:   oru completions zsh --print
 
 _oru() {
   local -a commands
@@ -185,9 +183,9 @@ ${
           ;;`
     : ""
 }        completions)
-          local -a shells
-          shells=(bash zsh fish)
-          _describe -t shells 'shell' shells
+          _arguments \\
+            '--print[Print completion script to stdout]' \\
+            '1:shell:(bash zsh fish)'
           ;;
         backup)
           _arguments \\

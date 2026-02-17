@@ -57,7 +57,8 @@ export function generateBashCompletions(): string {
     : "";
 
   return `# oru shell completions for bash
-# Install: oru completions bash >> ~/.bashrc
+# Install: oru completions bash
+# Print:   oru completions bash --print
 
 _oru_completions() {
   local cur prev words cword
@@ -114,7 +115,11 @@ _oru_completions() {
       ;;
 ${serverBlock}
     completions)
-      COMPREPLY=($(compgen -W "$completion_shells" -- "$cur"))
+      if [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "--print" -- "$cur"))
+      else
+        COMPREPLY=($(compgen -W "$completion_shells" -- "$cur"))
+      fi
       ;;
     list)
       if [[ "$cur" == -* ]]; then

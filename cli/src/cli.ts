@@ -1069,9 +1069,7 @@ export function createProgram(
         return;
       }
       if (!process.stdin.isTTY) {
-        write(
-          `Detected shell: ${shell}\nUse: oru completions ${shell} > <path>\nOr run interactively: oru completions`,
-        );
+        write(`Detected shell: ${shell}\nRun interactively: oru completions ${shell}`);
         process.exitCode = 1;
         return;
       }
@@ -1085,26 +1083,26 @@ export function createProgram(
       write(formatSuccessMessage(result));
     });
 
-  completionsCmd
-    .command("bash")
-    .description("Generate bash completions")
-    .action(() => {
-      write(generateBashCompletions());
-    });
-
-  completionsCmd
-    .command("zsh")
-    .description("Generate zsh completions")
-    .action(() => {
-      write(generateZshCompletions());
-    });
-
-  completionsCmd
-    .command("fish")
-    .description("Generate fish completions")
-    .action(() => {
-      write(generateFishCompletions());
-    });
+  for (const shell of ["bash", "zsh", "fish"] as const) {
+    completionsCmd
+      .command(shell)
+      .description(`Install ${shell} completions`)
+      .option("--print", "Print the completion script to stdout instead of installing")
+      .action((opts: { print?: boolean }) => {
+        if (opts.print || !process.stdout.isTTY) {
+          write(
+            shell === "bash"
+              ? generateBashCompletions()
+              : shell === "zsh"
+                ? generateZshCompletions()
+                : generateFishCompletions(),
+          );
+          return;
+        }
+        const result = installCompletions(shell, write);
+        write(formatSuccessMessage(result));
+      });
+  }
 
   // self-update
   program
