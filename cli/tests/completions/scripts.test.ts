@@ -197,6 +197,19 @@ describe("zsh completions script", () => {
   it("contains backup command", () => {
     expect(script).toContain("backup:Create a database backup snapshot");
   });
+
+  it("contains edit command", () => {
+    expect(script).toContain("edit");
+  });
+
+  it("contains --due and --overdue for list", () => {
+    expect(script).toContain("--due");
+    expect(script).toContain("--overdue");
+  });
+
+  it("contains --blocked-by for add and update", () => {
+    expect(script).toContain("--blocked-by");
+  });
 });
 
 describe("fish completions script", () => {
@@ -295,5 +308,18 @@ describe("fish completions script", () => {
 
   it("contains backup command", () => {
     expect(script).toContain("backup");
+  });
+
+  it("contains edit command", () => {
+    expect(script).toContain("edit");
+  });
+
+  it("contains --due and --overdue for list", () => {
+    expect(script).toContain("-l due");
+    expect(script).toContain("-l overdue");
+  });
+
+  it("contains --blocked-by for add and update", () => {
+    expect(script).toContain("blocked-by");
   });
 });

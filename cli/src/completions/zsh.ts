@@ -16,6 +16,7 @@ _oru() {
     'labels:List all labels in use'
     'get:Get a task by ID'
     'update:Update a task'
+    'edit:Open task in $EDITOR for complex edits'
     'delete:Delete one or more tasks'
     'done:Mark one or more tasks as done'
     'start:Start one or more tasks'
@@ -57,6 +58,7 @@ _oru() {
             '(-d --due)'{-d,--due}'[Due date]:date:' \\
             '--assign[Assign to owner]:owner:' \\
             '*'{-l,--label}'[Add labels]:label:->labels' \\
+            '(-b --blocked-by)'{-b,--blocked-by}'[Blocked by task ID]:task:' \\
             '(-n --note)'{-n,--note}'[Add a note]:note:' \\
             '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\
@@ -69,6 +71,8 @@ _oru() {
             '(-p --priority)'{-p,--priority}'[Filter by priority]:priority:('"$priority_values"')' \\
             '(-l --label)'{-l,--label}'[Filter by label]:label:->labels' \\
             '--owner[Filter by owner]:owner:' \\
+            '--due[Filter by due date]:date:' \\
+            '--overdue[Show only overdue tasks]' \\
             '--sort[Sort order]:sort:('"$sort_values"')' \\
             '--search[Search by title]:query:' \\
             '(-a --all)'{-a,--all}'[Include done tasks]' \\
@@ -98,6 +102,24 @@ _oru() {
             '--assign[Assign to owner]:owner:' \\
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '*--unlabel[Remove labels]:label:->labels' \\
+            '(-b --blocked-by)'{-b,--blocked-by}'[Blocked by task ID]:task:' \\
+            '(-n --note)'{-n,--note}'[Append a note]:note:' \\
+            '--clear-notes[Remove all notes]' \\
+            '--meta[Metadata key=value]:meta:' \\
+            '--json[Output as JSON]' \\
+            '--plaintext[Output as plain text]' \\
+            '1:task:->tasks'
+          ;;
+        edit)
+          _arguments \\
+            '(-t --title)'{-t,--title}'[New title]:title:' \\
+            '(-s --status)'{-s,--status}'[New status]:status:('"$status_values"')' \\
+            '(-p --priority)'{-p,--priority}'[New priority]:priority:('"$priority_values"')' \\
+            '(-d --due)'{-d,--due}'[Due date]:date:' \\
+            '--assign[Assign to owner]:owner:' \\
+            '*'{-l,--label}'[Add labels]:label:->labels' \\
+            '*--unlabel[Remove labels]:label:->labels' \\
+            '(-b --blocked-by)'{-b,--blocked-by}'[Blocked by task ID]:task:' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\
             '--clear-notes[Remove all notes]' \\
             '--meta[Metadata key=value]:meta:' \\

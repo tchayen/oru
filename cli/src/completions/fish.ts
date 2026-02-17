@@ -42,6 +42,7 @@ complete -c oru -n __oru_needs_command -a list -d 'List tasks'
 complete -c oru -n __oru_needs_command -a labels -d 'List all labels in use'
 complete -c oru -n __oru_needs_command -a get -d 'Get a task by ID'
 complete -c oru -n __oru_needs_command -a update -d 'Update a task'
+complete -c oru -n __oru_needs_command -a edit -d 'Open task in \\$EDITOR for complex edits'
 complete -c oru -n __oru_needs_command -a delete -d 'Delete one or more tasks'
 complete -c oru -n __oru_needs_command -a done -d 'Mark one or more tasks as done'
 complete -c oru -n __oru_needs_command -a start -d 'Start one or more tasks'
@@ -77,9 +78,10 @@ complete -c oru -n '__oru_using_command telemetry' -a status -d 'Show telemetry 
 complete -c oru -n '__oru_using_command telemetry' -a enable -d 'Enable telemetry'
 complete -c oru -n '__oru_using_command telemetry' -a disable -d 'Disable telemetry'
 
-# Task ID completions for get, update, delete, done, start
+# Task ID completions for get, update, edit, delete, done, start
 complete -c oru -n '__oru_using_command get' -a '(__oru_task_ids)'
 complete -c oru -n '__oru_using_command update' -a '(__oru_task_ids)'
+complete -c oru -n '__oru_using_command edit' -a '(__oru_task_ids)'
 complete -c oru -n '__oru_using_command delete' -a '(__oru_task_ids)'
 complete -c oru -n '__oru_using_command done' -a '(__oru_task_ids)'
 complete -c oru -n '__oru_using_command start' -a '(__oru_task_ids)'
@@ -92,21 +94,25 @@ complete -c oru -n '__oru_using_command backup' -a '(__fish_complete_directories
 # sync gets file completions
 complete -c oru -n '__oru_using_command sync' -F
 
-# Status flag for add, list, update
+# Status flag for add, list, update, edit
 complete -c oru -n '__oru_using_command add' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
 complete -c oru -n '__oru_using_command list' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
 complete -c oru -n '__oru_using_command update' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
+complete -c oru -n '__oru_using_command edit' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
 
-# Priority flag for add, list, update
+# Priority flag for add, list, update, edit
 complete -c oru -n '__oru_using_command add' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
 complete -c oru -n '__oru_using_command list' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
 complete -c oru -n '__oru_using_command update' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
+complete -c oru -n '__oru_using_command edit' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
 
 # Label flag
 complete -c oru -n '__oru_using_command add' -s l -l label -a '(__oru_labels)' -d 'Label' -r
 complete -c oru -n '__oru_using_command list' -s l -l label -a '(__oru_labels)' -d 'Label' -r
 complete -c oru -n '__oru_using_command update' -s l -l label -a '(__oru_labels)' -d 'Label' -r
+complete -c oru -n '__oru_using_command edit' -s l -l label -a '(__oru_labels)' -d 'Label' -r
 complete -c oru -n '__oru_using_command update' -l unlabel -a '(__oru_labels)' -d 'Remove label' -r
+complete -c oru -n '__oru_using_command edit' -l unlabel -a '(__oru_labels)' -d 'Remove label' -r
 
 # Common flags
 complete -c oru -n '__oru_using_command labels' -l json -d 'Output as JSON'
@@ -117,11 +123,14 @@ complete -c oru -n '__oru_using_command add' -s d -l due -d 'Due date' -r
 complete -c oru -n '__oru_using_command add' -s n -l note -d 'Add a note' -r
 complete -c oru -n '__oru_using_command add' -l id -d 'Task ID' -r
 complete -c oru -n '__oru_using_command add' -l assign -d 'Assign to owner' -r
+complete -c oru -n '__oru_using_command add' -s b -l blocked-by -d 'Blocked by task ID' -r
 complete -c oru -n '__oru_using_command add' -l meta -d 'Metadata key=value' -r
 complete -c oru -n '__oru_using_command list' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command list' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command list' -l search -d 'Search by title' -r
 complete -c oru -n '__oru_using_command list' -l owner -d 'Filter by owner' -r
+complete -c oru -n '__oru_using_command list' -l due -d 'Filter by due date' -r
+complete -c oru -n '__oru_using_command list' -l overdue -d 'Show only overdue tasks'
 complete -c oru -n '__oru_using_command list' -l sort -a '${SORT_FIELDS.join(" ")}' -d 'Sort order' -r
 complete -c oru -n '__oru_using_command list' -s a -l all -d 'Include done tasks'
 complete -c oru -n '__oru_using_command list' -l actionable -d 'Show only actionable tasks'
@@ -136,7 +145,17 @@ complete -c oru -n '__oru_using_command update' -s d -l due -d 'Due date' -r
 complete -c oru -n '__oru_using_command update' -s n -l note -d 'Append a note' -r
 complete -c oru -n '__oru_using_command update' -l assign -d 'Assign to owner' -r
 complete -c oru -n '__oru_using_command update' -l clear-notes -d 'Remove all notes'
+complete -c oru -n '__oru_using_command update' -s b -l blocked-by -d 'Blocked by task ID' -r
 complete -c oru -n '__oru_using_command update' -l meta -d 'Metadata key=value' -r
+complete -c oru -n '__oru_using_command edit' -l json -d 'Output as JSON'
+complete -c oru -n '__oru_using_command edit' -l plaintext -d 'Output as plain text'
+complete -c oru -n '__oru_using_command edit' -s t -l title -d 'New title' -r
+complete -c oru -n '__oru_using_command edit' -s d -l due -d 'Due date' -r
+complete -c oru -n '__oru_using_command edit' -s n -l note -d 'Append a note' -r
+complete -c oru -n '__oru_using_command edit' -l assign -d 'Assign to owner' -r
+complete -c oru -n '__oru_using_command edit' -l clear-notes -d 'Remove all notes'
+complete -c oru -n '__oru_using_command edit' -s b -l blocked-by -d 'Blocked by task ID' -r
+complete -c oru -n '__oru_using_command edit' -l meta -d 'Metadata key=value' -r
 complete -c oru -n '__oru_using_command delete' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command delete' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command done' -l json -d 'Output as JSON'
