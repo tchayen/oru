@@ -865,6 +865,30 @@ describe("oplog replay", () => {
     expect(task!.owner).toBe("human");
   });
 
+  it("normalizes empty string owner to null in create op", async () => {
+    replayOps(db, [
+      makeOp({
+        id: "op-1",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          owner: "",
+          labels: [],
+          notes: [],
+          metadata: {},
+        }),
+        timestamp: "2024-01-01T00:00:00.000Z",
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    // Empty string owner from create op should be normalized to null
+    expect(task!.owner).toBeNull();
+  });
+
   it("clears owner with empty value", async () => {
     replayOps(db, [
       makeOp({
