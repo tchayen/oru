@@ -13,7 +13,7 @@ import { Image } from "expo-image";
 import { ConnectionContext } from "@/hooks/use-connection";
 import { useTasks } from "@/hooks/use-tasks";
 import { TaskRow } from "@/components/task-row";
-import type { Task, Status } from "@/utils/api";
+import type { Task } from "@/utils/api";
 import { NEXT_STATUS } from "@/utils/task-constants";
 
 export default function TaskListScreen() {
