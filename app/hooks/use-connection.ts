@@ -4,6 +4,7 @@ import {
   setServerUrl as storeServerUrl,
   getAuthToken,
   setAuthToken as storeAuthToken,
+  clearAuthToken,
   clearConnection,
 } from "@/utils/connection";
 
@@ -42,6 +43,8 @@ export function useConnectionProvider(): ConnectionState {
     await storeServerUrl(url);
     if (token) {
       await storeAuthToken(token);
+    } else {
+      await clearAuthToken();
     }
     setServerUrl(url);
     setAuthToken(token);

@@ -19,6 +19,10 @@ export async function setAuthToken(token: string): Promise<void> {
   await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
 }
 
+export async function clearAuthToken(): Promise<void> {
+  await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+}
+
 export async function clearConnection(): Promise<void> {
   await SecureStore.deleteItemAsync(SERVER_URL_KEY);
   await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
