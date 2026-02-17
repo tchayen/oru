@@ -49,7 +49,7 @@ import {
   confirm,
   formatSuccessMessage,
 } from "./completions/index.js";
-import { dim, yellow, orange, white } from "./format/colors.js";
+import { bold, dim, white } from "./format/colors.js";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
 import { performBackup } from "./backup.js";
 import {
@@ -87,7 +87,7 @@ function parseMetadata(pairs: string[]): Record<string, string | null> {
 
 function highlightInlineCommands(text: string): string {
   // Highlight command examples like "update -s done" in descriptions
-  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => yellow(cmd));
+  return text.replace(/\b(update -s \w+)\b/g, (_, cmd) => white(cmd));
 }
 
 function colorizeHelp(text: string): string {
@@ -98,12 +98,12 @@ function colorizeHelp(text: string): string {
       // Section headers: "Options:", "Commands:", "Arguments:"
       if (/^(Options|Commands|Arguments):$/.test(line)) {
         section = line.slice(0, -1).toLowerCase();
-        return orange(line);
+        return bold(line);
       }
       // Usage line: "Usage: oru [options] [command]"
       if (line.startsWith("Usage: ")) {
         section = "";
-        return orange("Usage:") + " " + line.slice(7);
+        return bold("Usage:") + " " + line.slice(7);
       }
       // Non-indented non-empty lines reset section (e.g. description text)
       if (line.trim() !== "" && !line.startsWith(" ")) {
@@ -115,7 +115,7 @@ function colorizeHelp(text: string): string {
       if (entryMatch) {
         const [, indent, term, pad, desc] = entryMatch;
         if (term.startsWith("-")) {
-          return indent + yellow(term) + pad + desc;
+          return indent + bold(term) + pad + desc;
         }
         return indent + white(term) + pad + dim(highlightInlineCommands(desc));
       }
@@ -154,7 +154,7 @@ export function createProgram(
   const service = new TaskService(ky, deviceId);
   const program = new Command("oru")
     .description(
-      `${orange("oru")} — personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file. Set ORU_DEBUG=1 for verbose error output.`,
+      `${bold("oru")} — personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file. Set ORU_DEBUG=1 for verbose error output.`,
     )
     .version(`${__VERSION__} (${__GIT_COMMIT__})`);
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { bold, dim, italic, red, green, yellow, cyan } from "../../src/format/colors.js";
+import { bold, dim, italic, white } from "../../src/format/colors.js";
 
 let savedForceColor: string | undefined;
 let savedNoColor: string | undefined;
@@ -37,30 +37,18 @@ describe("colors", () => {
     expect(italic("hello")).toBe("\x1b[3mhello\x1b[23m");
   });
 
-  it("red wraps text", () => {
-    expect(red("error")).toBe("\x1b[31merror\x1b[39m");
-  });
-
-  it("green wraps text", () => {
-    expect(green("ok")).toBe("\x1b[32mok\x1b[39m");
-  });
-
-  it("yellow wraps text", () => {
-    expect(yellow("warn")).toBe("\x1b[33mwarn\x1b[39m");
-  });
-
-  it("cyan wraps text", () => {
-    expect(cyan("info")).toBe("\x1b[36minfo\x1b[39m");
+  it("white wraps text", () => {
+    expect(white("text")).toBe("\x1b[37mtext\x1b[39m");
   });
 
   it("styles can be nested", () => {
-    expect(bold(red("important"))).toBe("\x1b[1m\x1b[31mimportant\x1b[39m\x1b[22m");
+    expect(bold(white("important"))).toBe("\x1b[1m\x1b[37mimportant\x1b[39m\x1b[22m");
   });
 
   it("NO_COLOR disables output", () => {
     process.env.NO_COLOR = "";
     expect(bold("hello")).toBe("hello");
-    expect(red("hello")).toBe("hello");
+    expect(white("hello")).toBe("hello");
   });
 
   it("NO_COLOR takes precedence over FORCE_COLOR", () => {
