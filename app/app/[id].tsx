@@ -13,30 +13,8 @@ import { Picker, Host, ContextMenu, Button, DateTimePicker } from "@expo/ui/swif
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ConnectionContext } from "@/hooks/use-connection";
-import {
-  type Task,
-  type Status,
-  type Priority,
-  fetchTask,
-  updateTask,
-  deleteTask,
-} from "@/utils/api";
-
-const STATUSES: Status[] = ["todo", "in_progress", "in_review", "done"];
-
-const STATUS_LABELS: Record<Status, string> = {
-  todo: "To Do",
-  in_progress: "In Progress",
-  in_review: "In Review",
-  done: "Done",
-};
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-};
+import { type Task, type Priority, fetchTask, updateTask, deleteTask } from "@/utils/api";
+import { STATUSES, STATUS_LABELS, PRIORITY_LABELS } from "@/utils/task-constants";
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

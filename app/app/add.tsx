@@ -6,13 +6,7 @@ import { Stack, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { ConnectionContext } from "@/hooks/use-connection";
 import { type Priority, createTask } from "@/utils/api";
-
-const PRIORITY_LABELS: Record<Priority, string> = {
-  urgent: "Urgent",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-};
+import { PRIORITY_LABELS } from "@/utils/task-constants";
 
 export default function AddTaskScreen() {
   const { serverUrl, authToken } = use(ConnectionContext);
