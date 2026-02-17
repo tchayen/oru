@@ -20,6 +20,7 @@ import {
   MAX_METADATA_KEYS,
   MAX_METADATA_KEY_LENGTH,
   MAX_METADATA_VALUE_LENGTH,
+  sanitizeTitle,
 } from "../validation.js";
 
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
@@ -239,7 +240,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
     }
     // Sanitize title before validation
     if (typeof raw.title === "string") {
-      raw.title = raw.title.replace(/[\r\n]+/g, " ").trim();
+      raw.title = sanitizeTitle(raw.title);
     }
     const result = createTaskSchema.safeParse(raw);
     if (!result.success) {
@@ -273,7 +274,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
     }
     // Sanitize title before validation
     if (typeof raw.title === "string") {
-      raw.title = raw.title.replace(/[\r\n]+/g, " ").trim();
+      raw.title = sanitizeTitle(raw.title);
     }
     const result = updateTaskSchema.safeParse(raw);
     if (!result.success) {
