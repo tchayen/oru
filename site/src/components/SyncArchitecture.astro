@@ -145,7 +145,7 @@ import Card from "./ui/Card.astro";
 
     <div class="sync-rules grid grid-cols-3 gap-6 max-md:grid-cols-1">
       <Card class="sync-card reveal" data-delay="80">
-        <h4 class="mb-3 text-[16px]">Last-write-wins per field</h4>
+        <h4 class="mb-3 ">Last-write-wins per field</h4>
         <p class="body-sm text-text-tertiary">
           Change the title on your phone and the priority on your laptop. Both
           edits survive. Conflicts are resolved at the field level, not the task
@@ -153,14 +153,14 @@ import Card from "./ui/Card.astro";
         </p>
       </Card>
       <Card class="sync-card reveal" data-delay="160">
-        <h4 class="mb-3 text-[16px]">Updates beat deletes</h4>
+        <h4 class="mb-3 ">Updates beat deletes</h4>
         <p class="body-sm text-text-tertiary">
           If one device deletes a task and another updates it, the task comes
           back. Intent to modify is stronger than intent to remove.
         </p>
       </Card>
       <Card class="sync-card reveal" data-delay="240">
-        <h4 class="mb-3 text-[16px]">Sequence-based cursoring</h4>
+        <h4 class="mb-3 ">Sequence-based cursoring</h4>
         <p class="body-sm text-text-tertiary">
           Sync uses monotonic sequence numbers, not timestamps. No
           same-millisecond bugs. No clock drift issues. Each device tracks

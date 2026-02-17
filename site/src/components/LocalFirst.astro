@@ -14,7 +14,7 @@ import { SHOW_APP } from "../flags";
         <p class="body-lg text-text-secondary mb-4">
           oru stores everything in a single SQLite database at
           <code
-            class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-accent"
+            class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-text-primary"
             >~/.oru/oru.db</code
           >. No accounts. No cloud. No third-party servers between you and your
           tasks.
@@ -27,11 +27,11 @@ import { SHOW_APP } from "../flags";
 
       <div class="mt-12 reveal" data-delay="160">
         <h4 class="mb-2">No sign-up. No login. No tokens.</h4>
-        <p class="body-sm text-text-tertiary mb-4">
+        <p class="body text-text-tertiary mb-4">
           Install it. Use it. There is no onboarding flow, no email field, no
           OAuth redirect. The database is created on first run. That is the
           entire setup. Want to leave? <code
-            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
+            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-text-primary"
             >cp ~/.oru/oru.db</code
           > and you have everything.
         </p>
@@ -77,9 +77,9 @@ import { SHOW_APP } from "../flags";
           <div class="w-px h-full bg-border-default"></div>
         </div>
         <div
-          class="diagram-db flex flex-col items-center gap-1 py-6 px-8 bg-bg-surface border border-accent-border rounded-xl w-full text-center shadow-[0_0_32px_rgba(234,88,12,0.08)] animate-db-pulse transition-[border-color] duration-300 ease-out-expo hover:border-accent"
+          class="diagram-db flex flex-col items-center gap-1 py-6 px-8 bg-bg-surface border-2 border-text-primary rounded-xl w-full text-center transition-[border-color] duration-300 ease-out-expo"
         >
-          <div class="text-accent mb-1">
+          <div class="text-text-primary mb-1">
             <svg
               width="20"
               height="20"
@@ -158,11 +158,3 @@ import { SHOW_APP } from "../flags";
     </div>
   </div>
 </section>
-
-<style>
-  @media (prefers-reduced-motion: reduce) {
-    .diagram-db {
-      animation: none;
-    }
-  }
-</style>

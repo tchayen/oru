@@ -9,7 +9,7 @@ const { title = "terminal", class: className = "" } = Astro.props;
 
 <div
   class:list={[
-    "terminal bg-bg-inset border border-border-default rounded-2xl overflow-hidden min-w-0 shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_4px_24px_rgba(0,0,0,0.4),0_24px_80px_rgba(0,0,0,0.5)] transition-[border-color,box-shadow] duration-300 ease-out-expo",
+    "terminal bg-bg-inset border border-border-default rounded-2xl overflow-hidden min-w-0 shadow-[0_4px_24px_rgba(0,0,0,0.4),0_24px_80px_rgba(0,0,0,0.3)] transition-[border-color,box-shadow] duration-300 ease-out-expo",
     className,
   ]}
 >
@@ -30,26 +30,24 @@ const { title = "terminal", class: className = "" } = Astro.props;
 
 <style>
   .terminal:hover {
-    border-color: var(--color-accent-border);
+    border-color: var(--color-border-hover);
     box-shadow:
-      0 0 0 1px rgba(234, 88, 12, 0.1),
-      0 0 24px rgba(234, 88, 12, 0.06),
-      0 4px 24px rgba(0, 0, 0, 0.4),
-      0 24px 80px rgba(0, 0, 0, 0.5);
+      0 4px 24px rgba(0, 0, 0, 0.5),
+      0 24px 80px rgba(0, 0, 0, 0.4);
   }
 
   .terminal:hover .terminal-dot:nth-child(1) {
-    background: #ef4444;
+    background: #666;
   }
   .terminal:hover .terminal-dot:nth-child(2) {
-    background: #eab308;
+    background: #666;
   }
   .terminal:hover .terminal-dot:nth-child(3) {
-    background: #22c55e;
+    background: #666;
   }
 
   .terminal-body :global(.prompt) {
-    color: var(--color-accent);
+    color: var(--color-text-primary);
     user-select: none;
   }
   .terminal-body :global(.cmd) {
@@ -83,6 +81,28 @@ const { title = "terminal", class: className = "" } = Astro.props;
   .terminal-body :global(.blank) {
     display: block;
     height: 1.7em;
+  }
+
+  .terminal-body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+
+  .terminal-body::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .terminal-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .terminal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+  }
+
+  .terminal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
   }
 
   @media (prefers-reduced-motion: reduce) {

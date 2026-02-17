@@ -1,85 +1,44 @@
 ---
-import Badge from "./ui/Badge.astro";
-import InstallBlock from "./ui/InstallBlock.astro";
-import Button from "./ui/Button.astro";
 import { SHOW_APP } from "../flags";
+import InstallBlock from "./ui/InstallBlock.astro";
 ---
 
 <section class="hero relative pt-32 pb-24 bg-bg-base overflow-hidden max-sm:pt-20 max-sm:pb-16">
-  <div
-    class="absolute -top-[200px] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(234,88,12,0.06)_0%,rgba(234,88,12,0.02)_40%,transparent_70%)] pointer-events-none"
-  ></div>
   <div class="container flex flex-col items-center text-center relative z-1">
-    <Badge class="reveal hero-badge">your tasks, managed by your agent</Badge>
-    <h1
-      class="display max-w-[800px] mt-6 mb-6 reveal"
-      data-delay="80"
-    >
-      A task manager your AI <span class="hero-shimmer"
-        >agent</span
-      > can operate.
-    </h1>
-    <p class={`body-lg max-w-[640px] text-text-secondary reveal ${SHOW_APP ? "mb-8" : "mb-12"}`} data-delay="160">
+    <div class="hero-ascii reveal mb-8 max-sm:mb-6" aria-label="oru">
+      <pre class="ascii-art font-mono text-text-primary leading-none select-none" role="img" aria-hidden="true">{` ██████╗ ██████╗ ██╗   ██╗
+██╔═══██╗██╔══██╗██║   ██║
+██║   ██║██████╔╝██║   ██║
+██║   ██║██╔══██╗██║   ██║
+╚██████╔╝██║  ██║╚██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝`}</pre>
+    </div>
+    <p class="font-mono text-sm text-text-tertiary mb-6 tracking-wide reveal" data-delay="80">
+      your tasks, managed by your agent
+    </p>
+    <p class="body-lg max-w-[640px] text-text-secondary mb-10 reveal" data-delay="160">
       Local-first CLI for personal tasks. SQLite database on your machine,
       offline sync, JSON output for agents. No accounts. No cloud.
     </p>
+
     {SHOW_APP && (
       <p class="body text-text-tertiary max-w-[480px] mb-12 reveal" data-delay="200">
         With a native iOS companion for when you are away from the terminal.
       </p>
     )}
-    <div
-      class="hero-cta flex items-center gap-4 flex-wrap justify-center reveal max-sm:flex-col max-sm:w-full"
-      data-delay="240"
-    >
+
+    <div class="reveal max-sm:w-full" data-delay="240">
       <InstallBlock />
-      <Button variant="secondary" href="https://github.com/tchayen/oru">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-          ></path>
-        </svg>
-        View on GitHub
-      </Button>
     </div>
+
   </div>
 </section>
 
 <style>
-  .hero-shimmer {
-    background: linear-gradient(
-      90deg,
-      var(--color-accent) 0%,
-      var(--color-accent-hover) 40%,
-      #fb923c 60%,
-      var(--color-accent) 100%
-    );
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 5s linear infinite;
-  }
-
-  :global(.hero-badge) {
-    animation: badge-pulse 2s ease-in-out 0.4s 3;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-shimmer {
-      animation: none;
-      background-position: 0% 50%;
-    }
-
-    :global(.hero-badge) {
-      animation: none;
-    }
-  }
-
-  @media (max-width: 639px) {
-    .hero-cta :global(.install-block) {
-      width: 100%;
-      justify-content: space-between;
-    }
+  .ascii-art {
+    font-size: clamp(10px, 2.8vw, 28px);
+    letter-spacing: 0.02em;
+    white-space: pre;
+    line-height: 1.1;
   }
 </style>
