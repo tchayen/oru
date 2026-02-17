@@ -55,11 +55,11 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 ## Commands
 
 ```bash
-pnpm test          # run all tests (delegates to cli workspace)
-pnpm lint          # oxlint
-pnpm fmt           # oxfmt (fix)
-pnpm fmt:check     # oxfmt (check only)
-pnpm build         # tsup → cli/dist/cli.js
+pnpm test            # run all tests (delegates to cli workspace)
+pnpm lint            # oxlint
+pnpm fmt             # oxfmt (fix)
+pnpm fmt:check       # oxfmt (check only)
+pnpm build           # tsup → cli/dist/cli.js
 cd app && pnpm tsgo  # type check the app
 ```
 

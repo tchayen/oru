@@ -85,11 +85,11 @@ When MCP is not available, use the CLI directly with `--json` for structured
 output:
 
 ```bash
-oru context --json               # what needs attention
-oru list --json                  # all active tasks
+oru context --json                           # what needs attention
+oru list --json                              # all active tasks
 oru add "Fix bug" -p high -d tomorrow --json
 oru update <id> -s done --json
-oru done <id>                    # shorthand for marking done
+oru done <id>                                # shorthand for marking done
 ```
 
 Set `ORU_FORMAT=json` or `output_format = "json"` in

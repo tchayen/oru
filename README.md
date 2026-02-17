@@ -115,7 +115,7 @@ Or if oru is installed globally (`npm install -g oru-cli`):
 ## Configuration
 
 ```bash
-oru config init    # creates ~/.oru/config.toml with documented options
+oru config init # creates ~/.oru/config.toml with documented options
 ```
 
 Key options:
