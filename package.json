@@ -7,7 +7,7 @@
     "test": "pnpm --filter oru-cli test",
     "build": "pnpm --filter oru-cli build",
     "dev": "pnpm --filter oru-cli dev",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",

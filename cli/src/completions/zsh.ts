@@ -213,8 +213,8 @@ ${
           if (( \${#task_ids} )); then
             local -a descriptions
             for entry in $task_ids; do
-              local id=\${entry%%\$'\\t'*}
-              local title=\${entry#*\$'\\t'}
+              local id=\${entry%%$'\\t'*}
+              local title=\${entry#*$'\\t'}
               descriptions+=("\${id}:\${title}")
             done
             _describe -t tasks 'task' descriptions

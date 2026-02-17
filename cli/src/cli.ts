@@ -16,7 +16,6 @@ import {
   filterByDue,
   formatContextText,
   type DueFilter,
-  type ContextSections,
 } from "./format/text.js";
 import {
   formatTaskJson,
@@ -58,8 +57,6 @@ import {
   validateTitle as checkTitle,
   validateNote as checkNote,
   validateLabels as checkLabels,
-  MAX_TITLE_LENGTH,
-  MAX_NOTE_LENGTH,
   MAX_LABELS,
   MAX_BLOCKED_BY,
   MAX_METADATA_KEYS,
