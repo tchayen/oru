@@ -25,6 +25,15 @@ import {
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
 
+const dueAtSchema = z
+  .string()
+  .regex(
+    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/,
+    "Invalid date format. Expected YYYY-MM-DD, YYYY-MM-DDTHH:MM, or YYYY-MM-DDTHH:MM:SS.",
+  )
+  .nullable()
+  .optional();
+
 const metadataSchema = z
   .record(z.string(), z.unknown())
   .refine(
@@ -56,7 +65,7 @@ const createTaskSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => (v === "" ? null : v)),
-  due_at: z.string().nullable().optional(),
+  due_at: dueAtSchema,
   blocked_by: z
     .array(z.string())
     .max(MAX_BLOCKED_BY, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items.`)
@@ -92,7 +101,7 @@ const updateTaskSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => (v === "" ? null : v)),
-  due_at: z.string().nullable().optional(),
+  due_at: dueAtSchema,
   blocked_by: z
     .array(z.string())
     .max(MAX_BLOCKED_BY, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items.`)

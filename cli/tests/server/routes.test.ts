@@ -160,6 +160,46 @@ describe("POST /tasks", () => {
     expect(task.owner).toBeNull();
   });
 
+  it("returns 400 for invalid due_at format", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", due_at: "banana" });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+    expect(body.message).toContain("Invalid date format");
+  });
+
+  it("returns 400 for due_at with trailing garbage", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", due_at: "2026-02-15T10:00:00Z" });
+    expect(res.status).toBe(400);
+  });
+
+  it("accepts due_at as YYYY-MM-DD", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", due_at: "2026-03-15" });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.due_at).toBe("2026-03-15");
+  });
+
+  it("accepts due_at as YYYY-MM-DDTHH:MM", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", due_at: "2026-03-15T10:30" });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.due_at).toBe("2026-03-15T10:30");
+  });
+
+  it("accepts due_at as YYYY-MM-DDTHH:MM:SS", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", due_at: "2026-03-15T10:30:00" });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.due_at).toBe("2026-03-15T10:30:00");
+  });
+
+  it("accepts due_at as null", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", due_at: null });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.due_at).toBeNull();
+  });
   it("returns 400 for invalid JSON body", async () => {
     const init: RequestInit = {
       method: "POST",
@@ -480,6 +520,31 @@ describe("PATCH /tasks/:id", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.title).toBe("New title");
+  });
+
+  it("returns 400 for invalid due_at format", async () => {
+    const task = await service.add({ title: "Test" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { due_at: "not-a-date" });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+    expect(body.message).toContain("Invalid date format");
+  });
+
+  it("accepts valid due_at in PATCH", async () => {
+    const task = await service.add({ title: "Test" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { due_at: "2026-06-01T14:00" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.due_at).toBe("2026-06-01T14:00");
+  });
+
+  it("clears due_at with null in PATCH", async () => {
+    const task = await service.add({ title: "Test", due_at: "2026-06-01T14:00:00" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { due_at: null });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.due_at).toBeNull();
   });
 
   it("returns current task when no updates provided", async () => {
