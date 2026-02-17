@@ -501,7 +501,7 @@ describe("task repository", () => {
     });
 
     it("getTask with full exact ID still works", async () => {
-      const task = await createTask(ky, { id: "exact-full-id-12345678", title: "Exact match" });
+      await createTask(ky, { id: "exact-full-id-12345678", title: "Exact match" });
       const found = await getTask(ky, "exact-full-id-12345678");
       expect(found).toBeDefined();
       expect(found!.id).toBe("exact-full-id-12345678");
@@ -534,7 +534,7 @@ describe("task repository", () => {
     });
 
     it("getTask prefix matching ignores deleted tasks", async () => {
-      const task1 = await createTask(ky, { id: "prefix-match-1", title: "Task 1" });
+      await createTask(ky, { id: "prefix-match-1", title: "Task 1" });
       await createTask(ky, { id: "prefix-match-2", title: "Task 2" });
 
       // Delete task 2

@@ -4,7 +4,6 @@ import type { TaskService } from "../main.js";
 import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import type { CreateTaskInput, UpdateTaskInput } from "../tasks/types.js";
 import type { ListFilters } from "../tasks/repository.js";
-import type { ContextSections } from "../format/text.js";
 
 declare const __VERSION__: string;
 
