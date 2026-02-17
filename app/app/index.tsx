@@ -14,13 +14,7 @@ import { ConnectionContext } from "@/hooks/use-connection";
 import { useTasks } from "@/hooks/use-tasks";
 import { TaskRow } from "@/components/task-row";
 import type { Task, Status } from "@/utils/api";
-
-const NEXT_STATUS: Record<Status, Status> = {
-  todo: "in_progress",
-  in_progress: "in_review",
-  in_review: "done",
-  done: "todo",
-};
+import { NEXT_STATUS } from "@/utils/task-constants";
 
 export default function TaskListScreen() {
   const { serverUrl, authToken, disconnect } = use(ConnectionContext);
