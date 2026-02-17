@@ -4,7 +4,8 @@ import { SHOW_SERVER } from "../flags.js";
 
 export function generateFishCompletions(): string {
   return `# oru shell completions for fish
-# Install: oru completions fish > ~/.config/fish/completions/oru.fish
+# Install: oru completions fish
+# Print:   oru completions fish --print
 
 function __oru_task_ids
   oru _complete tasks (commandline -ct) 2>/dev/null | while read -l line
@@ -69,6 +70,7 @@ complete -c oru -n '__oru_using_subcommand server start' -l tunnel -d 'Create a 
     : ""
 }# completions subcommands
 complete -c oru -n '__oru_using_command completions' -a 'bash zsh fish'
+complete -c oru -n '__oru_using_command completions' -l print -d 'Print completion script to stdout'
 
 # telemetry subcommands
 complete -c oru -n '__oru_using_command telemetry' -a status -d 'Show telemetry status'
