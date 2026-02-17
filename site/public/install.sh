@@ -90,9 +90,9 @@ resolve_version() {
   info "Fetching latest version..."
 
   if command -v curl >/dev/null 2>&1; then
-    VERSION="$(curl -fsSL https://registry.npmjs.org/oru-cli/latest | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)"
+    VERSION="$(curl -fsSL https://registry.npmjs.org/@tchayen/oru/latest | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)"
   elif command -v wget >/dev/null 2>&1; then
-    VERSION="$(wget -qO- https://registry.npmjs.org/oru-cli/latest | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)"
+    VERSION="$(wget -qO- https://registry.npmjs.org/@tchayen/oru/latest | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)"
   else
     error "curl or wget is required"
   fi

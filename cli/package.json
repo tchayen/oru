@@ -1,5 +1,5 @@
 {
-  "name": "oru-cli",
+  "name": "@tchayen/oru",
   "version": "0.1.0",
   "description": "oru — agent-friendly todo CLI with offline sync",
   "keywords": [

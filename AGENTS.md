@@ -14,13 +14,13 @@ MCP-compatible agent):
   "mcpServers": {
     "oru": {
       "command": "npx",
-      "args": ["-p", "oru-cli@latest", "oru-mcp"]
+      "args": ["-p", "@tchayen/oru@latest", "oru-mcp"]
     }
   }
 }
 ```
 
-If oru is installed globally (`npm install -g oru-cli`), use
+If oru is installed globally (`npm install -g @tchayen/oru`), use
 `"command": "oru-mcp"` instead.
 
 ## Available MCP tools

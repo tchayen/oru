@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "pnpm --filter oru-cli test",
-    "build": "pnpm --filter oru-cli build",
-    "dev": "pnpm --filter oru-cli dev",
+    "test": "pnpm --filter @tchayen/oru test",
+    "build": "pnpm --filter @tchayen/oru build",
+    "dev": "pnpm --filter @tchayen/oru dev",
     "lint": "oxlint --deny-warnings",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
