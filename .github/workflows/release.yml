@@ -1,12 +1,8 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
-
-permissions:
-  contents: write
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -38,6 +34,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Set version from tag
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          cd cli && npm version "$VERSION" --no-git-tag-version
+
       - run: pnpm --filter oru-cli build
 
       - name: Create production deployment
@@ -49,16 +51,15 @@ jobs:
       - name: Package tarball
         working-directory: cli
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
           TARBALL_DIR="oru-v${VERSION}-${{ matrix.platform }}"
           mkdir -p "$TARBALL_DIR"
 
-          # Copy built artifacts
           cp -r staging/dist "$TARBALL_DIR/"
           cp -r staging/node_modules "$TARBALL_DIR/"
           cp staging/package.json "$TARBALL_DIR/"
 
-          # Create wrapper script
           cat > "$TARBALL_DIR/oru" <<'WRAPPER'
           #!/bin/sh
           exec node "$(dirname "$0")/dist/cli.js" "$@"
@@ -75,6 +76,9 @@ jobs:
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -90,22 +94,90 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter oru-cli build
-      - run: pnpm --filter oru-cli publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  create-release:
-    needs: [build, publish-npm]
+      - name: Set version from tag
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          cd cli && npm version "$VERSION" --no-git-tag-version
+
+      - run: pnpm --filter oru-cli build
+      - run: pnpm --filter oru-cli publish --provenance --no-git-checks
+
+  publish-gpr:
+    needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: "@tchayen"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Set version from tag
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          cd cli && npm version "$VERSION" --no-git-tag-version
+
+      - run: pnpm --filter oru-cli build
+
+      - name: Publish to GitHub Packages
+        working-directory: cli
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.name = '@tchayen/oru-cli';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets:
+    needs: [build, publish-npm, publish-gpr]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_TOKEN: ${{ github.token }}
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/*.tar.gz
-          generate_release_notes: true
+      - name: Update release with changelog and assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release edit "${{ github.event.release.tag_name }}" \
+            --notes-file CHANGELOG.md
+          gh release upload "${{ github.event.release.tag_name }}" \
+            artifacts/*.tar.gz --clobber
