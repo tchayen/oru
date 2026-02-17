@@ -200,6 +200,21 @@ describe("POST /tasks", () => {
     const task = await res.json();
     expect(task.due_at).toBeNull();
   });
+
+  it("returns existing task with 200 when id already exists", async () => {
+    const id = "01963e00-0000-7000-8000-000000000001";
+    const res1 = await req("POST", "/tasks", { title: "Idempotent", id });
+    expect(res1.status).toBe(201);
+    const task1 = await res1.json();
+    expect(task1.id).toBe(id);
+    expect(task1.title).toBe("Idempotent");
+
+    const res2 = await req("POST", "/tasks", { title: "Idempotent", id });
+    expect(res2.status).toBe(200);
+    const task2 = await res2.json();
+    expect(task2.id).toBe(id);
+    expect(task2.title).toBe("Idempotent");
+  });
   it("returns 400 for invalid JSON body", async () => {
     const init: RequestInit = {
       method: "POST",

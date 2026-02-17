@@ -249,6 +249,14 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
     const { title, status, priority, owner, due_at, blocked_by, labels, notes, metadata, id } =
       result.data;
 
+    // Idempotent create: if id is provided and task already exists, return it
+    if (id) {
+      const existing = await service.get(id);
+      if (existing) {
+        return c.json(existing, 200);
+      }
+    }
+
     const task = await service.add({
       id,
       title,
