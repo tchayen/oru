@@ -8,8 +8,12 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
         btn.classList.add("copied");
         setTimeout(() => {
-          btn.innerHTML = original;
-          btn.classList.remove("copied");
+          btn.style.opacity = "0";
+          setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove("copied");
+            btn.style.opacity = "1";
+          }, 150);
         }, 2000);
       } catch {
         // Clipboard API not available

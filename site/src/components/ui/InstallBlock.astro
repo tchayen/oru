@@ -1,47 +1,113 @@
 ---
 interface Props {
-  command?: string;
   class?: string;
 }
 
-const { command = "npm install -g oru-cli", class: className = "" } = Astro.props;
+const { class: className = "" } = Astro.props;
 ---
 
-<div
-  class:list={[
-    "install-block inline-flex items-center gap-4 bg-bg-inset border border-border-default rounded-xl py-3.5 pl-5 pr-4 font-mono text-sm leading-none",
-    className,
-  ]}
->
-  <code class="flex items-center gap-2.5">
-    <span class="text-text-tertiary select-none">$</span>
-    <span class="text-text-primary">{command}</span>
-  </code>
-  <button
-    class="copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-tertiary transition-all duration-150 ease-out-expo shrink-0 cursor-pointer hover:text-text-secondary hover:bg-white/5"
-    data-copy={command}
-    aria-label="Copy install command"
-    type="button"
+<div class:list={["install-widget max-w-full", className]}>
+  <div class="flex items-center justify-between pl-4 pr-4 mb-2">
+    <div class="flex items-center gap-1">
+      <button
+        class="install-tab active font-mono text-[14px] px-3 py-1.5 rounded-md cursor-pointer transition-colors duration-150"
+        data-tab="curl"
+        type="button"
+      >curl</button>
+      <button
+        class="install-tab font-mono text-[14px] px-3 py-1.5 rounded-md cursor-pointer transition-colors duration-150"
+        data-tab="npm"
+        type="button"
+      >npm</button>
+    </div>
+    <div class="flex items-center gap-3 font-mono text-xs text-text-muted select-none">
+      <span>macOS</span>
+      <span>Linux</span>
+    </div>
+  </div>
+  <div
+    class="install-block flex items-center gap-4 bg-bg-inset border border-border-default rounded-xl pr-4 font-mono text-[16px] leading-none overflow-hidden"
   >
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+    <div class="install-commands grid min-w-0 overflow-x-auto py-5 pl-5">
+      <code class="install-cmd flex items-center gap-2.5 whitespace-nowrap col-start-1 row-start-1" data-cmd="curl">
+        <span class="text-text-muted select-none">$</span>
+        <span class="text-text-primary">curl -fsSL https://oru.sh/install | bash</span>
+      </code>
+      <code class="install-cmd flex items-center gap-2.5 whitespace-nowrap col-start-1 row-start-1 invisible" data-cmd="npm" aria-hidden="true">
+        <span class="text-text-muted select-none">$</span>
+        <span class="text-text-primary">npm install -g oru-cli</span>
+      </code>
+    </div>
+    <button
+      class="copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-muted transition-all duration-150 ease-out-expo shrink-0 cursor-pointer hover:text-text-secondary hover:bg-white/5"
+      data-copy="curl -fsSL https://oru.sh/install | bash"
+      aria-label="Copy install command"
+      type="button"
     >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-      ></path>
-    </svg>
-  </button>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+    </button>
+  </div>
 </div>
 
+<script>
+  const COMMANDS: Record<string, string> = {
+    curl: "curl -fsSL https://oru.sh/install | bash",
+    npm: "npm install -g oru-cli",
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll<HTMLElement>(".install-widget").forEach((widget) => {
+      const tabs = widget.querySelectorAll<HTMLButtonElement>(".install-tab");
+      const cmds = widget.querySelectorAll<HTMLElement>(".install-cmd");
+      const copyBtn = widget.querySelector<HTMLButtonElement>(".copy-btn");
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const key = tab.dataset.tab!;
+          tabs.forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          cmds.forEach((cmd) => {
+            const isActive = cmd.dataset.cmd === key;
+            cmd.classList.toggle("invisible", !isActive);
+            cmd.setAttribute("aria-hidden", String(!isActive));
+          });
+          if (copyBtn) {
+            copyBtn.dataset.copy = COMMANDS[key];
+          }
+        });
+      });
+    });
+  });
+</script>
+
 <style>
+  .install-tab {
+    color: var(--color-text-muted);
+    background: transparent;
+  }
+
+  .install-tab:hover {
+    color: var(--color-text-secondary);
+  }
+
+  .install-tab.active {
+    color: var(--color-text-primary);
+    background: var(--color-bg-surface);
+  }
+
   .copy-btn:global(.copied) {
-    color: var(--color-accent);
+    color: var(--color-text-primary);
   }
 </style>

@@ -16,8 +16,30 @@ const { class: className = "" } = Astro.props;
 </div>
 
 <style>
+  div {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+
+  div::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  div::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  div::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+  }
+
+  div::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
   div :global(.prompt) {
-    color: var(--color-accent);
+    color: var(--color-text-primary);
     user-select: none;
   }
   div :global(.cmd) {

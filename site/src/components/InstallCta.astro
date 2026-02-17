@@ -4,40 +4,19 @@ import InstallBlock from "./ui/InstallBlock.astro";
 
 <section class="relative pt-32 pb-24 bg-bg-base overflow-hidden">
   <div
-    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(234,88,12,0.05)_0%,rgba(234,88,12,0.02)_40%,transparent_70%)] pointer-events-none"
-  ></div>
-  <div
     class="container flex flex-col items-center text-center relative z-1"
   >
     <div class="reveal">
-      <h2 class="mb-8">Get started in one command.</h2>
+      <h2 class="mb-4">Get started in one command.</h2>
     </div>
-    <div class="mb-4 reveal" data-delay="80">
+    <p class="body-lg text-text-secondary max-w-[480px] mb-8 reveal" data-delay="80">
+      Your tasks. Your machine. Your agent.
+    </p>
+    <div class="mb-4 reveal max-sm:w-full" data-delay="160">
       <InstallBlock />
     </div>
-    <p class="body-sm text-text-tertiary mb-8 reveal" data-delay="160">
+    <p class="body-sm text-text-tertiary reveal" data-delay="240">
       Requires Node 22+. That is the only dependency.
-    </p>
-    <div
-      class="flex items-center gap-3 mb-12 reveal"
-      data-delay="240"
-    >
-      <a
-        href="https://github.com/tchayen/oru"
-        class="text-sm text-text-tertiary transition-colors duration-200 ease-out-expo cursor-pointer hover:text-text-primary"
-        target="_blank"
-        rel="noopener noreferrer">GitHub</a
-      >
-      <span class="text-text-muted">&middot;</span>
-      <a
-        href="https://www.npmjs.com/package/oru-cli"
-        class="text-sm text-text-tertiary transition-colors duration-200 ease-out-expo cursor-pointer hover:text-text-primary"
-        target="_blank"
-        rel="noopener noreferrer">npm</a
-      >
-    </div>
-    <p class="body-lg text-text-secondary max-w-[480px] reveal" data-delay="320">
-      Your tasks. Your machine. Your agent.
     </p>
   </div>
 </section>
