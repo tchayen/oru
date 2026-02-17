@@ -194,6 +194,79 @@ describe("filterByDue", () => {
     const result = filterByDue([taskDueAt10am], "overdue", now);
     expect(result.map((t) => t.id)).toEqual(["10am"]);
   });
+
+  it("this-week with sunday start includes Sunday and excludes previous Saturday", () => {
+    // Sunday 2026-02-15 at noon
+    const sunday = new Date(2026, 1, 15, 12, 0, 0);
+    const taskOnSunday: Task = {
+      ...sampleTaskNoDue,
+      id: "sun1",
+      due_at: "2026-02-15T00:00:00",
+    };
+    const taskOnPrevMonday: Task = {
+      ...sampleTaskNoDue,
+      id: "prevmon1",
+      due_at: "2026-02-09T00:00:00",
+    };
+    const taskOnSaturday: Task = {
+      ...sampleTaskNoDue,
+      id: "sat1",
+      due_at: "2026-02-21T00:00:00",
+    };
+    const taskOnNextSunday: Task = {
+      ...sampleTaskNoDue,
+      id: "nextsun1",
+      due_at: "2026-02-22T00:00:00",
+    };
+    const tasks = [taskOnSunday, taskOnPrevMonday, taskOnSaturday, taskOnNextSunday];
+
+    // With first_day_of_week="sunday", week is Sun 2/15 – Sat 2/21
+    const result = filterByDue(tasks, "this-week", sunday, "sunday");
+    const ids = result.map((t) => t.id);
+    expect(ids).toContain("sun1");
+    expect(ids).toContain("sat1");
+    expect(ids).not.toContain("prevmon1");
+    expect(ids).not.toContain("nextsun1");
+  });
+
+  it("this-week with monday start puts Sunday in same week as preceding Monday", () => {
+    // Sunday 2026-02-15 at noon
+    const sunday = new Date(2026, 1, 15, 12, 0, 0);
+    const taskOnSunday: Task = {
+      ...sampleTaskNoDue,
+      id: "sun1",
+      due_at: "2026-02-15T00:00:00",
+    };
+    const taskOnPrevMonday: Task = {
+      ...sampleTaskNoDue,
+      id: "prevmon1",
+      due_at: "2026-02-09T00:00:00",
+    };
+    const taskOnMonday: Task = {
+      ...sampleTaskNoDue,
+      id: "mon1",
+      due_at: "2026-02-09T00:00:00",
+    };
+
+    // With first_day_of_week="monday", on Sunday 2/15 the week is Mon 2/9 – Sun 2/15
+    const result = filterByDue(
+      [taskOnSunday, taskOnPrevMonday, taskOnMonday],
+      "this-week",
+      sunday,
+      "monday",
+    );
+    const ids = result.map((t) => t.id);
+    expect(ids).toContain("sun1"); // Sunday is the last day of Mon-Sun week
+    expect(ids).toContain("prevmon1"); // Mon 2/9 is the start of that week
+    expect(ids).toContain("mon1");
+  });
+
+  it("defaults to monday when firstDayOfWeek is not specified", () => {
+    // Ensure backward compatibility: omitting the param uses monday
+    const result = filterByDue(allTasks, "this-week", now);
+    const resultExplicit = filterByDue(allTasks, "this-week", now, "monday");
+    expect(result.map((t) => t.id)).toEqual(resultExplicit.map((t) => t.id));
+  });
 });
 
 describe("overdue highlighting", () => {

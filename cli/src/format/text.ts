@@ -1,5 +1,6 @@
 import type { Task } from "../tasks/types.js";
 import type { OplogEntry } from "../oplog/types.js";
+import type { Weekday } from "../config/config.js";
 import { bold, dim, italic, red, green, yellow, magenta, cyan, orange } from "./colors.js";
 
 export function isOverdue(dueAt: string, now?: Date): boolean {
@@ -298,7 +299,22 @@ export function formatContextText(sections: ContextSections, now?: Date): string
 
 export type DueFilter = "today" | "this-week" | "overdue";
 
-export function filterByDue(tasks: Task[], filter: DueFilter, now?: Date): Task[] {
+const WEEKDAY_INDEX: Record<Weekday, number> = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+export function filterByDue(
+  tasks: Task[],
+  filter: DueFilter,
+  now?: Date,
+  firstDayOfWeek: Weekday = "monday",
+): Task[] {
   const ref = now ?? new Date();
   const todayStr = `${ref.getFullYear()}-${String(ref.getMonth() + 1).padStart(2, "0")}-${String(ref.getDate()).padStart(2, "0")}`;
 
@@ -306,19 +322,23 @@ export function filterByDue(tasks: Task[], filter: DueFilter, now?: Date): Task[
     case "today":
       return tasks.filter((t) => t.due_at?.slice(0, 10) === todayStr);
     case "this-week": {
-      // Monday through Sunday of the current week
-      const day = ref.getDay();
-      const diffToMonday = day === 0 ? -6 : 1 - day;
-      const monday = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() + diffToMonday);
-      const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
-      const mondayStr = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
-      const sundayStr = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, "0")}-${String(sunday.getDate()).padStart(2, "0")}`;
+      const day = ref.getDay(); // 0=Sun, 1=Mon, ...
+      const startIndex = WEEKDAY_INDEX[firstDayOfWeek];
+      const diff = (day - startIndex + 7) % 7;
+      const weekStart = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - diff);
+      const weekEnd = new Date(
+        weekStart.getFullYear(),
+        weekStart.getMonth(),
+        weekStart.getDate() + 6,
+      );
+      const startStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, "0")}-${String(weekStart.getDate()).padStart(2, "0")}`;
+      const endStr = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, "0")}-${String(weekEnd.getDate()).padStart(2, "0")}`;
       return tasks.filter((t) => {
         if (!t.due_at) {
           return false;
         }
         const dateStr = t.due_at.slice(0, 10);
-        return dateStr >= mondayStr && dateStr <= sundayStr;
+        return dateStr >= startStr && dateStr <= endStr;
       });
     }
     case "overdue":

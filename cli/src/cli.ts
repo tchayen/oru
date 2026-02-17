@@ -484,7 +484,12 @@ export function createProgram(
           tasks = tasks.filter((t) => t.status !== "done");
         }
         if (opts.due) {
-          tasks = filterByDue(tasks, opts.due as DueFilter);
+          tasks = filterByDue(
+            tasks,
+            opts.due as DueFilter,
+            undefined,
+            resolvedConfig.first_day_of_week,
+          );
         }
         if (opts.overdue) {
           tasks = filterByDue(tasks, "overdue");
