@@ -44,7 +44,7 @@ describe("performBackup", () => {
   it("uses a timestamped filename", () => {
     const dest = performBackup(db, backupDir);
     const filename = path.basename(dest);
-    expect(filename).toMatch(/^oru-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}-\d+\.db$/);
+    expect(filename).toMatch(/^oru-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}\.db$/);
   });
 
   it("creates unique filenames on successive calls", () => {

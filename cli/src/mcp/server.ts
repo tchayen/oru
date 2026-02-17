@@ -135,7 +135,7 @@ export function createMcpServer(service: TaskService): McpServer {
           ? await service.updateWithNote(id, fields as UpdateTaskInput, note)
           : await service.update(id, fields as UpdateTaskInput);
         if (!task) {
-          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+          return { content: [{ type: "text", text: `Task not found: ${id}.` }], isError: true };
         }
         return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
       } catch (err: unknown) {
@@ -158,9 +158,9 @@ export function createMcpServer(service: TaskService): McpServer {
       try {
         const ok = await service.delete(id);
         if (!ok) {
-          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+          return { content: [{ type: "text", text: `Task not found: ${id}.` }], isError: true };
         }
-        return { content: [{ type: "text", text: `Deleted ${id}` }] };
+        return { content: [{ type: "text", text: `Deleted ${id}.` }] };
       } catch (err: unknown) {
         return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
@@ -233,7 +233,7 @@ export function createMcpServer(service: TaskService): McpServer {
       try {
         const task = await service.get(id);
         if (!task) {
-          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+          return { content: [{ type: "text", text: `Task not found: ${id}.` }], isError: true };
         }
         return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
       } catch (err: unknown) {
@@ -283,7 +283,7 @@ export function createMcpServer(service: TaskService): McpServer {
       try {
         const task = await service.addNote(id, note);
         if (!task) {
-          return { content: [{ type: "text", text: `Task not found: ${id}` }], isError: true };
+          return { content: [{ type: "text", text: `Task not found: ${id}.` }], isError: true };
         }
         return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
       } catch (err: unknown) {
