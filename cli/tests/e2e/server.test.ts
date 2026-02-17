@@ -5,6 +5,7 @@ import path from "path";
 import os from "os";
 
 const SERVER_PATH = path.resolve(__dirname, "../../dist/server/index.js");
+const serverBuilt = fs.existsSync(SERVER_PATH);
 
 const E2E_TOKEN = "e2e-test-token";
 const E2E_PAIRING_CODE = "e2e-pairing-code";
@@ -55,7 +56,7 @@ afterEach(() => {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 
-describe("server process e2e", () => {
+describe.skipIf(!serverBuilt)("server process e2e", () => {
   it("starts, serves requests, and stops", async () => {
     const port = 9871 + Math.floor(Math.random() * 100);
 
