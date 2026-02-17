@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": ["import", "vitest"],
   "rules": {
     "no-unused-vars": "warn",
     "no-console": "off",
@@ -12,20 +13,52 @@
     "eslint/no-self-compare": "error",
     "eslint/no-template-curly-in-string": "warn",
     "eslint/no-useless-rename": "warn",
+    "eslint/no-var": "error",
+    "eslint/prefer-const": "warn",
 
     "typescript/no-floating-promises": "error",
     "typescript/await-thenable": "error",
     "typescript/no-for-in-array": "error",
     "typescript/no-misused-promises": "error",
     "typescript/restrict-plus-operands": "error",
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-unnecessary-condition": "warn",
+    "typescript/no-unsafe-argument": "warn",
+    "typescript/no-unsafe-assignment": "warn",
+    "typescript/no-unsafe-member-access": "warn",
+    "typescript/consistent-type-imports": "warn",
+    "typescript/consistent-type-definitions": ["warn", "type"],
+    "typescript/prefer-nullish-coalescing": "warn",
+    "typescript/prefer-optional-chain": "warn",
+    "typescript/strict-boolean-expressions": "warn",
     "typescript/switch-exhaustiveness-check": "warn",
     "typescript/no-unnecessary-type-assertion": "warn",
     "typescript/no-unnecessary-template-expression": "warn",
     "typescript/no-confusing-void-expression": "warn",
 
+    "unicorn/better-regex": "warn",
+    "unicorn/consistent-function-scoping": "warn",
+    "unicorn/prefer-array-flat-map": "warn",
+    "unicorn/prefer-node-protocol": "warn",
+    "unicorn/prefer-number-properties": "warn",
+
     "oxc/misrefactored-assign-op": "error",
 
     "import/no-self-import": "error",
-    "import/no-duplicates": "warn"
-  }
+    "import/no-duplicates": "warn",
+    "import/no-absolute-path": "error",
+    "import/no-namespace": "warn",
+
+    "jest/no-focused-tests": "error",
+    "jest/no-conditional-expect": "off",
+    "jest/require-to-throw-message": "off"
+  },
+  "overrides": [
+    {
+      "files": ["app/**/*.ts", "app/**/*.tsx"],
+      "rules": {
+        "import/no-namespace": "off"
+      }
+    }
+  ]
 }

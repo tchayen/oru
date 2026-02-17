@@ -9,8 +9,7 @@ import { createTestDb, createTestKysely } from "../helpers/test-db.js";
 import { FsRemote } from "../../src/sync/fs-remote.js";
 import { SyncEngine } from "../../src/sync/engine.js";
 import { writeOp } from "../../src/oplog/writer.js";
-import { getTask } from "../../src/tasks/repository.js";
-import { createTask } from "../../src/tasks/repository.js";
+import { createTask, getTask } from "../../src/tasks/repository.js";
 import type { RemoteBackend } from "../../src/sync/remote.js";
 import type { OplogEntry } from "../../src/oplog/types.js";
 
