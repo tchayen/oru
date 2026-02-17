@@ -153,6 +153,13 @@ describe("POST /tasks", () => {
     expect(task.owner).toBe("agent");
   });
 
+  it("normalizes empty string owner to null", async () => {
+    const res = await req("POST", "/tasks", { title: "Test", owner: "" });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.owner).toBeNull();
+  });
+
   it("returns 400 for invalid JSON body", async () => {
     const init: RequestInit = {
       method: "POST",
@@ -404,6 +411,14 @@ describe("PATCH /tasks/:id", () => {
   it("clears owner with null", async () => {
     const task = await service.add({ title: "Test", owner: "agent" });
     const res = await req("PATCH", `/tasks/${task.id}`, { owner: null });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.owner).toBeNull();
+  });
+
+  it("normalizes empty string owner to null on update", async () => {
+    const task = await service.add({ title: "Test", owner: "agent" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { owner: "" });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.owner).toBeNull();

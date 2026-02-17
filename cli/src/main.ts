@@ -25,7 +25,8 @@ export class TaskService {
   async add(input: CreateTaskInput): Promise<Task> {
     return this.db.transaction().execute(async (trx) => {
       const now = new Date().toISOString();
-      const task = await createTask(trx, input, now);
+      const normalized = { ...input, owner: input.owner || null };
+      const task = await createTask(trx, normalized, now);
       await writeOp(
         trx,
         {

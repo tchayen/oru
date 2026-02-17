@@ -51,7 +51,11 @@ const createTaskSchema = z.object({
     .max(MAX_TITLE_LENGTH, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`),
   status: StatusEnum.optional(),
   priority: PriorityEnum.optional(),
-  owner: z.string().nullable().optional(),
+  owner: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
   due_at: z.string().nullable().optional(),
   blocked_by: z
     .array(z.string())
@@ -83,7 +87,11 @@ const updateTaskSchema = z.object({
     .optional(),
   status: StatusEnum.optional(),
   priority: PriorityEnum.optional(),
-  owner: z.string().nullable().optional(),
+  owner: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => (v === "" ? null : v)),
   due_at: z.string().nullable().optional(),
   blocked_by: z
     .array(z.string())

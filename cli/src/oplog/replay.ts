@@ -84,7 +84,10 @@ function rebuildTask(db: Database.Database, taskId: string): void {
   let priority = VALID_PRIORITIES.has(data.priority as string)
     ? (data.priority as string)
     : "medium";
-  let owner: string | null = typeof data.owner === "string" ? data.owner : null;
+  let owner: string | null =
+    typeof data.owner === "string" && (data.owner as string).trim().length > 0
+      ? (data.owner as string)
+      : null;
   let dueAt: string | null = typeof data.due_at === "string" ? data.due_at : null;
   let blockedBy = JSON.stringify(
     Array.isArray(data.blocked_by) ? filterStringArray(data.blocked_by) : [],
