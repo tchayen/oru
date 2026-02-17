@@ -47,7 +47,6 @@ const server = serve({ fetch: app.fetch, port }, async (info) => {
   const localIp = getLocalIp();
   const localUrl = `http://${localIp}:${info.port}`;
   console.log(`${orange("oru")} server listening on ${localUrl}`);
-  console.log(`Token: ${token}`);
 
   if (process.env.ORU_TUNNEL === "1") {
     try {
