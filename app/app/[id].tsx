@@ -49,12 +49,20 @@ export default function TaskDetailScreen() {
   const [newNote, setNewNote] = useState("");
   const [isAddingLabel, setIsAddingLabel] = useState(false);
   const [newLabel, setNewLabel] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTask(serverUrl, authToken, id).then((t) => {
-      setTask(t);
-      setIsLoading(false);
-    });
+    fetchTask(serverUrl, authToken, id)
+      .then((t) => {
+        setTask(t);
+        setError(null);
+      })
+      .catch(() => {
+        setError("Failed to load task. Check that oru server is running.");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, [serverUrl, authToken, id]);
 
   const handleStatusChange = useCallback(
@@ -63,8 +71,12 @@ export default function TaskDetailScreen() {
         return;
       }
       const status = STATUSES[event.nativeEvent.index];
-      const updated = await updateTask(serverUrl, authToken, task.id, { status });
-      setTask(updated);
+      try {
+        const updated = await updateTask(serverUrl, authToken, task.id, { status });
+        setTask(updated);
+      } catch {
+        Alert.alert("Error", "Failed to update status.");
+      }
     },
     [task, serverUrl, authToken],
   );
@@ -74,8 +86,12 @@ export default function TaskDetailScreen() {
       if (!task) {
         return;
       }
-      const updated = await updateTask(serverUrl, authToken, task.id, { priority: newPriority });
-      setTask(updated);
+      try {
+        const updated = await updateTask(serverUrl, authToken, task.id, { priority: newPriority });
+        setTask(updated);
+      } catch {
+        Alert.alert("Error", "Failed to update priority.");
+      }
     },
     [task, serverUrl, authToken],
   );
@@ -89,9 +105,13 @@ export default function TaskDetailScreen() {
       setIsEditingTitle(false);
       return;
     }
-    const updated = await updateTask(serverUrl, authToken, task.id, { title: trimmed });
-    setTask(updated);
-    setIsEditingTitle(false);
+    try {
+      const updated = await updateTask(serverUrl, authToken, task.id, { title: trimmed });
+      setTask(updated);
+      setIsEditingTitle(false);
+    } catch {
+      Alert.alert("Error", "Failed to update title.");
+    }
   }, [task, editedTitle, serverUrl, authToken]);
 
   const handleAddNote = useCallback(async () => {
@@ -102,9 +122,13 @@ export default function TaskDetailScreen() {
     if (!trimmed) {
       return;
     }
-    const updated = await updateTask(serverUrl, authToken, task.id, { note: trimmed });
-    setTask(updated);
-    setNewNote("");
+    try {
+      const updated = await updateTask(serverUrl, authToken, task.id, { note: trimmed });
+      setTask(updated);
+      setNewNote("");
+    } catch {
+      Alert.alert("Error", "Failed to add note.");
+    }
   }, [task, newNote, serverUrl, authToken]);
 
   const handleAddLabel = useCallback(async () => {
@@ -117,12 +141,16 @@ export default function TaskDetailScreen() {
       setNewLabel("");
       return;
     }
-    const updated = await updateTask(serverUrl, authToken, task.id, {
-      labels: [...task.labels, trimmed],
-    });
-    setTask(updated);
-    setIsAddingLabel(false);
-    setNewLabel("");
+    try {
+      const updated = await updateTask(serverUrl, authToken, task.id, {
+        labels: [...task.labels, trimmed],
+      });
+      setTask(updated);
+      setIsAddingLabel(false);
+      setNewLabel("");
+    } catch {
+      Alert.alert("Error", "Failed to add label.");
+    }
   }, [task, newLabel, serverUrl, authToken]);
 
   const handleRemoveLabel = useCallback(
@@ -130,10 +158,14 @@ export default function TaskDetailScreen() {
       if (!task) {
         return;
       }
-      const updated = await updateTask(serverUrl, authToken, task.id, {
-        labels: task.labels.filter((l) => l !== label),
-      });
-      setTask(updated);
+      try {
+        const updated = await updateTask(serverUrl, authToken, task.id, {
+          labels: task.labels.filter((l) => l !== label),
+        });
+        setTask(updated);
+      } catch {
+        Alert.alert("Error", "Failed to remove label.");
+      }
     },
     [task, serverUrl, authToken],
   );
@@ -144,8 +176,12 @@ export default function TaskDetailScreen() {
         return;
       }
       const due_at = date.toISOString().split("T")[0] + "T00:00:00";
-      const updated = await updateTask(serverUrl, authToken, task.id, { due_at });
-      setTask(updated);
+      try {
+        const updated = await updateTask(serverUrl, authToken, task.id, { due_at });
+        setTask(updated);
+      } catch {
+        Alert.alert("Error", "Failed to update due date.");
+      }
     },
     [task, serverUrl, authToken],
   );
@@ -154,8 +190,12 @@ export default function TaskDetailScreen() {
     if (!task) {
       return;
     }
-    const updated = await updateTask(serverUrl, authToken, task.id, { due_at: null });
-    setTask(updated);
+    try {
+      const updated = await updateTask(serverUrl, authToken, task.id, { due_at: null });
+      setTask(updated);
+    } catch {
+      Alert.alert("Error", "Failed to clear due date.");
+    }
   }, [task, serverUrl, authToken]);
 
   const handleDelete = useCallback(() => {
@@ -168,17 +208,31 @@ export default function TaskDetailScreen() {
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          await deleteTask(serverUrl, authToken, task.id);
-          router.back();
+          try {
+            await deleteTask(serverUrl, authToken, task.id);
+            router.back();
+          } catch {
+            Alert.alert("Error", "Failed to delete task.");
+          }
         },
       },
     ]);
   }, [task, serverUrl, authToken, router]);
 
-  if (isLoading || !task) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error || !task) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 24 }}>
+        <Text style={{ fontSize: 15, color: PlatformColor("secondaryLabel"), textAlign: "center" }}>
+          {error ?? "Task not found."}
+        </Text>
       </View>
     );
   }
