@@ -11,12 +11,12 @@ const { title, class: className = "", ...rest } = Astro.props;
 
 <div
   class:list={[
-    "feature-card relative bg-bg-elevated border border-border-subtle rounded-xl p-7 transition-[border-color,transform,box-shadow] duration-300 ease-out-expo overflow-hidden cursor-default hover:border-border-default hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]",
+    "feature-card relative bg-bg-elevated border border-border-subtle rounded-xl p-6 transition-[border-color,transform,box-shadow] duration-300 ease-out-expo overflow-hidden cursor-default hover:border-border-default hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]",
     className,
   ]}
   {...rest}
 >
-  <div class="relative z-1 mb-5">
+  <div class="relative z-1 mb-4">
     <slot name="code" />
   </div>
   <h4 class="relative z-1 text-text-primary mb-2">
