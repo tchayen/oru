@@ -45,7 +45,7 @@ jobs:
         id: main-size
         run: |
           echo "html=$(stat -c%s site/dist/index.html)" >> "$GITHUB_OUTPUT"
-          echo "css=$(cat site/dist/_astro/*.css | wc -c)" >> "$GITHUB_OUTPUT"
+          echo "css=$(stat -c%s site/dist/_astro/*.css | awk '{s+=$1}END{print s}')" >> "$GITHUB_OUTPUT"
 
       - name: Checkout PR
         if: github.event_name == 'pull_request'
