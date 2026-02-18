@@ -1,0 +1,302 @@
+---
+import DocsLayout from "../../layouts/DocsLayout.astro";
+import MiniCode from "../../components/ui/MiniCode.astro";
+---
+
+<DocsLayout
+  title="Usage guide"
+  description="Comprehensive guide to all oru commands and features."
+>
+  <h2>Task lifecycle</h2>
+  <p>Every task moves through four statuses:</p>
+  <ol>
+    <li><code>todo</code> &mdash; not started (default)</li>
+    <li><code>in_progress</code> &mdash; actively being worked on</li>
+    <li><code>in_review</code> &mdash; waiting for review or feedback</li>
+    <li><code>done</code> &mdash; completed</li>
+  </ol>
+  <p>
+    Use <code>oru start</code>, <code>oru review</code>, and
+    <code>oru done</code> as shortcuts, or set the status explicitly with
+    <code>oru update &lt;id&gt; -s &lt;status&gt;</code>.
+  </p>
+
+  <h2>Adding tasks</h2>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Fix login bug"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Fix login bug"</span> <span class="flag">-p</span> <span class="val">high</span> <span class="flag">-d</span> <span class="val">friday</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Write docs"</span> <span class="flag">-l</span> <span class="val">docs</span> <span class="flag">-n</span> <span class="str">"Include API section"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy v2"</span> <span class="flag">-s</span> <span class="val">todo</span> <span class="flag">-d</span> <span class="val">2026-03-01</span> <span class="flag">--assign</span> <span class="val">alice</span>
+  </MiniCode>
+
+  <p>Options:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Flag</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>-s, --status</code></td><td>Initial status (default: <code>todo</code>)</td></tr>
+      <tr><td><code>-p, --priority</code></td><td>Priority: <code>low</code>, <code>medium</code>, <code>high</code>, <code>urgent</code> (default: <code>medium</code>)</td></tr>
+      <tr><td><code>-d, --due</code></td><td>Due date (natural language or ISO date)</td></tr>
+      <tr><td><code>--assign</code></td><td>Assign to an owner</td></tr>
+      <tr><td><code>-l, --label</code></td><td>Add one or more labels</td></tr>
+      <tr><td><code>-b, --blocked-by</code></td><td>IDs of blocking tasks</td></tr>
+      <tr><td><code>-n, --note</code></td><td>Add an initial note</td></tr>
+      <tr><td><code>--meta</code></td><td>Metadata key=value pairs</td></tr>
+      <tr><td><code>--id</code></td><td>Provide a task ID (for idempotent creates)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Listing tasks</h2>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">-s</span> <span class="val">in_progress</span> <span class="flag">-p</span> <span class="val">high</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">-l</span> <span class="val">backend</span> <span class="flag">--sort</span> <span class="val">due</span> <span class="flag">--actionable</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--search</span> <span class="str">"login"</span> <span class="flag">--all</span>
+  </MiniCode>
+
+  <p>
+    By default, <code>list</code> hides tasks with status <code>done</code>.
+    Add <code>--all</code> to include them.
+  </p>
+
+  <h3>Filtering</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Flag</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>-s, --status</code></td><td>Filter by status (comma-separated for multiple)</td></tr>
+      <tr><td><code>-p, --priority</code></td><td>Filter by priority (comma-separated for multiple)</td></tr>
+      <tr><td><code>-l, --label</code></td><td>Filter by label</td></tr>
+      <tr><td><code>--owner</code></td><td>Filter by owner</td></tr>
+      <tr><td><code>--due</code></td><td>Filter by due date: <code>today</code> or <code>this-week</code></td></tr>
+      <tr><td><code>--overdue</code></td><td>Show only overdue tasks</td></tr>
+      <tr><td><code>--search</code></td><td>Search by title text</td></tr>
+      <tr><td><code>--actionable</code></td><td>Show only tasks with no incomplete blockers</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Sorting</h3>
+  <p>
+    Use <code>--sort</code> to change the order. Default is <code>priority</code>.
+    Available fields: <code>priority</code>, <code>due</code>, <code>status</code>,
+    <code>created</code>, <code>updated</code>, <code>title</code>.
+  </p>
+
+  <h3>Pagination</h3>
+  <p>
+    Use <code>--limit</code> and <code>--offset</code> for paginated results.
+  </p>
+
+  <h2>Getting a single task</h2>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">019414a3</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">019414a3</span> <span class="flag">--json</span>
+  </MiniCode>
+  <p>
+    You can use a full ID or a unique prefix. If the prefix is ambiguous (matches
+    multiple tasks), oru will tell you and list the matches.
+  </p>
+
+  <h2>Updating tasks</h2>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-s</span> <span class="val">in_progress</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-l</span> <span class="val">urgent</span> <span class="flag">-d</span> <span class="val">tomorrow</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-n</span> <span class="str">"Blocked on API review"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-t</span> <span class="str">"New title"</span> <span class="flag">-p</span> <span class="val">high</span>
+  </MiniCode>
+
+  <p>
+    Labels are additive by default. Use <code>--unlabel</code> to remove a label:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">--unlabel</span> <span class="val">wontfix</span>
+  </MiniCode>
+
+  <p>Clear the due date or owner by passing <code>none</code>:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-d</span> <span class="val">none</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">--assign</span> <span class="val">none</span>
+  </MiniCode>
+
+  <h2>Editing in $EDITOR</h2>
+  <p>
+    For complex edits, open a task in your editor. The file uses a frontmatter
+    format with all task fields:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">019414a3</span><br />
+    <span class="prompt">$ </span><span class="cmd">EDITOR</span>=<span class="val">nano</span> <span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">019414a3</span>
+  </MiniCode>
+
+  <h2>Status shortcuts</h2>
+  <p>Quick commands to change task status. Accept one or more IDs:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">start</span> <span class="val">019414a3</span>          <span class="flag"># → in_progress</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">review</span> <span class="val">019414a3</span>         <span class="flag"># → in_review</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">done</span> <span class="val">019414a3</span> <span class="val">019414b7</span>  <span class="flag"># → done (multiple)</span>
+  </MiniCode>
+
+  <h2>Labels</h2>
+  <p>Labels are freeform strings. Add them when creating or updating tasks:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Fix bug"</span> <span class="flag">-l</span> <span class="val">bug</span> <span class="val">frontend</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">-l</span> <span class="val">bug</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">labels</span>
+  </MiniCode>
+  <p>
+    The <code>labels</code> command lists all labels currently in use across your tasks.
+  </p>
+
+  <h2>Notes</h2>
+  <p>
+    Notes are append-only comments on a task. Add a note with <code>-n</code> on
+    <code>add</code> or <code>update</code>:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-n</span> <span class="str">"Discussed in standup, moving to next sprint"</span>
+  </MiniCode>
+  <p>
+    Clear all notes with <code>--clear-notes</code>. You can combine
+    <code>--clear-notes</code> with <code>-n</code> to replace all notes with a
+    single new one.
+  </p>
+
+  <h2>Due dates</h2>
+  <p>oru supports natural language date parsing:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Ship feature"</span> <span class="flag">-d</span> <span class="val">tomorrow</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Sprint review"</span> <span class="flag">-d</span> <span class="val">friday</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Quarterly report"</span> <span class="flag">-d</span> <span class="val">2026-03-01</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Standup"</span> <span class="flag">-d</span> <span class="str">"tod 10a"</span>
+  </MiniCode>
+  <p>Supported formats include:</p>
+  <ul>
+    <li><code>today</code>, <code>tomorrow</code>, <code>yesterday</code></li>
+    <li>Day names: <code>monday</code>, <code>friday</code>, <code>next tuesday</code></li>
+    <li>Month + day: <code>march 15</code>, <code>jan 1</code></li>
+    <li>ISO dates: <code>2026-03-01</code></li>
+    <li>Time suffixes: <code>tod 10a</code>, <code>tomorrow 2pm</code></li>
+  </ul>
+
+  <h2>Blocked-by dependencies</h2>
+  <p>
+    Mark a task as blocked by other tasks. Use <code>--actionable</code> on
+    <code>list</code> to filter to tasks with no incomplete blockers:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">-b</span> <span class="val">019414a3</span> <span class="val">019414b7</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--actionable</span>
+  </MiniCode>
+
+  <h2>Metadata</h2>
+  <p>
+    Attach arbitrary key-value pairs with <code>--meta</code>. Pass a key without
+    a value to remove it:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Fix issue"</span> <span class="flag">--meta</span> <span class="val">pr=123</span> <span class="val">repo=oru</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">--meta</span> <span class="val">pr</span>  <span class="flag"># removes the "pr" key</span>
+  </MiniCode>
+
+  <h2>Context</h2>
+  <p>
+    Get a dashboard-style summary of what needs attention. Shows overdue tasks,
+    tasks due soon, in-progress work, actionable items, blocked tasks, and
+    recently completed tasks:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span> <span class="flag">--owner</span> <span class="val">alice</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span> <span class="flag">-l</span> <span class="val">backend</span>
+  </MiniCode>
+
+  <h2>Deleting tasks</h2>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">delete</span> <span class="val">019414a3</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">delete</span> <span class="val">019414a3</span> <span class="val">019414b7</span>
+  </MiniCode>
+
+  <h2>Change history</h2>
+  <p>View the oplog for a task to see every change made:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">log</span> <span class="val">019414a3</span>
+  </MiniCode>
+
+  <h2>Sync</h2>
+  <p>
+    oru syncs between machines via a shared filesystem directory (Dropbox, iCloud
+    Drive, NFS, etc.). The sync engine uses oplog-based conflict resolution with
+    last-write-wins per field:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">sync</span> <span class="val">~/Dropbox/oru-sync</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">sync</span> <span class="val">/mnt/shared/oru</span>
+  </MiniCode>
+
+  <h2>Using with AI agents</h2>
+  <p>
+    oru is designed to be operated by AI agents. Every command supports
+    <code>--json</code> for machine-readable output.
+  </p>
+
+  <h3>JSON output</h3>
+  <p>
+    Pass <code>--json</code> to any command, or set <code>ORU_FORMAT=json</code>,
+    or set <code>output_format = "json"</code> in your config:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--json</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">019414a3</span> <span class="flag">--json</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span> <span class="flag">--json</span>
+  </MiniCode>
+
+  <h3>MCP server</h3>
+  <p>
+    oru includes a built-in <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server
+    that exposes task management as tools your AI can call directly:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">mcp</span>
+  </MiniCode>
+  <p>
+    Add it to your MCP client configuration (e.g. Claude Desktop) and the agent
+    can create, list, update, and complete tasks natively.
+  </p>
+
+  <h3>AGENTS.md</h3>
+  <p>
+    Drop an <code>AGENTS.md</code> file in your project root to tell AI agents
+    how to use oru for task tracking. See the
+    <a href="https://github.com/tchayen/oru">repository</a> for an example.
+  </p>
+
+  <h2>Backup</h2>
+  <p>Create a point-in-time snapshot of your database:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">backup</span> <span class="val">~/backups</span>
+  </MiniCode>
+  <p>
+    Set <code>backup_path</code> in your config for automatic backups on every command.
+  </p>
+
+  <h2>Self-update</h2>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">self-update</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">self-update</span> <span class="flag">--check</span>
+  </MiniCode>
+
+  <hr />
+
+  <p>
+    For the HTTP API (used by the mobile app and custom integrations), see the
+    <a href="/docs/api">API reference</a>.
+  </p>
+</DocsLayout>
