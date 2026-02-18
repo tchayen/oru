@@ -10,7 +10,9 @@ SQLite database on your machine. No accounts. No cloud. JSON output on every com
 curl -fsSL https://oru.sh/install | bash
 ```
 
-Requires Node 22+. Or install via npm:
+Requires Node 22+.
+
+Or install via npm:
 
 ```bash
 npm install -g @tchayen/oru
