@@ -97,8 +97,8 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Getting a single task</h2>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">019414a3</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">019414a3</span> <span class="flag">--json</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">hJ7kMp3nQrs</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">--json</span>
   </MiniCode>
   <p>
     You can use a full ID or a unique prefix. If the prefix is ambiguous (matches
@@ -107,23 +107,23 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Updating tasks</h2>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-s</span> <span class="val">in_progress</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-l</span> <span class="val">urgent</span> <span class="flag">-d</span> <span class="val">tomorrow</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-n</span> <span class="str">"Blocked on API review"</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-t</span> <span class="str">"New title"</span> <span class="flag">-p</span> <span class="val">high</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">-s</span> <span class="val">in_progress</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">-l</span> <span class="val">urgent</span> <span class="flag">-d</span> <span class="val">tomorrow</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">-n</span> <span class="str">"Blocked on API review"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">-t</span> <span class="str">"New title"</span> <span class="flag">-p</span> <span class="val">high</span>
   </MiniCode>
 
   <p>
     Labels are additive by default. Use <code>--unlabel</code> to remove a label:
   </p>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">--unlabel</span> <span class="val">wontfix</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">--unlabel</span> <span class="val">wontfix</span>
   </MiniCode>
 
   <p>Clear the due date or owner by passing <code>none</code>:</p>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-d</span> <span class="val">none</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">--assign</span> <span class="val">none</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">-d</span> <span class="val">none</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">--assign</span> <span class="val">none</span>
   </MiniCode>
 
   <h2>Editing in $EDITOR</h2>
@@ -132,16 +132,16 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     format with all task fields:
   </p>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">019414a3</span><br />
-    <span class="prompt">$ </span><span class="cmd">EDITOR</span>=<span class="val">nano</span> <span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">019414a3</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">hJ7kMp3nQrs</span><br />
+    <span class="prompt">$ </span><span class="cmd">EDITOR</span>=<span class="val">nano</span> <span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">hJ7kMp3nQrs</span>
   </MiniCode>
 
   <h2>Status shortcuts</h2>
   <p>Quick commands to change task status. Accept one or more IDs:</p>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">start</span> <span class="val">019414a3</span>          <span class="flag"># → in_progress</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">review</span> <span class="val">019414a3</span>         <span class="flag"># → in_review</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">done</span> <span class="val">019414a3</span> <span class="val">019414b7</span>  <span class="flag"># → done (multiple)</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">start</span> <span class="val">hJ7kMp3nQrs</span>       <span class="flag"># → in_progress</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">review</span> <span class="val">hJ7kMp3nQrs</span>      <span class="flag"># → in_review</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">done</span> <span class="val">hJ7kMp3nQrs</span> <span class="val">wX2yBv5uTzA</span>  <span class="flag"># → done (multiple)</span>
   </MiniCode>
 
   <h2>Labels</h2>
@@ -161,7 +161,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     <code>add</code> or <code>update</code>:
   </p>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-n</span> <span class="str">"Discussed in standup, moving to next sprint"</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">-n</span> <span class="str">"Discussed in standup, moving to next sprint"</span>
   </MiniCode>
   <p>
     Clear all notes with <code>--clear-notes</code>. You can combine
@@ -192,7 +192,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     <code>list</code> to filter to tasks with no incomplete blockers:
   </p>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">-b</span> <span class="val">019414a3</span> <span class="val">019414b7</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">-b</span> <span class="val">hJ7kMp3nQrs</span> <span class="val">wX2yBv5uTzA</span><br />
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--actionable</span>
   </MiniCode>
 
@@ -203,7 +203,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   </p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Fix issue"</span> <span class="flag">--meta</span> <span class="val">pr=123</span> <span class="val">repo=oru</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">--meta</span> <span class="val">pr</span>  <span class="flag"># removes the "pr" key</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">--meta</span> <span class="val">pr</span>  <span class="flag"># removes the "pr" key</span>
   </MiniCode>
 
   <h2>Context</h2>
@@ -220,14 +220,14 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Deleting tasks</h2>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">delete</span> <span class="val">019414a3</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">delete</span> <span class="val">019414a3</span> <span class="val">019414b7</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">delete</span> <span class="val">hJ7kMp3nQrs</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">delete</span> <span class="val">hJ7kMp3nQrs</span> <span class="val">wX2yBv5uTzA</span>
   </MiniCode>
 
   <h2>Change history</h2>
   <p>View the oplog for a task to see every change made:</p>
   <MiniCode>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">log</span> <span class="val">019414a3</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">log</span> <span class="val">hJ7kMp3nQrs</span>
   </MiniCode>
 
   <h2>Sync</h2>
@@ -256,7 +256,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   </p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--json</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">019414a3</span> <span class="flag">--json</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">get</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">--json</span><br />
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span> <span class="flag">--json</span>
   </MiniCode>
 

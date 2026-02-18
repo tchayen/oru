@@ -87,7 +87,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   <p>Get a single task by ID or unique prefix.</p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
-    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/hJ7kMp3nQrs</span>
   </MiniCode>
   <p>Returns <code>404</code> if not found, <code>409</code> if the prefix is ambiguous.</p>
 
@@ -138,7 +138,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
     &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \<br />
     &nbsp;&nbsp;<span class="flag">-d</span> <span class="str">'&#123;"status":"done","note":"Completed in sprint 12"&#125;'</span> \<br />
-    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/hJ7kMp3nQrs</span>
   </MiniCode>
 
   <p>Request body:</p>
@@ -169,11 +169,11 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-X</span> <span class="val">DELETE</span> \<br />
     &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
-    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/hJ7kMp3nQrs</span>
   </MiniCode>
   <p>Response:</p>
   <MiniCode>
-    &#123;<span class="key">"id"</span>: <span class="str">"019414a3-..."</span>, <span class="key">"deleted"</span>: <span class="val">true</span>&#125;
+    &#123;<span class="key">"id"</span>: <span class="str">"hJ7kMp3nQrs"</span>, <span class="key">"deleted"</span>: <span class="val">true</span>&#125;
   </MiniCode>
 
   <h3>POST /pair</h3>
@@ -207,7 +207,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       </tr>
     </thead>
     <tbody>
-      <tr><td><code>id</code></td><td>string</td><td>UUIDv7 identifier</td></tr>
+      <tr><td><code>id</code></td><td>string</td><td>11-character base62 identifier</td></tr>
       <tr><td><code>title</code></td><td>string</td><td>Task title</td></tr>
       <tr><td><code>status</code></td><td>string</td><td><code>todo</code>, <code>in_progress</code>, <code>in_review</code>, <code>done</code></td></tr>
       <tr><td><code>priority</code></td><td>string</td><td><code>low</code>, <code>medium</code>, <code>high</code>, <code>urgent</code></td></tr>
@@ -266,11 +266,11 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <p>Example error response:</p>
   <MiniCode>
-    &#123;<span class="key">"error"</span>: <span class="str">"not_found"</span>, <span class="key">"id"</span>: <span class="str">"019414a3"</span>&#125;
+    &#123;<span class="key">"error"</span>: <span class="str">"not_found"</span>, <span class="key">"id"</span>: <span class="str">"hJ7kMp3nQrs"</span>&#125;
   </MiniCode>
 
   <p>Ambiguous prefix error includes the matching IDs:</p>
   <MiniCode>
-    &#123;<span class="key">"error"</span>: <span class="str">"ambiguous_prefix"</span>, <span class="key">"id"</span>: <span class="str">"019"</span>, <span class="key">"matches"</span>: [<span class="str">"019414a3-..."</span>, <span class="str">"019414b7-..."</span>]&#125;
+    &#123;<span class="key">"error"</span>: <span class="str">"ambiguous_prefix"</span>, <span class="key">"id"</span>: <span class="str">"hJ7"</span>, <span class="key">"matches"</span>: [<span class="str">"hJ7kMp3nQrs"</span>, <span class="str">"hJ7mQr8tPvL"</span>]&#125;
   </MiniCode>
 </DocsLayout>
