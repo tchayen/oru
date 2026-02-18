@@ -290,9 +290,9 @@
 
 /* Prose — docs content styling */
 .prose h2 {
-  font-family: var(--font-heading);
+  font-family: var(--font-sans);
   font-size: 32px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--color-text-primary);

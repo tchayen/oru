@@ -6,58 +6,104 @@ interface Props {
 const { class: className = "" } = Astro.props;
 ---
 
-<div
-  class:list={[
-    "bg-bg-inset border border-border-subtle rounded-lg px-4 py-3 font-mono text-[13px] leading-[1.6] text-text-secondary overflow-x-auto",
-    className,
-  ]}
->
-  <slot />
+<div class="mini-code-wrap">
+  <div
+    class:list={[
+      "mini-code-content bg-bg-inset border border-border-subtle rounded-lg px-4 py-3 font-mono text-[13px] leading-[1.6] text-text-secondary overflow-x-auto",
+      className,
+    ]}
+  >
+    <slot />
+  </div>
+  <button
+    class="mini-code-copy copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-muted transition-all duration-150 cursor-pointer hover:text-text-secondary hover:bg-white/5"
+    data-copy-code
+    aria-label="Copy"
+    type="button"
+  >
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
+  </button>
 </div>
 
 <style>
-  div {
+  .mini-code-wrap {
+    position: relative;
+  }
+
+  .mini-code-copy {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    opacity: 0;
+    transition: opacity 150ms ease;
+  }
+
+  .mini-code-wrap:hover .mini-code-copy {
+    opacity: 1;
+  }
+
+  .mini-code-copy:focus-visible {
+    opacity: 1;
+  }
+
+  .mini-code-copy:global(.copied) {
+    color: var(--color-text-primary);
+  }
+
+  .mini-code-content {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
   }
 
-  div::-webkit-scrollbar {
+  .mini-code-content::-webkit-scrollbar {
     height: 6px;
   }
 
-  div::-webkit-scrollbar-track {
+  .mini-code-content::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  div::-webkit-scrollbar-thumb {
+  .mini-code-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
   }
 
-  div::-webkit-scrollbar-thumb:hover {
+  .mini-code-content::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.25);
   }
 
-  div :global(.prompt) {
-    color: var(--color-text-primary);
+  .mini-code-content :global(.prompt) {
+    color: var(--color-text-muted);
     user-select: none;
   }
-  div :global(.cmd) {
+  .mini-code-content :global(.cmd) {
     color: var(--color-text-primary);
   }
-  div :global(.sub) {
+  .mini-code-content :global(.sub) {
     color: var(--color-syn-command);
   }
-  div :global(.flag) {
+  .mini-code-content :global(.flag) {
     color: var(--color-syn-flag);
   }
-  div :global(.str) {
+  .mini-code-content :global(.str) {
     color: var(--color-syn-string);
   }
-  div :global(.val) {
+  .mini-code-content :global(.val) {
     color: var(--color-syn-value);
   }
-  div :global(.key) {
+  .mini-code-content :global(.key) {
     color: var(--color-syn-key);
   }
 </style>
