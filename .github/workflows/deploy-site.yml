@@ -10,6 +10,10 @@ on:
     paths:
       - "site/**"
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,6 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: pnpm/action-setup@v4
 
@@ -29,6 +35,27 @@ jobs:
           cache: pnpm
 
       - run: pnpm install
+
+      - name: Build main site
+        if: github.event_name == 'pull_request'
+        run: pnpm --filter oru-site build
+
+      - name: Save main site sizes
+        if: github.event_name == 'pull_request'
+        id: main-size
+        run: |
+          echo "html=$(stat -c%s site/dist/index.html)" >> "$GITHUB_OUTPUT"
+          echo "css=$(cat site/dist/_astro/*.css | wc -c)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - name: Install PR dependencies
+        if: github.event_name == 'pull_request'
+        run: pnpm install
 
       - name: Build site
         run: pnpm --filter oru-site build
@@ -43,8 +70,65 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: 3f58569663fe4a2164c60b23c6eb6a2d
 
-      - name: Comment preview URL
+      - name: Post preview comment
         if: github.event_name == 'pull_request'
-        run: gh pr comment ${{ github.event.pull_request.number }} --body "${{ steps.deploy.outputs.url }}"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+
+            const mainHtml = Number("${{ steps.main-size.outputs.html }}");
+            const mainCss = Number("${{ steps.main-size.outputs.css }}");
+
+            const prHtml = fs.statSync("site/dist/index.html").size;
+            const cssFiles = fs.readdirSync("site/dist/_astro").filter(f => f.endsWith(".css"));
+            const prCss = cssFiles.reduce((sum, f) => sum + fs.statSync(path.join("site/dist/_astro", f)).size, 0);
+
+            function fmt(bytes) {
+              return (bytes / 1024).toFixed(2);
+            }
+
+            function delta(main, pr) {
+              const diff = pr - main;
+              if (diff === 0) return "0 B";
+              const sign = diff > 0 ? "+" : "";
+              const pct = ((diff / main) * 100).toFixed(1);
+              return `${sign}${diff} B (${sign}${pct}%)`;
+            }
+
+            const body = [
+              "## Preview",
+              "",
+              "${{ steps.deploy.outputs.url }}",
+              "",
+              "| File | main | PR | Delta |",
+              "| --- | ---: | ---: | ---: |",
+              `| \`index.html\` | ${fmt(mainHtml)} KB | ${fmt(prHtml)} KB | ${delta(mainHtml, prHtml)} |`,
+              `| \`*.css\` | ${fmt(mainCss)} KB | ${fmt(prCss)} KB | ${delta(mainCss, prCss)} |`,
+            ].join("\n");
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(
+              (c) => c.user.login === "github-actions[bot]" && c.body.startsWith("## Preview")
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

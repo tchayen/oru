@@ -10,6 +10,14 @@ site:
   - changed-files:
       - any-glob-to-any-file: "site/**"
 
+docs:
+  - changed-files:
+      - any-glob-to-any-file: "site/src/pages/docs/**"
+
+types:
+  - changed-files:
+      - any-glob-to-any-file: "types/**"
+
 infra:
   - changed-files:
       - any-glob-to-any-file: ".github/**"
