@@ -100,7 +100,7 @@ describe("recurring task spawn", () => {
     expect(daysDiff).toBeLessThan(8);
   });
 
-  it("is idempotent — marking done twice does not create duplicate", async () => {
+  it("is idempotent – marking done twice does not create duplicate", async () => {
     const parent = await service.add({
       title: "Water plants",
       recurrence: "FREQ=DAILY",

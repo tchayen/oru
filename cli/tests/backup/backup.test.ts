@@ -93,7 +93,7 @@ describe("shouldAutoBackup", () => {
   it("returns false when a recent backup exists", () => {
     fs.mkdirSync(backupDir, { recursive: true });
     fs.writeFileSync(path.join(backupDir, "oru-2026-01-01T00-00-00-000.db"), "data");
-    // File was just created so mtime is now — well within 60 minutes
+    // File was just created so mtime is now – well within 60 minutes
     expect(shouldAutoBackup(backupDir, 60)).toBe(false);
   });
 

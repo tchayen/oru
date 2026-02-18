@@ -39,7 +39,7 @@ describe("schema", () => {
     db.close();
   });
 
-  it("is idempotent — calling twice does not error", () => {
+  it("is idempotent – calling twice does not error", () => {
     const db = freshDb();
     initSchema(db);
     expect(() => initSchema(db)).not.toThrow();

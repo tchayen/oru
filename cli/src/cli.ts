@@ -156,7 +156,7 @@ export function createProgram(
   const service = new TaskService(ky, deviceId);
   const program = new Command("oru")
     .description(
-      `${bold("oru")} — personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file. Set ORU_DEBUG=1 for verbose error output.`,
+      `${bold("oru")} – personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file. Set ORU_DEBUG=1 for verbose error output.`,
     )
     .version(`${__VERSION__} (${__GIT_COMMIT__})`);
 
@@ -937,7 +937,7 @@ export function createProgram(
       });
   }
 
-  // done — separate from addStatusShortcut to handle recurring task spawn
+  // done – separate from addStatusShortcut to handle recurring task spawn
   program
     .command("done <id...>")
     .description("Mark one or more tasks as done (shortcut for update -s done)")

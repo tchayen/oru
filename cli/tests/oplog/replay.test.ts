@@ -186,7 +186,7 @@ describe("oplog replay", () => {
         timestamp: "2024-01-01T00:02:00.000Z",
       }),
     ]);
-    // Then apply earlier update — should NOT override
+    // Then apply earlier update – should NOT override
     replayOps(db, [
       makeOp({
         id: "op-2",
@@ -358,7 +358,7 @@ describe("oplog replay", () => {
     expect(task!.priority).toBe("urgent");
   });
 
-  it("idempotent replay — applying same ops twice has no extra effect", async () => {
+  it("idempotent replay – applying same ops twice has no extra effect", async () => {
     const ops: OplogEntry[] = [
       makeOp({
         id: "op-1",
@@ -1009,7 +1009,7 @@ describe("oplog replay", () => {
       }),
     ]);
     const task = await getTask(ky, "t1");
-    // Op B (invalid) should not poison the LWW tiebreaker — Op A's valid value is preserved
+    // Op B (invalid) should not poison the LWW tiebreaker – Op A's valid value is preserved
     expect(task!.status).toBe("in_progress");
   });
 

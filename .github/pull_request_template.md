@@ -18,7 +18,7 @@ For applicable checklists (new command, new field, new status, new config), see 
 # Test plan
 
 <!--
-List exactly what you tested and how. Be specific — name the tests you added, commands you ran, and scenarios you verified. Do not use checkboxes.
+List exactly what you tested and how. Be specific - name the tests you added, commands you ran, and scenarios you verified. Do not use checkboxes.
 
-IMPORTANT: Do not claim to have manually tested anything you did not personally run. If you are an AI agent, you may only list automated tests (unit, integration) that were actually executed. Manual verification steps must be left for the human reviewer to complete and confirm — do not pre-fill or assert them on their behalf.
+IMPORTANT: Do not claim to have manually tested anything you did not personally run. If you are an AI agent, you may only list automated tests (unit, integration) that were actually executed. Manual verification steps must be left for the human reviewer to complete and confirm - do not pre-fill or assert them on their behalf.
 -->

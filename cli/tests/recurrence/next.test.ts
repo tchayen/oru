@@ -49,13 +49,13 @@ describe("nextOccurrence", () => {
       });
 
       it("picks earliest matching day from multiple", () => {
-        // March 10, 2026 is a Tuesday — next MO,WE,FR = Wednesday
+        // March 10, 2026 is a Tuesday – next MO,WE,FR = Wednesday
         const result = nextOccurrence("FREQ=WEEKLY;BYDAY=MO,WE,FR", d(2026, 3, 10));
         expect(result).toEqual(d(2026, 3, 11)); // Wednesday
       });
 
       it("wraps with interval > 1", () => {
-        // March 13, 2026 is a Friday — next MO with interval=2
+        // March 13, 2026 is a Friday – next MO with interval=2
         const result = nextOccurrence("FREQ=WEEKLY;INTERVAL=2;BYDAY=MO", d(2026, 3, 13));
         expect(result).toEqual(d(2026, 3, 23)); // skip 1 week, then Monday
       });

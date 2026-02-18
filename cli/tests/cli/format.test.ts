@@ -311,13 +311,13 @@ describe("overdue highlighting", () => {
         ...sampleTask,
         id: "def45678",
         title: "Future task",
-        due_at: "2099-12-31T15:30:00", // datetime (16 chars visual) — forces dueW=16
+        due_at: "2099-12-31T15:30:00", // datetime (16 chars visual) – forces dueW=16
         labels: [],
       };
       const output = formatTasksText([overdue, future]);
       const lines = output.split("\n");
       // The header line has the DUE column; check that both date rows
-      // are aligned identically — the overdue bold ANSI should NOT add extra padding
+      // are aligned identically – the overdue bold ANSI should NOT add extra padding
       // Strip ANSI codes to compare raw column positions
       // eslint-disable-next-line no-control-regex
       const stripAnsi = (s: string) => s.replace(/\u001b\[\d+(;\d+)*m/g, "");

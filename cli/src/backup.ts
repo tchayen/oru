@@ -14,7 +14,7 @@ function backupFilename(): string {
 
 /**
  * Create a consistent backup of the database using VACUUM INTO.
- * This is safe for WAL-mode databases — unlike fs.copyFileSync, it
+ * This is safe for WAL-mode databases – unlike fs.copyFileSync, it
  * produces a self-contained copy that includes any in-flight WAL data.
  * Returns the full path of the backup file.
  */

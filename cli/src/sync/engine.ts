@@ -52,7 +52,7 @@ export class SyncEngine {
     for (;;) {
       if (++iterations > this.maxPullIterations) {
         throw new Error(
-          `Sync pull loop exceeded ${this.maxPullIterations} iterations — aborting to prevent infinite loop. This likely indicates a bug in the remote backend.`,
+          `Sync pull loop exceeded ${this.maxPullIterations} iterations – aborting to prevent infinite loop. This likely indicates a bug in the remote backend.`,
         );
       }
 
@@ -69,7 +69,7 @@ export class SyncEngine {
         break;
       }
 
-      // Replay ALL ops (including our own) — replayOps is idempotent and
+      // Replay ALL ops (including our own) – replayOps is idempotent and
       // rebuilds tasks from the full oplog, ensuring the tasks table is
       // consistent even if local writeOp didn't update it directly.
       replayOps(this.db, result.entries);
