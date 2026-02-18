@@ -9,11 +9,11 @@ const { class: className = "" } = Astro.props;
 <div class="mini-code-wrap">
   <div
     class:list={[
-      "mini-code-content bg-bg-inset border border-border-subtle rounded-lg px-4 py-3 font-mono text-[13px] leading-[1.6] text-text-secondary overflow-x-auto",
+      "mini-code-content bg-bg-inset border border-border-subtle rounded-lg pl-4 py-3 font-mono text-[13px] leading-[1.6] text-text-secondary overflow-x-auto",
       className,
     ]}
   >
-    <slot />
+    <div class="w-max min-w-full pr-4"><slot /></div>
   </div>
   <button
     class="mini-code-copy copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-muted transition-all duration-150 cursor-pointer hover:text-text-secondary hover:bg-white/5"
