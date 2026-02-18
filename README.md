@@ -1,4 +1,11 @@
-# oru
+```
+ ██████╗ ██████╗ ██╗   ██╗
+██╔═══██╗██╔══██╗██║   ██║
+██║   ██║██████╔╝██║   ██║
+██║   ██║██╔══██╗██║   ██║
+╚██████╔╝██║  ██║╚██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝
+```
 
 Personal task manager for the terminal. Designed to be operated by your AI agent.
 
