@@ -1,11 +1,40 @@
 import { v7 as uuidv7 } from "uuid";
-import { customAlphabet } from "nanoid";
 
-const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 8);
+const BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const BASE62_SET = new Set(BASE62);
 
-/** Short random ID for tasks and devices. */
+/** Encode 16 bytes to a 22-character base62 string. */
+export function base62Encode(bytes: Uint8Array): string {
+  let n = 0n;
+  for (const b of bytes) {
+    n = (n << 8n) | BigInt(b);
+  }
+  const chars: string[] = [];
+  for (let i = 0; i < 22; i++) {
+    chars.push(BASE62[Number(n % 62n)]);
+    n /= 62n;
+  }
+  return chars.reverse().join("");
+}
+
+/** Validate that a string is a 22-character base62 ID. */
+export function isValidId(s: string): boolean {
+  if (s.length !== 22) {
+    return false;
+  }
+  for (const c of s) {
+    if (!BASE62_SET.has(c)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Time-sortable base62-encoded UUID v7 ID for tasks and devices. */
 export function generateId(): string {
-  return nanoid();
+  const buf = new Uint8Array(16);
+  uuidv7({}, buf);
+  return base62Encode(buf);
 }
 
 /** Time-sortable ID for oplog entries (sync cursoring relies on ordering). */

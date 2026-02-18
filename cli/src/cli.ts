@@ -53,6 +53,7 @@ import {
 import { bold, dim, white } from "./format/colors.js";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
 import { performBackup } from "./backup.js";
+import { isValidId } from "./id.js";
 import {
   sanitizeTitle,
   validateTitle as checkTitle,
@@ -357,6 +358,14 @@ export function createProgram(
           return;
         }
         if (opts.blockedBy && !validateBlockedBy(opts.blockedBy, json)) {
+          return;
+        }
+
+        if (opts.id && !isValidId(opts.id)) {
+          validationError(
+            json,
+            `Invalid ID format: "${opts.id}". IDs must be 22-character base62 strings.`,
+          );
           return;
         }
 
@@ -770,6 +779,18 @@ export function createProgram(
             return;
           }
           write(json ? formatTaskJson(task) : formatTaskText(task));
+          // Check for spawned recurring task
+          if (task.status === "done" && task.recurrence) {
+            const spawned = await service.getSpawnedTask(task.id);
+            if (spawned) {
+              if (json) {
+                write(JSON.stringify({ spawned: spawned }, null, 2));
+              } else {
+                write(`\n${dim("Next occurrence:")} ${formatRecurrence(task.recurrence)}`);
+                write(formatTaskText(spawned));
+              }
+            }
+          }
         } catch (err) {
           if (err instanceof AmbiguousPrefixError) {
             handleAmbiguousPrefix(err, json);
