@@ -14,18 +14,18 @@ import Badge from "./ui/Badge.astro";
           >oru context</code
         >, reads the JSON, and tells you Monday is your only free day to file
         taxes before Thursday's deadline. Every command is non-interactive
-        — no prompts, no confirmations, deterministic exit codes. Agents
+        – no prompts, no confirmations, deterministic exit codes. Agents
         do not need a browser, an API token, or special handling.
       </p>
       <p class="body max-w-[640px] mx-auto text-text-tertiary">
         Human-readable tables when you run it. Machine-readable JSON when
-        your agent does. Same commands, same behavior — no interactive mode
+        your agent does. Same commands, same behavior – no interactive mode
         to work around.
       </p>
     </div>
 
     <div
-      class="grid grid-cols-2 gap-6 mb-16 max-md:grid-cols-1 reveal"
+      class="grid grid-cols-2 gap-6 max-md:grid-cols-1 reveal"
       data-delay="80"
     >
       <div class="flex flex-col gap-4 min-w-0">
@@ -58,49 +58,5 @@ import Badge from "./ui/Badge.astro";
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-6 max-md:grid-cols-1">
-      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
-        <h3 class="">Agents retry. oru handles it.</h3>
-        <p class="body text-text-secondary">
-          The <code
-            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-text-primary"
-            >--id</code
-          > flag makes creates idempotent — your agent can safely retry without
-          creating duplicate tasks.
-        </p>
-        <Terminal title="idempotent creates">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
-          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
-          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
-          <span class="blank"></span>
-          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
-          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
-          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
-        </Terminal>
-      </div>
-
-      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="160">
-        <h3 class="">Key-value metadata on any task.</h3>
-        <p class="body text-text-secondary">
-          Link tasks to PRs, projects, sprints, or anything else. The <code
-            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-text-primary"
-            >--meta</code
-          > flag takes arbitrary key-value pairs — useful for your own organization
-          and for agents to track provenance.
-        </p>
-        <Terminal title="metadata">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Review PR feedback"</span> \</span>
-          <span class="line">    <span class="flag">--meta</span> <span class="val">agent=claude-code</span> \</span>
-          <span class="line">    <span class="flag">--meta</span> <span class="val">pr=142</span> \</span>
-          <span class="line">    <span class="flag">--meta</span> <span class="val">run=a1b2c3</span></span>
-          <span class="line"><span class="output">019414a4  </span><span class="cmd">Review PR feedback</span></span>
-          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
-          <span class="line"><span class="output">  Metadata:</span></span>
-          <span class="line"><span class="output">    agent: claude-code</span></span>
-          <span class="line"><span class="output">    pr: 142</span></span>
-          <span class="line"><span class="output">    run: a1b2c3</span></span>
-        </Terminal>
-      </div>
-    </div>
   </div>
 </section>
