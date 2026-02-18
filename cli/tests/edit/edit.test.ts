@@ -11,6 +11,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     priority: "medium",
     owner: null,
     due_at: null,
+    recurrence: null,
     blocked_by: [],
     labels: [],
     notes: [],

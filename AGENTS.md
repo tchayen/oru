@@ -46,6 +46,7 @@ Each task has the following fields:
 - **priority** — `low`, `medium`, `high`, `urgent`
 - **owner** — Optional assignee
 - **due_at** — Optional ISO 8601 due date
+- **recurrence** — Optional RRULE string (e.g. `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO`). Prefix with `after:` for completion-based recurrence (next due computed from completion time). When a recurring task is marked done, the next occurrence is automatically spawned.
 - **blocked_by** — Array of task IDs this task depends on
 - **labels** — Array of string labels (e.g. `bug`, `feature`, `refactor`)
 - **notes** — Append-only array of text notes
@@ -71,6 +72,8 @@ Each task has the following fields:
 1. Call `update_task` to set status to `done`.
 2. Use `add_note` to leave a brief summary of what was done.
 3. Check `get_context` again — completing a task may unblock others.
+4. If the task had `recurrence`, the next occurrence was automatically created
+   with a new due date. Check the response or call `list_tasks` to see it.
 
 ### Task decomposition
 
@@ -90,6 +93,8 @@ oru list --json                              # all active tasks
 oru add "Fix bug" -p high -d tomorrow --json
 oru update <id> -s done --json
 oru done <id>                                # shorthand for marking done
+oru add "Standup" -r weekly -d monday --json # recurring task
+oru update <id> --repeat none --json         # remove recurrence
 ```
 
 Set `ORU_FORMAT=json` or `output_format = "json"` in
@@ -111,3 +116,7 @@ Set `ORU_FORMAT=json` or `output_format = "json"` in
   blockers are all done becomes actionable.
 - **Done tasks are hidden**: `list_tasks` and `list` exclude done tasks by
   default. Pass `status: "done"` or `-s done` to see them.
+- **Recurring tasks**: Set `recurrence` to an RRULE string (e.g.
+  `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO,WE,FR`). Prefix with `after:` for
+  completion-based recurrence. When the task is marked done, the next
+  occurrence is spawned automatically with a deterministic ID.

@@ -71,4 +71,10 @@ export const appMigrations: Migration[] = [
       d.exec("ALTER TABLE tasks ADD COLUMN owner TEXT");
     },
   },
+  {
+    version: 7,
+    up: (d) => {
+      d.exec("ALTER TABLE tasks ADD COLUMN recurrence TEXT");
+    },
+  },
 ];

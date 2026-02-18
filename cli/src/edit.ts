@@ -11,6 +11,7 @@ import {
   type Status,
   type Priority,
 } from "./tasks/types.js";
+import { isValidRecurrence } from "./recurrence/validate.js";
 
 export function serializeTask(task: Task): string {
   const frontmatter: Record<string, unknown> = {
@@ -25,6 +26,10 @@ export function serializeTask(task: Task): string {
 
   if (task.due_at) {
     frontmatter.due = task.due_at;
+  }
+
+  if (task.recurrence) {
+    frontmatter.recurrence = task.recurrence;
   }
 
   frontmatter.blocked_by = task.blocked_by;
@@ -113,6 +118,19 @@ export function parseDocument(
       throw new Error(`Invalid due date: ${parsedDue}. The date is not a valid calendar date.`);
     }
     fields.due_at = parsedDue;
+  }
+
+  // Recurrence
+  const parsedRecurrence = parsed.recurrence;
+  if (parsedRecurrence === undefined || parsedRecurrence === "") {
+    if (existing.recurrence !== null && existing.recurrence !== undefined) {
+      fields.recurrence = null;
+    }
+  } else if (typeof parsedRecurrence === "string" && parsedRecurrence !== existing.recurrence) {
+    if (!isValidRecurrence(parsedRecurrence)) {
+      throw new Error(`Invalid recurrence: ${parsedRecurrence}.`);
+    }
+    fields.recurrence = parsedRecurrence;
   }
 
   // Blocked by

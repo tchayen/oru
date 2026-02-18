@@ -37,6 +37,7 @@ import {
 import { parseDate } from "./dates/parse.js";
 import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "./edit.js";
 import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
+import { parseRecurrence, formatRecurrence } from "./recurrence/index.js";
 import { SHOW_SERVER } from "./flags.js";
 import { AmbiguousPrefixError, SORT_FIELDS, type SortField } from "./tasks/repository.js";
 import {
@@ -315,12 +316,16 @@ export function createProgram(
     .option("-l, --label <labels...>", "Add labels")
     .option("-b, --blocked-by <ids...>", "IDs of tasks that block this task")
     .option("-n, --note <note>", "Add an initial note")
+    .option(
+      "-r, --repeat <rule>",
+      "Recurrence rule (e.g. daily, weekly, 'every monday', FREQ=DAILY)",
+    )
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .addHelpText(
       "after",
-      '\nExamples:\n  $ oru add "Fix login bug"\n  $ oru add "Fix login bug" -p high -d friday\n  $ oru add "Write docs" -l docs -n "Include API section"\n  $ oru add "Deploy v2" -s todo -d 2026-03-01 --assign alice',
+      '\nExamples:\n  $ oru add "Fix login bug"\n  $ oru add "Fix login bug" -p high -d friday\n  $ oru add "Write docs" -l docs -n "Include API section"\n  $ oru add "Deploy v2" -s todo -d 2026-03-01 --assign alice\n  $ oru add "Water plants" -r "every 3 days" -d today',
     )
     .action(
       async (
@@ -334,6 +339,7 @@ export function createProgram(
           label?: string[];
           blockedBy?: string[];
           note?: string;
+          repeat?: string;
           meta?: string[];
           json?: boolean;
           plaintext?: boolean;
@@ -381,6 +387,16 @@ export function createProgram(
           dueAt = parsed;
         }
 
+        let recurrence: string | undefined;
+        if (opts.repeat) {
+          try {
+            recurrence = parseRecurrence(opts.repeat);
+          } catch (err) {
+            validationError(json, err instanceof Error ? err.message : String(err));
+            return;
+          }
+        }
+
         const metadata = opts.meta ? parseMetadata(opts.meta) : undefined;
         if (metadata && !validateMetadata(metadata, json)) {
           return;
@@ -396,6 +412,7 @@ export function createProgram(
           priority: opts.priority,
           owner,
           due_at: dueAt,
+          recurrence,
           blocked_by: opts.blockedBy,
           labels: opts.label ?? undefined,
           notes: opts.note ? [opts.note] : undefined,
@@ -547,12 +564,13 @@ export function createProgram(
     .option("-b, --blocked-by <ids...>", "Set blocker task IDs (replaces full list)")
     .option("-n, --note <note>", "Append a note")
     .option("--clear-notes", "Remove all notes")
+    .option("-r, --repeat <rule>", "Recurrence rule ('none' to clear)")
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .addHelpText(
       "after",
-      '\nExamples:\n  $ oru update 019414a3 -s in_progress\n  $ oru update 019414a3 -l urgent -d tomorrow\n  $ oru update 019414a3 -n "Blocked on API review"\n  $ oru update 019414a3 -t "New title" -p high',
+      '\nExamples:\n  $ oru update 019414a3 -s in_progress\n  $ oru update 019414a3 -l urgent -d tomorrow\n  $ oru update 019414a3 -n "Blocked on API review"\n  $ oru update 019414a3 -t "New title" -p high\n  $ oru update 019414a3 -r "every monday"',
     )
     .action(
       async (
@@ -568,6 +586,7 @@ export function createProgram(
           blockedBy?: string[];
           note?: string;
           clearNotes?: boolean;
+          repeat?: string;
           meta?: string[];
           json?: boolean;
           plaintext?: boolean;
@@ -654,6 +673,19 @@ export function createProgram(
 
           if (opts.blockedBy) {
             updateFields.blocked_by = opts.blockedBy;
+          }
+
+          if (opts.repeat !== undefined) {
+            if (opts.repeat.toLowerCase() === "none") {
+              updateFields.recurrence = null;
+            } else {
+              try {
+                updateFields.recurrence = parseRecurrence(opts.repeat);
+              } catch (err) {
+                validationError(json, err instanceof Error ? err.message : String(err));
+                return;
+              }
+            }
           }
 
           if (opts.meta) {
@@ -884,12 +916,38 @@ export function createProgram(
       });
   }
 
-  addStatusShortcut(
-    "done",
-    "done",
-    "Mark one or more tasks as done (shortcut for update -s done)",
-    "\nExamples:\n  $ oru done 019414a3\n  $ oru done 019414a3 019414b7",
-  );
+  // done — separate from addStatusShortcut to handle recurring task spawn
+  program
+    .command("done <id...>")
+    .description("Mark one or more tasks as done (shortcut for update -s done)")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .addHelpText("after", "\nExamples:\n  $ oru done 019414a3\n  $ oru done 019414a3 019414b7")
+    .action(async (ids: string[], opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
+      for (const id of ids) {
+        await withTaskLookup(
+          id,
+          json,
+          () => service.update(id, { status: "done" }),
+          async (task) => {
+            write(json ? formatTaskJson(task) : formatTaskText(task));
+            // Check for spawned recurring task
+            if (task.recurrence) {
+              const spawned = await service.getSpawnedTask(task.id);
+              if (spawned) {
+                if (json) {
+                  write(JSON.stringify({ spawned: spawned }, null, 2));
+                } else {
+                  write(`\n${dim("Next occurrence:")} ${formatRecurrence(task.recurrence)}`);
+                  write(formatTaskText(spawned));
+                }
+              }
+            }
+          },
+        );
+      }
+    });
   addStatusShortcut(
     "start",
     "in_progress",

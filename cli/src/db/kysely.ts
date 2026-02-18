@@ -13,6 +13,7 @@ export interface TaskTable {
   created_at: string;
   due_at: string | null;
   owner: string | null;
+  recurrence: string | null;
   updated_at: string;
   deleted_at: string | null;
 }

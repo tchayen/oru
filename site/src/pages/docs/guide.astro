@@ -45,6 +45,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       <tr><td><code>-l, --label</code></td><td>Add one or more labels</td></tr>
       <tr><td><code>-b, --blocked-by</code></td><td>IDs of blocking tasks</td></tr>
       <tr><td><code>-n, --note</code></td><td>Add an initial note</td></tr>
+      <tr><td><code>-r, --repeat</code></td><td>Recurrence rule (e.g. <code>daily</code>, <code>every monday</code>)</td></tr>
       <tr><td><code>--meta</code></td><td>Metadata key=value pairs</td></tr>
       <tr><td><code>--id</code></td><td>Provide a task ID (for idempotent creates)</td></tr>
     </tbody>
@@ -195,6 +196,67 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">-b</span> <span class="val">019414a3</span> <span class="val">019414b7</span><br />
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--actionable</span>
   </MiniCode>
+
+  <h2>Recurring tasks</h2>
+  <p>
+    Add <code>-r</code> (<code>--repeat</code>) to make a task recurring. When you mark
+    a recurring task as done, the next occurrence is automatically created with a new due date.
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Water plants"</span> <span class="flag">-r</span> <span class="str">"every 3 days"</span> <span class="flag">-d</span> <span class="val">today</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Standup"</span> <span class="flag">-r</span> <span class="str">"every mon,wed,fri"</span> <span class="flag">-d</span> <span class="val">monday</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Monthly report"</span> <span class="flag">-r</span> <span class="val">monthly</span> <span class="flag">-d</span> <span class="str">"every 1st"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Laundry"</span> <span class="flag">-r</span> <span class="str">"after:weekly"</span> <span class="flag">-d</span> <span class="val">today</span>
+  </MiniCode>
+
+  <h3>Calendar-based vs. completion-based</h3>
+  <p>
+    By default, the next due date advances from the current <code>due_at</code>. This is
+    <strong>calendar-based</strong> &mdash; good for tasks that happen on fixed schedules
+    regardless of when you complete them.
+  </p>
+  <p>
+    Prefix with <code>after:</code> for <strong>completion-based</strong> recurrence. The
+    next due date is computed from when you complete the task. Good for tasks like &ldquo;every
+    3 days after I last did it.&rdquo;
+  </p>
+
+  <h3>Supported formats</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Input</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>daily</code></td><td>Every day</td></tr>
+      <tr><td><code>weekly</code></td><td>Every week</td></tr>
+      <tr><td><code>monthly</code></td><td>Every month</td></tr>
+      <tr><td><code>yearly</code></td><td>Every year</td></tr>
+      <tr><td><code>weekdays</code></td><td>Monday through Friday</td></tr>
+      <tr><td><code>every 3 days</code></td><td>Every N days/weeks/months/years</td></tr>
+      <tr><td><code>every monday</code></td><td>Specific day of the week</td></tr>
+      <tr><td><code>every mon,wed,fri</code></td><td>Multiple days of the week</td></tr>
+      <tr><td><code>every 15th</code></td><td>Specific day of the month</td></tr>
+      <tr><td><code>FREQ=DAILY</code></td><td>Raw RRULE (for agents)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Removing recurrence</h3>
+  <p>
+    Use <code>--repeat none</code> on <code>update</code> to stop a task from recurring.
+    The current task remains; it just won&rsquo;t spawn a new occurrence when completed.
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-r</span> <span class="val">none</span>
+  </MiniCode>
+
+  <h3>What carries over</h3>
+  <p>
+    The spawned task copies: title, priority, owner, labels, metadata, and recurrence rule.
+    It resets: status (to <code>todo</code>), notes, and blocked-by dependencies.
+  </p>
 
   <h2>Metadata</h2>
   <p>
