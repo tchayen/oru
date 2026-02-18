@@ -13,7 +13,7 @@ const { title, description } = Astro.props;
 const pages = [
   { href: "/docs/getting-started", label: "Getting started" },
   { href: "/docs/guide", label: "Usage guide" },
-  { href: "/docs/api", label: "API reference" },
+  // { href: "/docs/api", label: "API reference" }, // hidden until server feature ships
 ];
 
 const currentPath = Astro.url.pathname.replace(/\/$/, "");
