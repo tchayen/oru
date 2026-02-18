@@ -25,6 +25,9 @@ app/android/
 *.mobileprovision
 *.pem
 
+# Copied at pack time by prepack script
+cli/README.md
+
 # Debug logs
 npm-debug.*
 yarn-debug.*
