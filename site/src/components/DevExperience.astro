@@ -1,11 +1,10 @@
 ---
-import FeatureCard from "./ui/FeatureCard.astro";
-import MiniCode from "./ui/MiniCode.astro";
+import Terminal from "./ui/Terminal.astro";
 ---
 
 <section class="py-24 bg-bg-base">
   <div class="container">
-    <div class="text-center mb-12 reveal">
+    <div class="text-center mb-16 reveal">
       <p class="section-label">The small things</p>
       <h2 class="mb-4">Sharp edges, filed down.</h2>
       <p class="body-lg mx-auto text-text-secondary">
@@ -13,76 +12,156 @@ import MiniCode from "./ui/MiniCode.astro";
       </p>
     </div>
 
-    <div
-      class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1"
-    >
-      <FeatureCard title="Natural language dates" class="reveal" data-delay="0">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">add</span>
-          <span class="str">"Ship v2"</span>
-          <span class="flag">--due</span>
-          <span class="val">tomorrow</span>
-        </MiniCode>
-        Parse "tomorrow", "friday", "next week", or any date string. No rigid formats
-        required.
-      </FeatureCard>
+    <div class="grid grid-cols-2 gap-6 max-md:grid-cols-1">
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
+        <h3>Natural language dates.</h3>
+        <p class="body text-text-secondary">
+          Parse "tomorrow", "friday", "next week", or any date string. No rigid
+          formats required.
+        </p>
+        <Terminal title="due dates">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Ship v2"</span> <span class="flag">--due</span> <span class="val">tomorrow</span></span>
+          <span class="line"><span class="output">019414a5  </span><span class="cmd">Ship v2</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="line"><span class="output">  Due: 2026-02-19</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Sprint review"</span> <span class="flag">--due</span> <span class="val">friday</span></span>
+          <span class="line"><span class="output">019414a6  </span><span class="cmd">Sprint review</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="line"><span class="output">  Due: 2026-02-21</span></span>
+        </Terminal>
+      </div>
 
-      <FeatureCard title="Context view" class="reveal" data-delay="80">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">context</span>
-        </MiniCode>
-        See what needs attention right now – overdue tasks, in-progress work, and
-        what's actionable next.
-      </FeatureCard>
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
+        <h3>See what needs attention.</h3>
+        <p class="body text-text-secondary">
+          One command to surface overdue tasks, in-progress work, and what's
+          actionable next.
+        </p>
+        <Terminal title="oru context">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="val">Overdue (1):</span></span>
+          <span class="line"><span class="output">  019414a3  </span><span class="cmd">Refactor auth middleware</span><span class="output">  high  Feb 16</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="val">Due soon (1):</span></span>
+          <span class="line"><span class="output">  019414a5  </span><span class="cmd">Ship v2</span><span class="output">  medium  tomorrow</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="val">In progress (1):</span></span>
+          <span class="line"><span class="output">  fj6EmFhu  </span><span class="cmd">Write migration tests</span><span class="output">  medium</span></span>
+        </Terminal>
+      </div>
 
-      <FeatureCard title="Task dependencies" class="reveal" data-delay="160">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">add</span>
-          <span class="str">"Deploy"</span>
-          <span class="flag">--blocked-by</span>
-          <span class="val">3</span>
-        </MiniCode>
-        Block tasks until prerequisites are done. Filter to actionable work with
-        <code>--actionable</code>.
-      </FeatureCard>
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
+        <h3>Block until prerequisites are done.</h3>
+        <p class="body text-text-secondary">
+          Mark tasks as blocked by other tasks. Filter to what you can actually
+          work on with <code
+            class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-text-primary"
+            >--actionable</code
+          >.
+        </p>
+        <Terminal title="task dependencies">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">--blocked-by</span> <span class="val">019414a3</span></span>
+          <span class="line"><span class="output">019414a7  </span><span class="cmd">Deploy</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="line"><span class="output">  Blocked by: 019414a3</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--actionable</span></span>
+          <span class="line"><span class="output">[ ]  yX9K9UbF  </span><span class="cmd">Update API docs</span><span class="output">  low</span></span>
+        </Terminal>
+      </div>
 
-      <FeatureCard title="Labels" class="reveal" data-delay="0">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">list</span>
-          <span class="flag">--label</span>
-          <span class="val">backend</span>
-        </MiniCode>
-        Tag and filter tasks. Labels are freeform strings – no predefined categories
-        to manage.
-      </FeatureCard>
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
+        <h3>Tag and filter tasks.</h3>
+        <p class="body text-text-secondary">
+          Labels are freeform strings – no predefined categories to manage.
+          Add multiple labels, then filter by any of them.
+        </p>
+        <Terminal title="labels">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Fix bug"</span> <span class="flag">-l</span> <span class="val">bug</span> <span class="val">frontend</span></span>
+          <span class="line"><span class="output">019414a8  </span><span class="cmd">Fix bug</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="line"><span class="output">  Labels: bug, frontend</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">-l</span> <span class="val">bug</span></span>
+          <span class="line"><span class="output">[ ]  019414a8  </span><span class="cmd">Fix bug</span><span class="output">  medium</span></span>
+        </Terminal>
+      </div>
 
-      <FeatureCard title="Pipe-friendly" class="reveal" data-delay="80">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">get</span>
-          <span class="val">1</span>
-          <span class="flag">--json</span> | <span class="cmd">jq</span>
-          <span class="str">'.due'</span>
-        </MiniCode>
-        Non-interactive by design. Compose with jq, grep, and scripts – or let
-        your agent call it directly.
-      </FeatureCard>
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
+        <h3>Pipe-friendly by default.</h3>
+        <p class="body text-text-secondary">
+          Non-interactive by design. Compose with jq, grep, and scripts – or
+          let your agent call it directly.
+        </p>
+        <Terminal title="json output">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--json</span> | <span class="cmd">jq</span> <span class="str">'.[].title'</span></span>
+          <span class="line"><span class="str">"Refactor auth middleware"</span></span>
+          <span class="line"><span class="str">"Write migration tests"</span></span>
+          <span class="line"><span class="str">"Update API docs"</span></span>
+        </Terminal>
+      </div>
 
-      <FeatureCard title="Shell completions" class="reveal" data-delay="160">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">completions</span>
-          <span class="val">bash</span>
-          | <span class="val">zsh</span>
-          | <span class="val">fish</span>
-        </MiniCode>
-        Tab-complete commands, flags, and values. Ships with scripts for bash, zsh,
-        and fish.
-      </FeatureCard>
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
+        <h3>Shell completions for everything.</h3>
+        <p class="body text-text-secondary">
+          Tab-complete commands, flags, and values. Ships with scripts for bash,
+          zsh, and fish.
+        </p>
+        <Terminal title="completions">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span></span>
+          <span class="line"><span class="output">Detected shell: zsh</span></span>
+          <span class="line"><span class="output">Completions written to ~/.zfunc/_oru</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="output">&lt;tab&gt;</span></span>
+          <span class="line"><span class="output">add      context  delete   done     edit     get</span></span>
+          <span class="line"><span class="output">labels   list     log      review   start    update</span></span>
+        </Terminal>
+      </div>
+
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
+        <h3>Agents retry. oru handles it.</h3>
+        <p class="body text-text-secondary">
+          The <code
+            class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-text-primary"
+            >--id</code
+          > flag makes creates idempotent – your agent can safely retry without
+          creating duplicate tasks.
+        </p>
+        <Terminal title="idempotent creates">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
+          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
+          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+        </Terminal>
+      </div>
+
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
+        <h3>Key-value metadata on any task.</h3>
+        <p class="body text-text-secondary">
+          Link tasks to PRs, projects, sprints, or anything else. The <code
+            class="font-mono text-sm bg-bg-surface px-1.5 py-0.5 rounded text-text-primary"
+            >--meta</code
+          > flag takes arbitrary key-value pairs – useful for your own organization
+          and for agents to track provenance.
+        </p>
+        <Terminal title="metadata">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Review PR feedback"</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">agent=claude-code</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">pr=142</span> \</span>
+          <span class="line">    <span class="flag">--meta</span> <span class="val">run=a1b2c3</span></span>
+          <span class="line"><span class="output">019414a4  </span><span class="cmd">Review PR feedback</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="line"><span class="output">  Metadata:</span></span>
+          <span class="line"><span class="output">    agent: claude-code</span></span>
+          <span class="line"><span class="output">    pr: 142</span></span>
+          <span class="line"><span class="output">    run: a1b2c3</span></span>
+        </Terminal>
+      </div>
     </div>
   </div>
 </section>
