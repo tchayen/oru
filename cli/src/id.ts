@@ -1,4 +1,4 @@
-import { v7 as uuidv7 } from "uuid";
+import { v4 as uuidv4, v7 as uuidv7 } from "uuid";
 
 const BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const BASE62_SET = new Set(BASE62);
@@ -30,10 +30,10 @@ export function isValidId(s: string): boolean {
   return true;
 }
 
-/** Time-sortable base62-encoded UUID v7 ID for tasks and devices. */
+/** Random base62-encoded UUID v4 ID for tasks and devices. */
 export function generateId(): string {
   const buf = new Uint8Array(16);
-  uuidv7({}, buf);
+  uuidv4({}, buf);
   return base62Encode(buf);
 }
 
