@@ -47,6 +47,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       <tr><td><code>-n, --note</code></td><td>Add an initial note</td></tr>
       <tr><td><code>--meta</code></td><td>Metadata key=value pairs</td></tr>
       <tr><td><code>--id</code></td><td>Provide a task ID (for idempotent creates)</td></tr>
+      <tr><td><code>--json</code> / <code>--plaintext</code></td><td>Override output format for this command</td></tr>
     </tbody>
   </table>
 
@@ -86,8 +87,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   <h3>Sorting</h3>
   <p>
     Use <code>--sort</code> to change the order. Default is <code>priority</code>.
-    Available fields: <code>priority</code>, <code>due</code>, <code>status</code>,
-    <code>created</code>, <code>updated</code>, <code>title</code>.
+    Available fields: <code>priority</code>, <code>due</code>, <code>title</code>, <code>created</code>.
   </p>
 
   <h3>Pagination</h3>
@@ -193,6 +193,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   </p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">-b</span> <span class="val">019414a3</span> <span class="val">019414b7</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-b</span> <span class="val">019414c1</span>  <span class="flag"># replaces the full blocker list</span><br />
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--actionable</span>
   </MiniCode>
 
@@ -269,8 +270,10 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">mcp</span>
   </MiniCode>
   <p>
-    Add it to your MCP client configuration (e.g. Claude Desktop) and the agent
-    can create, list, update, and complete tasks natively.
+    Add it to your MCP client configuration (e.g. Claude Desktop). Available tools:
+    <code>add_task</code>, <code>update_task</code>, <code>delete_task</code>,
+    <code>list_tasks</code>, <code>get_task</code>, <code>get_context</code>,
+    <code>add_note</code>, <code>list_labels</code>.
   </p>
 
   <h3>AGENTS.md</h3>
@@ -278,6 +281,21 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     Drop an <code>AGENTS.md</code> file in your project root to tell AI agents
     how to use oru for task tracking. See the
     <a href="https://github.com/tchayen/oru">repository</a> for an example.
+  </p>
+
+  <h2>Telemetry</h2>
+  <p>
+    oru collects anonymous usage data to help improve the tool. Check status or
+    opt out at any time:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">telemetry</span> <span class="sub">status</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">telemetry</span> <span class="sub">disable</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">telemetry</span> <span class="sub">enable</span>
+  </MiniCode>
+  <p>
+    You can also set <code>telemetry = false</code> in your config, or export
+    <code>DO_NOT_TRACK=1</code> to disable it without touching the config file.
   </p>
 
   <h2>Backup</h2>
