@@ -23,7 +23,14 @@ export function performBackup(db: Database.Database, backupDir: string): string 
     ? path.join(os.homedir(), backupDir.slice(1))
     : backupDir;
   fs.mkdirSync(resolved, { recursive: true });
-  const dest = path.join(resolved, backupFilename());
+  const base = backupFilename();
+  const stem = base.slice(0, -".db".length);
+  let dest = path.join(resolved, base);
+  let i = 1;
+  while (fs.existsSync(dest)) {
+    dest = path.join(resolved, `${stem}-${i}.db`);
+    i++;
+  }
   db.exec(`VACUUM INTO '${dest.replace(/'/g, "''")}'`);
   return dest;
 }
