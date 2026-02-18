@@ -40,8 +40,29 @@ jobs:
       - name: Test
         run: pnpm test
 
-  bundle-size:
+  changes:
     if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      cli: ${{ steps.filter.outputs.cli }}
+    steps:
+      - name: Check for CLI changes
+        id: filter
+        run: |
+          FILES=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq '.[].filename')
+          if echo "$FILES" | grep -q '^cli/'; then
+            echo "cli=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "cli=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  bundle-size:
+    needs: changes
+    if: needs.changes.outputs.cli == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
