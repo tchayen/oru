@@ -21,12 +21,12 @@ import Terminal from "./ui/Terminal.astro";
         </p>
         <Terminal title="due dates">
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Ship v2"</span> <span class="flag">--due</span> <span class="val">tomorrow</span></span>
-          <span class="line"><span class="output">019414a5  </span><span class="cmd">Ship v2</span></span>
+          <span class="line"><span class="output">aK4nR8tP1mE  </span><span class="cmd">Ship v2</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
           <span class="line"><span class="output">  Due: 2026-02-19</span></span>
           <span class="blank"></span>
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Sprint review"</span> <span class="flag">--due</span> <span class="val">friday</span></span>
-          <span class="line"><span class="output">019414a6  </span><span class="cmd">Sprint review</span></span>
+          <span class="line"><span class="output">bL5oS9uQ2nF  </span><span class="cmd">Sprint review</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
           <span class="line"><span class="output">  Due: 2026-02-21</span></span>
         </Terminal>
@@ -42,13 +42,13 @@ import Terminal from "./ui/Terminal.astro";
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span></span>
           <span class="blank"></span>
           <span class="line"><span class="val">Overdue (1):</span></span>
-          <span class="line"><span class="output">  019414a3  </span><span class="cmd">Refactor auth middleware</span><span class="output">  high  Feb 16</span></span>
+          <span class="line"><span class="output">  hJ7kMp3nQrs  </span><span class="cmd">Refactor auth middleware</span><span class="output">  high  Feb 16</span></span>
           <span class="blank"></span>
           <span class="line"><span class="val">Due soon (1):</span></span>
-          <span class="line"><span class="output">  019414a5  </span><span class="cmd">Ship v2</span><span class="output">  medium  tomorrow</span></span>
+          <span class="line"><span class="output">  aK4nR8tP1mE  </span><span class="cmd">Ship v2</span><span class="output">  medium  tomorrow</span></span>
           <span class="blank"></span>
           <span class="line"><span class="val">In progress (1):</span></span>
-          <span class="line"><span class="output">  fj6EmFhu  </span><span class="cmd">Write migration tests</span><span class="output">  medium</span></span>
+          <span class="line"><span class="output">  fP9sW3yU6rJ  </span><span class="cmd">Write migration tests</span><span class="output">  medium</span></span>
         </Terminal>
       </div>
 
@@ -62,13 +62,13 @@ import Terminal from "./ui/Terminal.astro";
           >.
         </p>
         <Terminal title="task dependencies">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">--blocked-by</span> <span class="val">019414a3</span></span>
-          <span class="line"><span class="output">019414a7  </span><span class="cmd">Deploy</span></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy"</span> <span class="flag">--blocked-by</span> <span class="val">hJ7kMp3nQrs</span></span>
+          <span class="line"><span class="output">cM6pT0vR3oG  </span><span class="cmd">Deploy</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
-          <span class="line"><span class="output">  Blocked by: 019414a3</span></span>
+          <span class="line"><span class="output">  Blocked by: hJ7kMp3nQrs</span></span>
           <span class="blank"></span>
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">--actionable</span></span>
-          <span class="line"><span class="output">[ ]  yX9K9UbF  </span><span class="cmd">Update API docs</span><span class="output">  low</span></span>
+          <span class="line"><span class="output">[ ]  gQ0tX4zV7sK  </span><span class="cmd">Update API docs</span><span class="output">  low</span></span>
         </Terminal>
       </div>
 
@@ -80,12 +80,12 @@ import Terminal from "./ui/Terminal.astro";
         </p>
         <Terminal title="labels">
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Fix bug"</span> <span class="flag">-l</span> <span class="val">bug</span> <span class="val">frontend</span></span>
-          <span class="line"><span class="output">019414a8  </span><span class="cmd">Fix bug</span></span>
+          <span class="line"><span class="output">eO8rV2xT5qI  </span><span class="cmd">Fix bug</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
           <span class="line"><span class="output">  Labels: bug, frontend</span></span>
           <span class="blank"></span>
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span> <span class="flag">-l</span> <span class="val">bug</span></span>
-          <span class="line"><span class="output">[ ]  019414a8  </span><span class="cmd">Fix bug</span><span class="output">  medium</span></span>
+          <span class="line"><span class="output">[ ]  eO8rV2xT5qI  </span><span class="cmd">Fix bug</span><span class="output">  medium</span></span>
         </Terminal>
       </div>
 
@@ -149,12 +149,12 @@ import Terminal from "./ui/Terminal.astro";
           creating duplicate tasks.
         </p>
         <Terminal title="idempotent creates">
-          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
-          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">hJ7kMp3nQrs</span></span>
+          <span class="line"><span class="output">hJ7kMp3nQrs  </span><span class="cmd">Deploy to staging</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
           <span class="blank"></span>
-          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">019414a3-...</span></span>
-          <span class="line"><span class="output">019414a3  </span><span class="cmd">Deploy to staging</span></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deploy to staging"</span> <span class="flag">--id</span> <span class="val">hJ7kMp3nQrs</span></span>
+          <span class="line"><span class="output">hJ7kMp3nQrs  </span><span class="cmd">Deploy to staging</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
         </Terminal>
       </div>
@@ -173,7 +173,7 @@ import Terminal from "./ui/Terminal.astro";
           <span class="line">    <span class="flag">--meta</span> <span class="val">agent=claude-code</span> \</span>
           <span class="line">    <span class="flag">--meta</span> <span class="val">pr=142</span> \</span>
           <span class="line">    <span class="flag">--meta</span> <span class="val">run=a1b2c3</span></span>
-          <span class="line"><span class="output">019414a4  </span><span class="cmd">Review PR feedback</span></span>
+          <span class="line"><span class="output">dN7qU1wS4pH  </span><span class="cmd">Review PR feedback</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
           <span class="line"><span class="output">  Metadata:</span></span>
           <span class="line"><span class="output">    agent: claude-code</span></span>
