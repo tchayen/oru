@@ -258,17 +258,9 @@ describe("CLI parse", () => {
 
   it("add --id creates task with given ID", async () => {
     const p = createProgram(db, capture());
-    await p.parseAsync([
-      "node",
-      "oru",
-      "add",
-      "ID task",
-      "--id",
-      "customID00000000000000",
-      "--json",
-    ]);
+    await p.parseAsync(["node", "oru", "add", "ID task", "--id", "customIDXaa", "--json"]);
     const parsed = JSON.parse(output.trim());
-    expect(parsed.id).toBe("customID00000000000000");
+    expect(parsed.id).toBe("customIDXaa");
   });
 
   it("add --id with invalid format gives validation error", async () => {
@@ -280,27 +272,11 @@ describe("CLI parse", () => {
 
   it("add --id is idempotent — returns existing task on re-run", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync([
-      "node",
-      "oru",
-      "add",
-      "First run",
-      "--id",
-      "idemID0000000000000000",
-      "--json",
-    ]);
+    await p1.parseAsync(["node", "oru", "add", "First run", "--id", "idemIDXaaaa", "--json"]);
     const first = JSON.parse(output.trim());
 
     const p2 = createProgram(db, capture());
-    await p2.parseAsync([
-      "node",
-      "oru",
-      "add",
-      "Second run",
-      "--id",
-      "idemID0000000000000000",
-      "--json",
-    ]);
+    await p2.parseAsync(["node", "oru", "add", "Second run", "--id", "idemIDXaaaa", "--json"]);
     const second = JSON.parse(output.trim());
 
     expect(second.id).toBe(first.id);
@@ -1411,22 +1387,22 @@ describe("CLI parse", () => {
   // Ambiguous prefix tests
   it("get shows ambiguous prefix error in text mode", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "aaaa1111aaaaaaaaaaaaaa"]);
+    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "aaaa1AAAAAA"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "aaaa2222aaaaaaaaaaaaaa"]);
+    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "aaaa2AAAAAA"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "get", "aaaa"]);
     expect(output).toContain("ambiguous");
-    expect(output).toContain("aaaa1111aaaaaaaaaaaaaa");
-    expect(output).toContain("aaaa2222aaaaaaaaaaaaaa");
+    expect(output).toContain("aaaa1AAAAAA");
+    expect(output).toContain("aaaa2AAAAAA");
   });
 
   it("get --json returns ambiguous_prefix error", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "bbbb1111bbbbbbbbbbbbbb"]);
+    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "bbbb1BBBBBB"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "bbbb2222bbbbbbbbbbbbbb"]);
+    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "bbbb2BBBBBB"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "get", "bbbb", "--json"]);
@@ -1438,9 +1414,9 @@ describe("CLI parse", () => {
 
   it("update shows ambiguous prefix error", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "cccc1111cccccccccccccc"]);
+    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "cccc1CCCCCC"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "cccc2222cccccccccccccc"]);
+    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "cccc2CCCCCC"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "update", "cccc", "--status", "done", "--json"]);
@@ -1450,9 +1426,9 @@ describe("CLI parse", () => {
 
   it("done shows ambiguous prefix error", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "dddd1111dddddddddddddd"]);
+    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "dddd1DDDDDD"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "dddd2222dddddddddddddd"]);
+    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "dddd2DDDDDD"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "done", "dddd"]);
@@ -1507,9 +1483,9 @@ describe("CLI parse", () => {
 
   it("log handles ambiguous prefix error", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "ffff1111ffffffffffffff"]);
+    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "ffff1ffffff"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "ffff2222ffffffffffffff"]);
+    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "ffff2ffffff"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "log", "ffff", "--json"]);
@@ -1526,9 +1502,9 @@ describe("CLI parse", () => {
 
   it("delete shows ambiguous prefix error", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "eeee1111eeeeeeeeeeeeee"]);
+    await p1.parseAsync(["node", "oru", "add", "Task A", "--id", "eeee1eeeeee"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "eeee2222eeeeeeeeeeeeee"]);
+    await p2.parseAsync(["node", "oru", "add", "Task B", "--id", "eeee2eeeeee"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "delete", "eeee", "--json"]);

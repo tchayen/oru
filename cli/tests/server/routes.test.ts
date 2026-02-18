@@ -202,7 +202,7 @@ describe("POST /tasks", () => {
   });
 
   it("returns existing task with 200 when id already exists", async () => {
-    const id = "0196300000000000000001";
+    const id = "01963000001";
     const res1 = await req("POST", "/tasks", { title: "Idempotent", id });
     expect(res1.status).toBe(201);
     const task1 = await res1.json();

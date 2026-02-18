@@ -272,7 +272,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       return c.json(
         {
           error: "validation",
-          message: "Invalid ID format. IDs must be 22-character base62 strings.",
+          message: "Invalid ID format. IDs must be 11-character base62 strings.",
         },
         400,
       );

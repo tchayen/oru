@@ -1,11 +1,12 @@
-import { v5 as uuidv5 } from "uuid";
+import { createHash } from "crypto";
 import { base62Encode } from "../id.js";
 
-const ORU_RECURRENCE_NAMESPACE = "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d";
+const NAMESPACE = "oru-recurrence";
 
-/** Generate a deterministic child task ID from a parent task ID. */
+/** Generate a deterministic 11-character base62 child task ID from a parent task ID. */
 export function spawnId(parentId: string): string {
-  const buf = new Uint8Array(16);
-  uuidv5(parentId, ORU_RECURRENCE_NAMESPACE, buf);
-  return base62Encode(buf);
+  const hash = createHash("sha256")
+    .update(NAMESPACE + ":" + parentId)
+    .digest();
+  return base62Encode(hash.subarray(0, 8), 11);
 }

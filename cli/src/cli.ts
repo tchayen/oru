@@ -364,7 +364,7 @@ export function createProgram(
         if (opts.id && !isValidId(opts.id)) {
           validationError(
             json,
-            `Invalid ID format: "${opts.id}". IDs must be 22-character base62 strings.`,
+            `Invalid ID format: "${opts.id}". IDs must be 11-character base62 strings.`,
           );
           return;
         }

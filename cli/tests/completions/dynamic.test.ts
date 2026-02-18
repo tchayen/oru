@@ -24,7 +24,7 @@ describe("_complete command", () => {
   });
 
   it("returns task IDs with titles", async () => {
-    const taskId = "TASKaaaaaaaaaaaaaaaaaa";
+    const taskId = "TASKaaaaaaa";
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Buy milk", "--id", taskId]);
 
@@ -36,14 +36,14 @@ describe("_complete command", () => {
 
   it("filters tasks by prefix", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "First", "--id", "abc0000000000000000000"]);
+    await p1.parseAsync(["node", "oru", "add", "First", "--id", "abc00000000"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Second", "--id", "xyz0000000000000000000"]);
+    await p2.parseAsync(["node", "oru", "add", "Second", "--id", "xyz00000000"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "_complete", "tasks", "abc"]);
-    expect(output).toContain("abc0000000000000000000");
-    expect(output).not.toContain("xyz0000000000000000000");
+    expect(output).toContain("abc00000000");
+    expect(output).not.toContain("xyz00000000");
   });
 
   it("returns unique labels", async () => {
@@ -72,7 +72,7 @@ describe("_complete command", () => {
   });
 
   it("excludes deleted tasks", async () => {
-    const delId = "del00000000000000000000";
+    const delId = "del00000000";
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Deleted task", "--id", delId, "--json"]);
 
