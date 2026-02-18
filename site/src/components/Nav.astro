@@ -1,9 +1,24 @@
+---
+interface Props {
+  showLogo?: boolean;
+}
+
+const { showLogo = true } = Astro.props;
+---
+
 <nav class="h-16 flex items-center">
   <div class="container flex items-center justify-between w-full">
-    <a href="/" class="cursor-pointer" aria-label="Home">
-      <span class="sr-only">oru</span>
-    </a>
-    <div class="flex items-center gap-6">
+    {showLogo && (
+      <a href="/" class="nav-logo cursor-pointer" aria-label="Home">
+        <pre class="font-mono text-text-primary leading-none select-none" role="img" aria-hidden="true">{` ██████╗ ██████╗ ██╗   ██╗
+██╔═══██╗██╔══██╗██║   ██║
+██║   ██║██████╔╝██║   ██║
+██║   ██║██╔══██╗██║   ██║
+╚██████╔╝██║  ██║╚██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝`}</pre>
+      </a>
+    )}
+    <div class="flex items-center gap-6 ml-auto">
       <a
         href="/docs/getting-started"
         class="text-sm text-text-tertiary transition-colors duration-200 ease-out-expo cursor-pointer hover:text-text-primary"
@@ -34,3 +49,18 @@
     </div>
   </div>
 </nav>
+
+<style>
+  .nav-logo pre {
+    font-size: 5.5px;
+    letter-spacing: 0.02em;
+    white-space: pre;
+    line-height: 1.1;
+    color: var(--color-text-tertiary);
+    transition: color 200ms ease;
+  }
+
+  .nav-logo:hover pre {
+    color: var(--color-text-primary);
+  }
+</style>
