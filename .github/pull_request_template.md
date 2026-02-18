@@ -1,6 +1,6 @@
 <!--
-PR title must have a scope prefix: cli:, app:, infra:, site:, or types:
-Examples: "cli: Add shell completions", "app: Add due date picker", "infra: Add bundle size CI"
+PR title must have a scope prefix: cli:, app:, infra:, site:, types:, or docs:
+Examples: "cli: Add shell completions", "app: Add due date picker", "infra: Add bundle size CI", "docs: Update sync architecture"
 
 PR body has three sections: "# Why" (context and reasoning), "# How" (approach taken), "# Test plan" (specific tests and verification).
 
