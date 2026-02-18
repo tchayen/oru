@@ -6,6 +6,8 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 
 - `cli/` — CLI package (TypeScript, Node 22+, ESM)
 - `app/` — Mobile app (Expo, React Native)
+- `site/` — Landing page (Astro)
+- `types/` — Shared type definitions
 
 ## Stack (CLI)
 
@@ -19,30 +21,10 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 
 ## Architecture
 
-- **Tasks table** is a materialized view. **Oplog is the source of truth** for sync.
+- **Oplog is the source of truth** for sync. Tasks table is written to directly but rebuilt from oplog during conflict resolution.
 - Service layer (`cli/src/main.ts`) wraps repo + oplog writes in single transactions.
 - Conflict resolution: last-write-wins per field, updates beat deletes, notes append-only with dedup.
 - Sync uses sequence-based cursoring (not timestamps) to avoid same-millisecond bugs.
-
-## Key directories
-
-- `cli/src/db/` — connection, schema, migrations
-- `cli/src/tasks/` — CRUD repository, types
-- `cli/src/oplog/` — writer, reader, replay (conflict resolution)
-- `cli/src/sync/` — engine, remote interface, filesystem remote backend
-- `cli/src/format/` — text and JSON output formatters
-- `cli/src/server/` — HTTP server (Hono) for mobile clients
-- `cli/src/cli.ts` — Commander setup, `cli/src/main.ts` — service layer
-- `cli/tests/` — mirrors src structure, all integration tests using real SQLite (in-memory)
-
-## Stack (App)
-
-- Expo 55, React Native 0.83, React 19
-- `expo-router` for navigation (Stack with form sheets)
-- `@expo/ui` for native SwiftUI controls (`Picker`, `ContextMenu`, `Button`)
-- `expo-image` for SF Symbols and images
-- `expo-camera` for QR code scanning
-- `tsgo` (native TypeScript checker) for type checking
 
 ## App conventions
 
@@ -50,7 +32,6 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 - Use `PlatformColor()` for all colors (supports dark/light mode). Never hardcode colors like `#000` or `#F2F2F7`
 - `expo-image` `tintColor` prop requires `PlatformColor(...) as unknown as string` cast (types don't match but works at runtime)
 - `AbortSignal.timeout()` is not available in Hermes — use `AbortController` + `setTimeout` instead
-- `NSAllowsLocalNetworking` is enabled in `app.json` for local HTTP server connections
 
 ## Commands
 
@@ -71,47 +52,43 @@ Defaults to `~/.oru/oru.db`. Override with `ORU_DB_PATH` env var.
 
 ### Adding a new CLI command
 
-1. `cli/src/cli.ts` — add `.command()` block (before `return program`)
-2. `cli/src/completions/bash.ts` — add to `commands` string, add case in switch
-3. `cli/src/completions/zsh.ts` — add to `commands` array, add case with `_arguments`
-4. `cli/src/completions/fish.ts` — add `complete -c oru` lines for command + flags
-5. `cli/tests/cli/parse.test.ts` — add tests for the new command
-6. `cli/tests/completions/scripts.test.ts` — add assertions that scripts contain the command
+1. `cli/src/cli.ts` — add command definition
+2. `cli/src/completions/bash.ts`, `zsh.ts`, `fish.ts` — add completions
+3. `cli/tests/cli/parse.test.ts` — add parse tests
+4. `cli/tests/completions/scripts.test.ts` — add completion assertions
 
 ### Adding a new task field
 
-1. `cli/src/tasks/types.ts` — add to `Task`, `CreateTaskInput`, `UpdateTaskInput`
-2. `cli/src/db/schema.ts` — add migration to `appMigrations` (increment version)
-3. `cli/src/tasks/repository.ts` — update `rowToTask()`, INSERT/UPDATE SQL, `ListFilters` if filterable
-4. `cli/src/main.ts` — update `add()` oplog value serialization, `update()` handles it via field loop automatically
-5. `cli/src/oplog/replay.ts` — add case in `rebuildTask()` switch, set initial state from create op
-6. `cli/src/server/routes.ts` — add to POST/PATCH validation and field extraction
-7. `cli/src/cli.ts` — add flag to relevant commands (`add`, `update`, `edit`)
-8. `cli/src/format/text.ts` — update `formatTaskText()` and `formatTasksText()` if visible
-9. `cli/src/edit.ts` — update `serializeTask()` and `parseDocument()` for `oru edit`
-10. `cli/src/completions/bash.ts`, `zsh.ts`, `fish.ts` — add flag completions if enum-like
-11. `app/utils/api.ts` — sync `Task`, `CreateTaskInput`, `UpdateTaskInput` types
-12. Add tests in `cli/tests/` mirroring each layer changed
+1. `cli/src/tasks/types.ts` — add to types
+2. `cli/src/db/schema.ts` — add migration (increment version)
+3. `cli/src/tasks/repository.ts` — update row mapping and SQL
+4. `cli/src/main.ts` — update oplog serialization
+5. `cli/src/oplog/replay.ts` — add case in rebuild switch
+6. `cli/src/server/routes.ts` — add validation
+7. `cli/src/cli.ts` — add flag to relevant commands
+8. `cli/src/format/text.ts` — update formatters if visible
+9. `cli/src/edit.ts` — update serialization/parsing
+10. `cli/src/completions/` — add flag completions if enum-like
+11. `app/utils/api.ts` — sync types
+12. Add tests mirroring each layer changed
 
 ### Adding a new status or priority value
 
-1. `cli/src/tasks/types.ts` — add to `STATUSES` / `PRIORITIES` array (all CLI consumers import from here)
-2. `cli/src/format/text.ts` — add case in `colorPriority()` / `colorStatus()` / `colorCheck()` switches
-3. `app/utils/api.ts` — `Status` / `Priority` types (mobile app has its own copy)
+1. `cli/src/tasks/types.ts` — add to arrays
+2. `cli/src/format/text.ts` — add formatting cases
+3. `app/utils/api.ts` — sync types
 
 ### Adding a new config option
 
-1. `cli/src/config/config.ts` — add type, add to `Config` interface, add to `DEFAULTS`, add `VALID_*` set if enum, add parsing in `loadConfig()`, add to `DEFAULT_CONFIG_TOML`
-2. `cli/src/cli.ts` — use the new config value where needed
-3. `cli/tests/config/` — add tests for parsing and validation
+1. `cli/src/config/config.ts` — add type, default, parsing, validation
+2. `cli/src/cli.ts` — use the new config value
+3. `cli/tests/config/` — add tests
 
 ## Git & PR conventions
 
-- Create PRs with `gh pr create`
-- **PR title must have a scope prefix**: `cli:`, `app:`, or `infra:`, `site:`, `types:`
-  - Examples: `cli: Add shell completions`, `app: Add due date picker`, `infra: Add bundle size CI`
-- PR description uses the template in `.github/pull_request_template.md` — fill in Why/How/Test plan and check all applicable checklist items
-- Delete checklist sections that don't apply (e.g. remove "If adding a new CLI command" for an app-only PR)
+- Use git worktrees for branch work — do not switch branches on the main worktree. Create worktrees in `~/oru-worktrees/` (e.g. `git worktree add ~/oru-worktrees/my-branch -b my-branch`)
+- Create PRs with `gh pr create`. Follow `.github/pull_request_template.md` for title format and description sections
+- In the test plan, explicitly state what was tested and how — no checkboxes, no vague claims
 - Keep commit messages concise — focus on the "why", not the "what"
 - Do not add `Co-Authored-By` lines to commits
 - Do not add "Generated with Claude Code" to PR descriptions

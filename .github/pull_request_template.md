@@ -1,41 +1,20 @@
+<!--
+PR title must have a scope prefix: cli:, app:, infra:, site:, or types:
+Examples: "cli: Add shell completions", "app: Add due date picker", "infra: Add bundle size CI"
+
+PR body has three sections: "# Why" (context and reasoning), "# How" (approach taken), "# Test plan" (specific tests and verification).
+
+For applicable checklists (new command, new field, new status, new config), see CLAUDE.md.
+-->
+
 # Why
 
-<!-- Describe why we are adding this — context and reasoning only -->
+<!-- Describe WHY we are adding this - context and reasoning only. -->
 
 # How
 
-<!-- Describe how the change was made -->
+<!-- Describe HOW the change was made. Don't list the changes made, explain what was the process. -->
 
 # Test plan
 
-<!-- What gives us confidence it works? How do we verify? What automated tests were added? -->
-
-# Checklist
-
-## Always
-
-- [ ] `pnpm check` passes (lint, format, typecheck, tests)
-- [ ] PR title has scope prefix (`cli:`, `app:`, `infra:`, `site:`, `types:`)
-
-## If adding a new CLI command
-
-- [ ] Shell completions updated (bash, zsh, fish)
-- [ ] Tests added in `cli/tests/cli/parse.test.ts`
-- [ ] Completion script tests updated in `cli/tests/completions/scripts.test.ts`
-
-## If adding/changing a task field
-
-- [ ] Schema migration added (version incremented)
-- [ ] Oplog replay handles new field in `rebuildTask()` switch
-- [ ] Server routes validate new field
-- [ ] `app/utils/api.ts` types synced
-- [ ] `cli/src/edit.ts` serialize/parse updated
-
-## If adding a new status or priority value
-
-- [ ] All sync points updated (see "Adding a new status or priority value" in CLAUDE.md)
-
-## If changing app UI
-
-- [ ] No hardcoded colors (use `PlatformColor()`)
-- [ ] SwiftUI components wrapped in `<Host matchContents>`
+<!-- List exactly what you tested and how. Be specific — name the tests you added, commands you ran, and scenarios you verified. Do not use checkboxes. -->
