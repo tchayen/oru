@@ -155,16 +155,10 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
     6,
     ...tasks.map((t) => (t.labels.length > 0 ? t.labels.join(", ") : "").length),
   );
-  const metaW = Math.max(
-    4,
-    ...tasks.map((t) => {
-      const keys = Object.keys(t.metadata);
-      return keys.length > 0 ? keys.map((k) => `${k}=${t.metadata[k]}`).join(", ").length : 0;
-    }),
-  );
+  const titleW = Math.max(5, ...tasks.map((t) => t.title.length));
 
   const header = dim(
-    `     ${"ID".padEnd(idW)}  ${"PRI".padEnd(priW)}  ${"OWNER".padEnd(ownerW)}  ${"DUE".padEnd(dueW)}  ${"LABELS".padEnd(labelsW)}  ${"META".padEnd(metaW)}  TITLE`,
+    `     ${"ID".padEnd(idW)}  ${"TITLE".padEnd(titleW)}  ${"PRI".padEnd(priW)}  ${"OWNER".padEnd(ownerW)}  ${"DUE".padEnd(dueW)}  ${"LABELS".padEnd(labelsW)}  META`,
   );
   const rows = tasks.map((t) => {
     const check = colorCheck(t.status);
@@ -176,7 +170,7 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
     const meta = metaKeys.length > 0 ? metaKeys.map((k) => `${k}=${t.metadata[k]}`).join(", ") : "";
     const duePadded = dueText.padEnd(dueW);
     const dueCol = dueOverdue ? bold(duePadded) : duePadded;
-    return `${check}  ${dim(t.id.padEnd(idW))}  ${colorPriority(t.priority.padEnd(priW))}  ${ownerStr.padEnd(ownerW)}  ${dueCol}  ${labels.padEnd(labelsW)}  ${meta.padEnd(metaW)}  ${bold(t.title)}`;
+    return `${check}  ${dim(t.id.padEnd(idW))}  ${bold(t.title.padEnd(titleW))}  ${colorPriority(t.priority.padEnd(priW))}  ${ownerStr.padEnd(ownerW)}  ${dueCol}  ${labels.padEnd(labelsW)}  ${meta}`;
   });
   return [header, ...rows].join("\n");
 }
