@@ -1,0 +1,42 @@
+name: Deploy Site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "site/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Build site
+        run: pnpm --filter oru-site build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 3f58569663fe4a2164c60b23c6eb6a2d
+          command: pages deploy site/dist --project-name=oru --branch=${{ github.event_name == 'pull_request' && github.head_ref || 'main' }} --commit-hash=${{ github.sha }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
