@@ -117,7 +117,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   <p>
     Labels are additive by default. Use <code>--unlabel</code> to remove a label:
   </p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">--unlabel</span> <span class="val">wontfix</span>
   </MiniCode>
 
@@ -161,7 +161,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     Notes are append-only comments on a task. Add a note with <code>-n</code> on
     <code>add</code> or <code>update</code>:
   </p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">hJ7kMp3nQrs</span> <span class="flag">-n</span> <span class="str">"Discussed in standup, moving to next sprint"</span>
   </MiniCode>
   <p>
@@ -273,7 +273,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     Use <code>--repeat none</code> on <code>update</code> to stop a task from recurring.
     The current task remains; it just won&rsquo;t spawn a new occurrence when completed.
   </p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">update</span> <span class="val">019414a3</span> <span class="flag">-r</span> <span class="val">none</span>
   </MiniCode>
 
@@ -313,7 +313,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Change history</h2>
   <p>View the oplog for a task to see every change made:</p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">log</span> <span class="val">hJ7kMp3nQrs</span>
   </MiniCode>
 
@@ -352,7 +352,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     oru includes a built-in <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server
     that exposes task management as tools your AI can call directly:
   </p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">mcp</span>
   </MiniCode>
   <p>
@@ -386,7 +386,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Backup</h2>
   <p>Create a point-in-time snapshot of your database:</p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">backup</span> <span class="val">~/backups</span>
   </MiniCode>
   <p>

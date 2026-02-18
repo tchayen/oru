@@ -20,12 +20,12 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     The install script auto-detects your platform, downloads the right binary,
     and adds oru to your <code>PATH</code>:
   </p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-fsSL</span> <span class="val">https://oru.sh/install</span> <span class="sub">|</span> <span class="cmd">bash</span>
   </MiniCode>
 
   <h3>npm</h3>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">npm</span> <span class="sub">install</span> <span class="flag">-g</span> <span class="val">@tchayen/oru</span>
   </MiniCode>
 
@@ -43,7 +43,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   </p>
 
   <h3>Verify installation</h3>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="flag">--version</span>
   </MiniCode>
 
@@ -70,7 +70,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   <h2>Shell completions</h2>
   <p>Tab completion makes oru much faster to use. Install for your shell:</p>
 
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span>
   </MiniCode>
 
@@ -86,12 +86,12 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Configuration</h2>
   <p>Create a config file with documented defaults:</p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">config</span> <span class="sub">init</span>
   </MiniCode>
 
   <p>This creates <code>~/.oru/config.toml</code>. Print the resolved path at any time:</p>
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">config</span> <span class="sub">path</span>
   </MiniCode>
 
@@ -175,7 +175,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     the <code>ORU_DB_PATH</code> environment variable:
   </p>
 
-  <MiniCode>
+  <MiniCode copy>
     <span class="prompt">$ </span><span class="cmd">ORU_DB_PATH</span>=<span class="str">/tmp/test.db</span> <span class="cmd">oru</span> <span class="sub">list</span>
   </MiniCode>
 
