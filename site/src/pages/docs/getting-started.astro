@@ -90,7 +90,12 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">config</span> <span class="sub">init</span>
   </MiniCode>
 
-  <p>This creates <code>~/.config/oru/config.toml</code>. Key options:</p>
+  <p>This creates <code>~/.oru/config.toml</code>. Print the resolved path at any time:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">config</span> <span class="sub">path</span>
+  </MiniCode>
+
+  <p>Key options:</p>
 
   <table>
     <thead>
@@ -108,28 +113,61 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       </tr>
       <tr>
         <td><code>date_format</code></td>
-        <td><code>"us"</code></td>
-        <td>Date parsing format (<code>us</code> or <code>eu</code>)</td>
+        <td><code>"mdy"</code></td>
+        <td>Slash date order: <code>mdy</code> (MM/DD/YYYY) or <code>dmy</code> (DD/MM/YYYY)</td>
       </tr>
       <tr>
         <td><code>first_day_of_week</code></td>
-        <td><code>"sunday"</code></td>
-        <td>First day of the week</td>
+        <td><code>"monday"</code></td>
+        <td>First day of the week (affects "next week", "end of week")</td>
+      </tr>
+      <tr>
+        <td><code>next_month</code></td>
+        <td><code>"same_day"</code></td>
+        <td>What "next month" means: <code>same_day</code> (Mar 15 → Apr 15) or <code>first</code> (Mar 15 → Apr 1)</td>
+      </tr>
+      <tr>
+        <td><code>auto_update_check</code></td>
+        <td><code>true</code></td>
+        <td>Check for new versions on startup (at most once per 24 h)</td>
       </tr>
       <tr>
         <td><code>backup_path</code></td>
         <td>&ndash;</td>
-        <td>Directory for automatic backups</td>
+        <td>Directory for automatic backups on every command</td>
+      </tr>
+      <tr>
+        <td><code>backup_interval</code></td>
+        <td><code>60</code></td>
+        <td>Minimum minutes between auto-backups</td>
       </tr>
       <tr>
         <td><code>telemetry</code></td>
         <td><code>true</code></td>
-        <td>Anonymous usage telemetry</td>
+        <td>Anonymous usage telemetry (see also: <code>oru telemetry</code>)</td>
       </tr>
     </tbody>
   </table>
 
   <p>You can also set <code>output_format</code> per-command with <code>--json</code> or <code>--plaintext</code>, or globally via the <code>ORU_FORMAT</code> environment variable.</p>
+
+  <h2>Environment variables</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Variable</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>ORU_DB_PATH</code></td><td>Override database file path (default: <code>~/.oru/oru.db</code>)</td></tr>
+      <tr><td><code>ORU_CONFIG_PATH</code></td><td>Override config file path</td></tr>
+      <tr><td><code>ORU_CONFIG_DIR</code></td><td>Override config directory (default: <code>~/.oru</code>)</td></tr>
+      <tr><td><code>ORU_FORMAT</code></td><td>Set default output format (<code>json</code> or <code>text</code>)</td></tr>
+      <tr><td><code>ORU_DEBUG=1</code></td><td>Enable verbose error output</td></tr>
+      <tr><td><code>DO_NOT_TRACK=1</code></td><td>Disable telemetry (standard opt-out signal)</td></tr>
+    </tbody>
+  </table>
 
   <h2>Database location</h2>
   <p>
