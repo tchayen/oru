@@ -34,6 +34,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "prepack": "cp ../README.md . 2>/dev/null || true",
     "build": "tsup",
     "dev": "tsx src/cli.ts",
     "tsgo": "tsgo --noEmit"
