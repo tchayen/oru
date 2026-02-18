@@ -1,13 +1,23 @@
+---
+interface Props {
+  showLogo?: boolean;
+}
+
+const { showLogo = true } = Astro.props;
+---
+
 <nav class="h-16 flex items-center">
   <div class="container flex items-center justify-between w-full">
-    <a href="/" class="nav-logo cursor-pointer" aria-label="Home">
-      <pre class="font-mono text-text-primary leading-none select-none" role="img" aria-hidden="true">{` ██████╗ ██████╗ ██╗   ██╗
+    {showLogo && (
+      <a href="/" class="nav-logo cursor-pointer" aria-label="Home">
+        <pre class="font-mono text-text-primary leading-none select-none" role="img" aria-hidden="true">{` ██████╗ ██████╗ ██╗   ██╗
 ██╔═══██╗██╔══██╗██║   ██║
 ██║   ██║██████╔╝██║   ██║
 ██║   ██║██╔══██╗██║   ██║
 ╚██████╔╝██║  ██║╚██████╔╝
  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝`}</pre>
-    </a>
+      </a>
+    )}
     <div class="flex items-center gap-6">
       <a
         href="/docs/getting-started"
