@@ -143,7 +143,3 @@ Conflict resolution is automatic: last-write-wins per field, updates beat delete
 ## Data
 
 Everything is stored locally in `~/.oru/oru.db` (SQLite). Override with `ORU_DB_PATH`.
-
-## License
-
-MIT
