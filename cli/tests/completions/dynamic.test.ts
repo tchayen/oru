@@ -24,25 +24,26 @@ describe("_complete command", () => {
   });
 
   it("returns task IDs with titles", async () => {
+    const taskId = "TASKaaaaaaa";
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Buy milk", "--id", "task-001"]);
+    await p1.parseAsync(["node", "oru", "add", "Buy milk", "--id", taskId]);
 
     const p2 = createProgram(db, capture());
     await p2.parseAsync(["node", "oru", "_complete", "tasks"]);
-    expect(output).toContain("task-001");
+    expect(output).toContain(taskId);
     expect(output).toContain("Buy milk");
   });
 
   it("filters tasks by prefix", async () => {
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "First", "--id", "abc-001"]);
+    await p1.parseAsync(["node", "oru", "add", "First", "--id", "abc00000000"]);
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "add", "Second", "--id", "xyz-002"]);
+    await p2.parseAsync(["node", "oru", "add", "Second", "--id", "xyz00000000"]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "_complete", "tasks", "abc"]);
-    expect(output).toContain("abc-001");
-    expect(output).not.toContain("xyz-002");
+    expect(output).toContain("abc00000000");
+    expect(output).not.toContain("xyz00000000");
   });
 
   it("returns unique labels", async () => {
@@ -71,15 +72,16 @@ describe("_complete command", () => {
   });
 
   it("excludes deleted tasks", async () => {
+    const delId = "del00000000";
     const p1 = createProgram(db, capture());
-    await p1.parseAsync(["node", "oru", "add", "Deleted task", "--id", "del-001", "--json"]);
+    await p1.parseAsync(["node", "oru", "add", "Deleted task", "--id", delId, "--json"]);
 
     const p2 = createProgram(db, capture());
-    await p2.parseAsync(["node", "oru", "delete", "del-001"]);
+    await p2.parseAsync(["node", "oru", "delete", delId]);
 
     const p3 = createProgram(db, capture());
     await p3.parseAsync(["node", "oru", "_complete", "tasks"]);
-    expect(output).not.toContain("del-001");
+    expect(output).not.toContain(delId);
   });
 
   it("returns empty for unknown type", async () => {

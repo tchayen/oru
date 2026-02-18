@@ -23,6 +23,7 @@ import {
   sanitizeTitle,
 } from "../validation.js";
 import { isValidRecurrence } from "../recurrence/validate.js";
+import { isValidId } from "../id.js";
 
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
@@ -265,6 +266,16 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
 
     if (recurrence && !isValidRecurrence(recurrence)) {
       return c.json({ error: "validation", message: "Invalid recurrence rule." }, 400);
+    }
+
+    if (id && !isValidId(id)) {
+      return c.json(
+        {
+          error: "validation",
+          message: "Invalid ID format. IDs must be 11-character base62 strings.",
+        },
+        400,
+      );
     }
 
     // Idempotent create: if id is provided and task already exists, return it

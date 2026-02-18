@@ -1,4 +1,5 @@
 import type { Kysely } from "kysely";
+import { sql } from "kysely";
 import type { DB } from "./db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types.js";
 import type { ListFilters } from "./tasks/repository.js";
@@ -488,7 +489,7 @@ export class TaskService {
       .selectAll()
       .where("task_id", "=", task.id)
       .orderBy("timestamp", "asc")
-      .orderBy("id", "asc")
+      .orderBy(sql`rowid`, "asc")
       .execute();
     return rows as OplogEntry[];
   }

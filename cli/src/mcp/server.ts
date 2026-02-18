@@ -34,7 +34,7 @@ export function createMcpServer(service: TaskService): McpServer {
           .string()
           .optional()
           .describe(
-            "Custom task ID for idempotent creates. If a task with this ID already exists, the existing task is returned. Must be a valid UUIDv7.",
+            "Custom task ID for idempotent creates. If a task with this ID already exists, the existing task is returned. Must be a 11-character base62 string (alphabet: 0-9, A-Z, a-z).",
           ),
         status: StatusEnum.optional().describe(
           "Initial status. Valid values: todo, in_progress, in_review, done. Defaults to 'todo'.",
