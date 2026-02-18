@@ -34,7 +34,17 @@ jobs:
         run: pnpm --filter oru-site build
 
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy site/dist --project-name=oru --branch=${{ github.event_name == 'pull_request' && github.head_ref || 'main' }} --commit-hash=${{ github.sha }}
+        id: deploy
+        run: |
+          OUTPUT=$(npx wrangler pages deploy site/dist --project-name=oru --branch=${{ github.event_name == 'pull_request' && github.head_ref || 'main' }} --commit-hash=${{ github.sha }})
+          echo "$OUTPUT"
+          echo "url=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.pages\.dev')" >> "$GITHUB_OUTPUT"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: 3f58569663fe4a2164c60b23c6eb6a2d
+
+      - name: Comment preview URL
+        if: github.event_name == 'pull_request'
+        run: gh pr comment ${{ github.event.pull_request.number }} --body "${{ steps.deploy.outputs.url }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
