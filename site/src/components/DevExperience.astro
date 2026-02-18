@@ -5,7 +5,7 @@ import MiniCode from "./ui/MiniCode.astro";
 
 <section class="py-24 bg-bg-base">
   <div class="container">
-    <div class="text-center mb-16 reveal">
+    <div class="text-center mb-12 reveal">
       <p class="section-label">The small things</p>
       <h2 class="mb-4">Sharp edges, filed down.</h2>
       <p class="body-lg max-w-[480px] mx-auto text-text-secondary">
@@ -14,7 +14,7 @@ import MiniCode from "./ui/MiniCode.astro";
     </div>
 
     <div
-      class="grid grid-cols-3 gap-6 max-lg:grid-cols-2 max-sm:grid-cols-1"
+      class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1"
     >
       <FeatureCard title="Natural language dates" class="reveal" data-delay="0">
         <MiniCode slot="code">
@@ -28,15 +28,28 @@ import MiniCode from "./ui/MiniCode.astro";
         required.
       </FeatureCard>
 
-      <FeatureCard title="TOML config" class="reveal" data-delay="80">
+      <FeatureCard title="Context view" class="reveal" data-delay="80">
         <MiniCode slot="code">
-          <span class="key">~/.oru/config.toml</span>
+          <span class="prompt">$ </span><span class="cmd">oru</span>
+          <span class="sub">context</span>
         </MiniCode>
-        Set default priority, preferred date format, and display preferences in a
-        human-readable config file.
+        See what needs attention right now — overdue tasks, in-progress work, and
+        what's actionable next.
       </FeatureCard>
 
-      <FeatureCard title="Labels" class="reveal" data-delay="160">
+      <FeatureCard title="Task dependencies" class="reveal" data-delay="160">
+        <MiniCode slot="code">
+          <span class="prompt">$ </span><span class="cmd">oru</span>
+          <span class="sub">add</span>
+          <span class="str">"Deploy"</span>
+          <span class="flag">--blocked-by</span>
+          <span class="val">3</span>
+        </MiniCode>
+        Block tasks until prerequisites are done. Filter to actionable work with
+        <code>--actionable</code>.
+      </FeatureCard>
+
+      <FeatureCard title="Labels" class="reveal" data-delay="0">
         <MiniCode slot="code">
           <span class="prompt">$ </span><span class="cmd">oru</span>
           <span class="sub">list</span>
@@ -47,31 +60,7 @@ import MiniCode from "./ui/MiniCode.astro";
         to manage.
       </FeatureCard>
 
-      <FeatureCard title="Task notes" class="reveal" data-delay="80">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">note</span>
-          <span class="val">3</span>
-          <span class="str">"Blocked on API review"</span>
-        </MiniCode>
-        Append context to any task. Notes are append-only and sync safely across
-        devices.
-      </FeatureCard>
-
-      <FeatureCard title="Edit anything" class="reveal" data-delay="160">
-        <MiniCode slot="code">
-          <span class="prompt">$ </span><span class="cmd">oru</span>
-          <span class="sub">edit</span>
-          <span class="val">1</span>
-          <span class="flag">--title</span>
-          <span class="str">"Ship v1.0"</span>
-          <span class="flag">--priority</span>
-          <span class="val">low</span>
-        </MiniCode>
-        Update title, priority, status, due date, or labels in a single command.
-      </FeatureCard>
-
-      <FeatureCard title="Pipe-friendly" class="reveal" data-delay="240">
+      <FeatureCard title="Pipe-friendly" class="reveal" data-delay="80">
         <MiniCode slot="code">
           <span class="prompt">$ </span><span class="cmd">oru</span>
           <span class="sub">get</span>
