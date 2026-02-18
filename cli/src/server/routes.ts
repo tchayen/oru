@@ -22,6 +22,8 @@ import {
   MAX_METADATA_VALUE_LENGTH,
   sanitizeTitle,
 } from "../validation.js";
+import { isValidRecurrence } from "../recurrence/validate.js";
+import { isValidId } from "../id.js";
 
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
@@ -87,6 +89,7 @@ const createTaskSchema = z.object({
     )
     .max(MAX_NOTES, `notes exceeds maximum of ${MAX_NOTES} items.`)
     .optional(),
+  recurrence: z.string().max(500).nullable().optional(),
   metadata: metadataSchema.optional(),
 });
 
@@ -120,6 +123,7 @@ const updateTaskSchema = z.object({
     .max(MAX_NOTE_LENGTH, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`)
     .optional(),
   clear_notes: z.boolean().optional(),
+  recurrence: z.string().max(500).nullable().optional(),
   metadata: metadataSchema.optional(),
 });
 
@@ -246,8 +250,33 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
     if (!result.success) {
       return c.json({ error: "validation", message: formatZodError(result.error) }, 400);
     }
-    const { title, status, priority, owner, due_at, blocked_by, labels, notes, metadata, id } =
-      result.data;
+    const {
+      title,
+      status,
+      priority,
+      owner,
+      due_at,
+      blocked_by,
+      labels,
+      notes,
+      recurrence,
+      metadata,
+      id,
+    } = result.data;
+
+    if (recurrence && !isValidRecurrence(recurrence)) {
+      return c.json({ error: "validation", message: "Invalid recurrence rule." }, 400);
+    }
+
+    if (id && !isValidId(id)) {
+      return c.json(
+        {
+          error: "validation",
+          message: "Invalid ID format. IDs must be 11-character base62 strings.",
+        },
+        400,
+      );
+    }
 
     // Idempotent create: if id is provided and task already exists, return it
     if (id) {
@@ -264,6 +293,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       priority: priority as Priority | undefined,
       owner,
       due_at,
+      recurrence,
       blocked_by,
       labels,
       notes,
@@ -298,11 +328,16 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       labels,
       note,
       clear_notes,
+      recurrence,
       metadata,
     } = result.data;
 
     if (title !== undefined && title.length === 0) {
       return c.json({ error: "validation", message: "Title cannot be empty." }, 400);
+    }
+
+    if (recurrence !== undefined && recurrence !== null && !isValidRecurrence(recurrence)) {
+      return c.json({ error: "validation", message: "Invalid recurrence rule." }, 400);
     }
 
     try {
@@ -328,6 +363,9 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       if (due_at !== undefined) {
         updateFields.due_at = due_at;
       }
+      if (recurrence !== undefined) {
+        updateFields.recurrence = recurrence;
+      }
       if (metadata) {
         updateFields.metadata = metadata;
       }
@@ -350,6 +388,15 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       if (!task) {
         return c.json({ error: "not_found", id }, 404);
       }
+
+      // If the task was marked done and has recurrence, include spawned task
+      if (task.status === "done" && task.recurrence) {
+        const spawned = await service.getSpawnedTask(task.id);
+        if (spawned) {
+          return c.json({ ...task, spawned });
+        }
+      }
+
       return c.json(task);
     } catch (err) {
       if (err instanceof AmbiguousPrefixError) {

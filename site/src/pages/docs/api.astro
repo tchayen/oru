@@ -87,7 +87,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   <p>Get a single task by ID or unique prefix.</p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
-    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/hJ7kMp3nQrs</span>
   </MiniCode>
   <p>Returns <code>404</code> if not found, <code>409</code> if the prefix is ambiguous.</p>
 
@@ -121,6 +121,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       <tr><td><code>blocked_by</code></td><td>string[]</td><td>No</td><td>Array of blocking task IDs</td></tr>
       <tr><td><code>labels</code></td><td>string[]</td><td>No</td><td>Array of label strings</td></tr>
       <tr><td><code>notes</code></td><td>string[]</td><td>No</td><td>Array of note strings</td></tr>
+      <tr><td><code>recurrence</code></td><td>string?</td><td>No</td><td>RRULE string (e.g. <code>FREQ=DAILY</code>). Prefix <code>after:</code> for completion-based. Max 500 chars.</td></tr>
       <tr><td><code>metadata</code></td><td>object</td><td>No</td><td>Key-value metadata</td></tr>
     </tbody>
   </table>
@@ -138,7 +139,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
     &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \<br />
     &nbsp;&nbsp;<span class="flag">-d</span> <span class="str">'&#123;"status":"done","note":"Completed in sprint 12"&#125;'</span> \<br />
-    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/hJ7kMp3nQrs</span>
   </MiniCode>
 
   <p>Request body:</p>
@@ -160,6 +161,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       <tr><td><code>labels</code></td><td>string[]</td><td>Replace labels list</td></tr>
       <tr><td><code>note</code></td><td>string</td><td>Append a note</td></tr>
       <tr><td><code>clear_notes</code></td><td>boolean</td><td>Remove all notes before adding new one</td></tr>
+      <tr><td><code>recurrence</code></td><td>string?</td><td>RRULE string (null to remove). When status becomes <code>done</code> and recurrence is set, the next occurrence is spawned automatically.</td></tr>
       <tr><td><code>metadata</code></td><td>object</td><td>Replace metadata</td></tr>
     </tbody>
   </table>
@@ -169,11 +171,11 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-X</span> <span class="val">DELETE</span> \<br />
     &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
-    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/hJ7kMp3nQrs</span>
   </MiniCode>
   <p>Response:</p>
   <MiniCode>
-    &#123;<span class="key">"id"</span>: <span class="str">"019414a3-..."</span>, <span class="key">"deleted"</span>: <span class="val">true</span>&#125;
+    &#123;<span class="key">"id"</span>: <span class="str">"hJ7kMp3nQrs"</span>, <span class="key">"deleted"</span>: <span class="val">true</span>&#125;
   </MiniCode>
 
   <h3>POST /pair</h3>
@@ -207,12 +209,13 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       </tr>
     </thead>
     <tbody>
-      <tr><td><code>id</code></td><td>string</td><td>UUIDv7 identifier</td></tr>
+      <tr><td><code>id</code></td><td>string</td><td>11-character base62 identifier</td></tr>
       <tr><td><code>title</code></td><td>string</td><td>Task title</td></tr>
       <tr><td><code>status</code></td><td>string</td><td><code>todo</code>, <code>in_progress</code>, <code>in_review</code>, <code>done</code></td></tr>
       <tr><td><code>priority</code></td><td>string</td><td><code>low</code>, <code>medium</code>, <code>high</code>, <code>urgent</code></td></tr>
       <tr><td><code>owner</code></td><td>string | null</td><td>Assigned owner</td></tr>
       <tr><td><code>due_at</code></td><td>string | null</td><td>ISO date string</td></tr>
+      <tr><td><code>recurrence</code></td><td>string | null</td><td>RRULE recurrence rule (e.g. <code>FREQ=WEEKLY;BYDAY=MO</code>)</td></tr>
       <tr><td><code>blocked_by</code></td><td>string[]</td><td>IDs of blocking tasks</td></tr>
       <tr><td><code>labels</code></td><td>string[]</td><td>Label strings</td></tr>
       <tr><td><code>notes</code></td><td>string[]</td><td>Append-only notes</td></tr>
@@ -239,6 +242,7 @@ import MiniCode from "../../components/ui/MiniCode.astro";
       <tr><td>Max notes per task</td><td>100</td></tr>
       <tr><td>Max blocked_by entries</td><td>100</td></tr>
       <tr><td>Max metadata keys</td><td>50</td></tr>
+      <tr><td>Recurrence length</td><td>500 characters</td></tr>
       <tr><td>Metadata key length</td><td>100 characters</td></tr>
       <tr><td>Metadata value length</td><td>5000 characters</td></tr>
     </tbody>
@@ -266,11 +270,11 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <p>Example error response:</p>
   <MiniCode>
-    &#123;<span class="key">"error"</span>: <span class="str">"not_found"</span>, <span class="key">"id"</span>: <span class="str">"019414a3"</span>&#125;
+    &#123;<span class="key">"error"</span>: <span class="str">"not_found"</span>, <span class="key">"id"</span>: <span class="str">"hJ7kMp3nQrs"</span>&#125;
   </MiniCode>
 
   <p>Ambiguous prefix error includes the matching IDs:</p>
   <MiniCode>
-    &#123;<span class="key">"error"</span>: <span class="str">"ambiguous_prefix"</span>, <span class="key">"id"</span>: <span class="str">"019"</span>, <span class="key">"matches"</span>: [<span class="str">"019414a3-..."</span>, <span class="str">"019414b7-..."</span>]&#125;
+    &#123;<span class="key">"error"</span>: <span class="str">"ambiguous_prefix"</span>, <span class="key">"id"</span>: <span class="str">"hJ7"</span>, <span class="key">"matches"</span>: [<span class="str">"hJ7kMp3nQrs"</span>, <span class="str">"hJ7mQr8tPvL"</span>]&#125;
   </MiniCode>
 </DocsLayout>

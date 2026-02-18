@@ -1,4 +1,11 @@
-# oru
+```
+ ██████╗ ██████╗ ██╗   ██╗
+██╔═══██╗██╔══██╗██║   ██║
+██║   ██║██████╔╝██║   ██║
+██║   ██║██╔══██╗██║   ██║
+╚██████╔╝██║  ██║╚██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝
+```
 
 Personal task manager for the terminal. Designed to be operated by your AI agent.
 
@@ -10,7 +17,9 @@ SQLite database on your machine. No accounts. No cloud. JSON output on every com
 curl -fsSL https://oru.sh/install | bash
 ```
 
-Requires Node 22+. Or install via npm:
+Requires Node 22+.
+
+Or install via npm:
 
 ```bash
 npm install -g @tchayen/oru
@@ -21,9 +30,10 @@ npm install -g @tchayen/oru
 ```bash
 oru add "Write README for release"
 oru add "Fix login bug" -p high -d friday -l backend
+oru add "Water plants" -r "every 3 days" -d today
 oru list
 oru context                  # what needs your attention right now
-oru done <id>
+oru done <id>                # recurring tasks auto-spawn the next occurrence
 ```
 
 ## Commands
@@ -64,6 +74,9 @@ oru context --json
 
 # Agent updates a task
 oru update abc123 -s in_progress --meta pr=142 --json
+
+# Create a recurring task (auto-spawns next occurrence when done)
+oru add "Weekly standup" -r "every monday" -d "next monday" --json
 ```
 
 Set `ORU_FORMAT=json` or `output_format = "json"` in config to default to JSON output.
@@ -139,7 +152,3 @@ Conflict resolution is automatic: last-write-wins per field, updates beat delete
 ## Data
 
 Everything is stored locally in `~/.oru/oru.db` (SQLite). Override with `ORU_DB_PATH`.
-
-## License
-
-MIT

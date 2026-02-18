@@ -133,7 +133,7 @@ ${serverBlock}
       ;;
     add)
       if [[ "$cur" == -* ]]; then
-        COMPREPLY=($(compgen -W "--id -s --status -p --priority -d --due --assign -l --label -b --blocked-by -n --note --meta --json --plaintext" -- "$cur"))
+        COMPREPLY=($(compgen -W "--id -s --status -p --priority -d --due --assign -l --label -b --blocked-by -n --note -r --repeat --meta --json --plaintext" -- "$cur"))
       fi
       ;;
     update|edit)
@@ -142,7 +142,7 @@ ${serverBlock}
         tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
         COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
       else
-        COMPREPLY=($(compgen -W "-t --title -s --status -p --priority -d --due --assign -l --label --unlabel -b --blocked-by -n --note --clear-notes --meta --json --plaintext" -- "$cur"))
+        COMPREPLY=($(compgen -W "-t --title -s --status -p --priority -d --due --assign -l --label --unlabel -b --blocked-by -n --note --clear-notes -r --repeat --meta --json --plaintext" -- "$cur"))
       fi
       ;;
     context)

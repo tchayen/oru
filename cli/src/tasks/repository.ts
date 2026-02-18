@@ -33,6 +33,7 @@ interface TaskRow {
   priority: string;
   due_at: string | null;
   owner: string | null;
+  recurrence: string | null;
   blocked_by: string;
   labels: string;
   notes: string;
@@ -50,6 +51,7 @@ function rowToTask(row: TaskRow): Task {
     priority: row.priority as Priority,
     owner: row.owner,
     due_at: row.due_at,
+    recurrence: row.recurrence,
     blocked_by: safeParseJson<string[]>(row.blocked_by, []),
     labels: safeParseJson<string[]>(row.labels, []),
     notes: safeParseJson<string[]>(row.notes, []),
@@ -74,6 +76,7 @@ export async function createTask(
     priority: input.priority ?? "medium",
     owner: input.owner ?? null,
     due_at: input.due_at ?? null,
+    recurrence: input.recurrence ?? null,
     blocked_by: input.blocked_by ?? [],
     labels: input.labels ?? [],
     notes: input.notes ?? [],
@@ -92,6 +95,7 @@ export async function createTask(
       priority: task.priority,
       owner: task.owner,
       due_at: task.due_at,
+      recurrence: task.recurrence,
       blocked_by: JSON.stringify(task.blocked_by),
       labels: JSON.stringify(task.labels),
       notes: JSON.stringify(task.notes),
@@ -256,6 +260,9 @@ export async function updateTask(
   }
   if (input.due_at !== undefined) {
     updates.due_at = input.due_at;
+  }
+  if (input.recurrence !== undefined) {
+    updates.recurrence = input.recurrence;
   }
   if (input.blocked_by !== undefined) {
     updates.blocked_by = JSON.stringify(input.blocked_by);

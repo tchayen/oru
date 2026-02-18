@@ -1,4 +1,5 @@
 import type { Kysely } from "kysely";
+import { sql } from "kysely";
 import type { DB } from "./db/kysely.js";
 import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types.js";
 import type { ListFilters } from "./tasks/repository.js";
@@ -15,6 +16,8 @@ import {
 } from "./tasks/repository.js";
 import { writeOp } from "./oplog/writer.js";
 import { isOverdue, isDueSoon } from "./format/text.js";
+import { nextOccurrence } from "./recurrence/next.js";
+import { spawnId } from "./recurrence/spawn-id.js";
 
 export class TaskService {
   constructor(
@@ -40,6 +43,7 @@ export class TaskService {
             priority: task.priority,
             owner: task.owner,
             due_at: task.due_at,
+            recurrence: task.recurrence,
             blocked_by: task.blocked_by,
             labels: task.labels,
             notes: task.notes,
@@ -50,6 +54,74 @@ export class TaskService {
       );
       return task;
     });
+  }
+
+  private async _maybeSpawn(trx: Kysely<DB>, task: Task, now: string): Promise<Task | null> {
+    if (task.status !== "done" || !task.recurrence) {
+      return null;
+    }
+
+    const childId = spawnId(task.id);
+
+    // Idempotency: check if child already exists
+    const existing = await getTask(trx, childId);
+    if (existing) {
+      return null;
+    }
+
+    // Parse RRULE and compute next due date
+    let rrule = task.recurrence;
+    const isAfter = rrule.startsWith("after:");
+    if (isAfter) {
+      rrule = rrule.slice(6);
+    }
+
+    const anchor = isAfter ? new Date(now) : task.due_at ? new Date(task.due_at) : new Date(now);
+
+    const nextDue = nextOccurrence(rrule, anchor);
+    const dueAt = `${nextDue.getFullYear()}-${String(nextDue.getMonth() + 1).padStart(2, "0")}-${String(nextDue.getDate()).padStart(2, "0")}T${String(nextDue.getHours()).padStart(2, "0")}:${String(nextDue.getMinutes()).padStart(2, "0")}:${String(nextDue.getSeconds()).padStart(2, "0")}`;
+
+    const childInput: CreateTaskInput = {
+      id: childId,
+      title: task.title,
+      priority: task.priority,
+      owner: task.owner,
+      due_at: dueAt,
+      recurrence: task.recurrence,
+      labels: [...task.labels],
+      metadata: { ...task.metadata },
+    };
+
+    const child = await createTask(trx, childInput, now);
+    await writeOp(
+      trx,
+      {
+        task_id: child.id,
+        device_id: this.deviceId,
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: child.title,
+          status: child.status,
+          priority: child.priority,
+          owner: child.owner,
+          due_at: child.due_at,
+          recurrence: child.recurrence,
+          blocked_by: child.blocked_by,
+          labels: child.labels,
+          notes: child.notes,
+          metadata: child.metadata,
+        }),
+      },
+      now,
+    );
+
+    return child;
+  }
+
+  async getSpawnedTask(parentId: string): Promise<Task | null> {
+    const childId = spawnId(parentId);
+    return getTask(this.db, childId);
   }
 
   async list(filters?: ListFilters): Promise<Task[]> {
@@ -85,6 +157,8 @@ export class TaskService {
           now,
         );
       }
+
+      await this._maybeSpawn(trx, task, now);
       return task;
     });
   }
@@ -163,6 +237,7 @@ export class TaskService {
         );
       }
 
+      await this._maybeSpawn(trx, task!, now);
       return task;
     });
   }
@@ -262,6 +337,7 @@ export class TaskService {
         }
       }
 
+      await this._maybeSpawn(trx, task!, now);
       return task;
     });
   }
@@ -413,7 +489,7 @@ export class TaskService {
       .selectAll()
       .where("task_id", "=", task.id)
       .orderBy("timestamp", "asc")
-      .orderBy("id", "asc")
+      .orderBy(sql`rowid`, "asc")
       .execute();
     return rows as OplogEntry[];
   }

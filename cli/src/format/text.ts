@@ -2,6 +2,7 @@ import type { Task } from "../tasks/types.js";
 import type { OplogEntry } from "../oplog/types.js";
 import type { Weekday } from "../config/config.js";
 import { bold, dim, italic, white } from "./colors.js";
+import { formatRecurrence } from "../recurrence/format.js";
 
 export function isOverdue(dueAt: string, now?: Date): boolean {
   const ref = now ?? new Date();
@@ -101,6 +102,9 @@ export function formatTaskText(task: Task, now?: Date): string {
     statusLine += `  Due: ${formatDue(task.due_at, now)}`;
   }
   lines.push(statusLine);
+  if (task.recurrence) {
+    lines.push(`  Recurrence: ${formatRecurrence(task.recurrence)}`);
+  }
   if (task.owner) {
     lines.push(`  Owner: ${task.owner}`);
   }

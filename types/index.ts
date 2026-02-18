@@ -13,6 +13,7 @@ export interface Task {
   priority: Priority;
   owner: string | null;
   due_at: string | null;
+  recurrence: string | null;
   blocked_by: string[];
   labels: string[];
   notes: string[];
@@ -29,6 +30,7 @@ export interface CreateTaskInput {
   priority?: Priority;
   owner?: string | null;
   due_at?: string | null;
+  recurrence?: string | null;
   blocked_by?: string[];
   labels?: string[];
   notes?: string[];
@@ -41,6 +43,7 @@ export interface UpdateTaskInput {
   priority?: Priority;
   owner?: string | null;
   due_at?: string | null;
+  recurrence?: string | null;
   blocked_by?: string[];
   labels?: string[];
   note?: string;

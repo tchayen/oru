@@ -14,24 +14,17 @@ export class SyncEngine {
   ) {}
 
   async push(): Promise<number> {
-    // Get the last pushed oplog UUID for this device
+    // Get the last pushed rowid for this device (rowid is SQLite's built-in
+    // monotonically increasing integer, no sortable ID format needed)
     const hwmRow = this.db
       .prepare("SELECT value FROM meta WHERE key = ?")
       .get(`push_hwm_${this.deviceId}`) as { value: string } | undefined;
-    const lastPushedId = hwmRow?.value ?? null;
+    const lastRowId = hwmRow ? parseInt(hwmRow.value, 10) || 0 : 0;
 
-    // Get local ops from this device since the last pushed UUID.
-    // UUIDv7 IDs are lexicographically sortable by creation time.
-    let ops: OplogEntry[];
-    if (lastPushedId) {
-      ops = this.db
-        .prepare("SELECT * FROM oplog WHERE device_id = ? AND id > ? ORDER BY id ASC")
-        .all(this.deviceId, lastPushedId) as OplogEntry[];
-    } else {
-      ops = this.db
-        .prepare("SELECT * FROM oplog WHERE device_id = ? ORDER BY id ASC")
-        .all(this.deviceId) as OplogEntry[];
-    }
+    // Get local ops from this device since the last pushed rowid
+    const ops = this.db
+      .prepare("SELECT rowid, * FROM oplog WHERE device_id = ? AND rowid > ? ORDER BY rowid ASC")
+      .all(this.deviceId, lastRowId) as (OplogEntry & { rowid: number })[];
 
     if (ops.length === 0) {
       return 0;
@@ -39,14 +32,14 @@ export class SyncEngine {
 
     await this.remote.push(ops);
 
-    // Update push high-water mark with the last pushed UUID
-    const lastId = ops[ops.length - 1].id;
+    // Update push high-water mark with the last pushed rowid
+    const lastRowid = ops[ops.length - 1].rowid;
     this.db
       .prepare(
         `INSERT INTO meta (key, value) VALUES (?, ?)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
       )
-      .run(`push_hwm_${this.deviceId}`, lastId);
+      .run(`push_hwm_${this.deviceId}`, String(lastRowid));
 
     return ops.length;
   }
