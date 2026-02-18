@@ -1,0 +1,276 @@
+---
+import DocsLayout from "../../layouts/DocsLayout.astro";
+import MiniCode from "../../components/ui/MiniCode.astro";
+---
+
+<DocsLayout
+  title="API reference"
+  description="HTTP API for programmatic access to oru tasks."
+>
+  <h2>Server setup</h2>
+  <p>Start the HTTP server on the default port (2358):</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">server</span> <span class="sub">start</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">server</span> <span class="sub">start</span> <span class="flag">--port</span> <span class="val">3000</span>
+  </MiniCode>
+  <p>
+    The server runs in the foreground. Press <code>Ctrl+C</code> to stop it. On
+    startup, it prints a pairing code for authenticating clients.
+  </p>
+
+  <h2>Authentication</h2>
+  <p>
+    The server uses bearer token authentication. Obtain a token via the pairing flow:
+  </p>
+
+  <h3>1. Get the pairing code</h3>
+  <p>
+    When the server starts, it prints a one-time pairing code to the terminal.
+  </p>
+
+  <h3>2. Exchange for a token</h3>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-X</span> <span class="val">POST</span> <span class="str">"http://localhost:2358/pair?code=ABCDEF"</span>
+  </MiniCode>
+  <p>Response:</p>
+  <MiniCode>
+    &#123;<span class="key">"token"</span>: <span class="str">"your-auth-token"</span>&#125;
+  </MiniCode>
+  <p>
+    The pairing code can only be used once. After pairing, use the token for all
+    subsequent requests.
+  </p>
+
+  <h3>3. Use the token</h3>
+  <p>
+    Include the token in the <code>Authorization</code> header:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-auth-token"</span> <span class="val">http://localhost:2358/tasks</span>
+  </MiniCode>
+
+  <hr />
+
+  <h2>Endpoints</h2>
+
+  <h3>GET /tasks</h3>
+  <p>List tasks. By default, hides tasks with status <code>done</code>.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>status</code></td><td>string</td><td>Filter by status (comma-separated)</td></tr>
+      <tr><td><code>priority</code></td><td>string</td><td>Filter by priority (comma-separated)</td></tr>
+      <tr><td><code>label</code></td><td>string</td><td>Filter by label</td></tr>
+      <tr><td><code>owner</code></td><td>string</td><td>Filter by owner</td></tr>
+      <tr><td><code>search</code></td><td>string</td><td>Search by title</td></tr>
+      <tr><td><code>actionable</code></td><td>any</td><td>If present, show only unblocked tasks</td></tr>
+      <tr><td><code>all</code></td><td>any</td><td>If present, include done tasks</td></tr>
+      <tr><td><code>limit</code></td><td>integer</td><td>Maximum results to return</td></tr>
+      <tr><td><code>offset</code></td><td>integer</td><td>Number of results to skip</td></tr>
+    </tbody>
+  </table>
+
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
+    &nbsp;&nbsp;<span class="str">"http://localhost:2358/tasks?status=in_progress&priority=high"</span>
+  </MiniCode>
+
+  <p>Returns an array of task objects.</p>
+
+  <h3>GET /tasks/:id</h3>
+  <p>Get a single task by ID or unique prefix.</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+  </MiniCode>
+  <p>Returns <code>404</code> if not found, <code>409</code> if the prefix is ambiguous.</p>
+
+  <h3>POST /tasks</h3>
+  <p>Create a new task. Returns <code>201</code> on success.</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-X</span> <span class="val">POST</span> \<br />
+    &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
+    &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \<br />
+    &nbsp;&nbsp;<span class="flag">-d</span> <span class="str">'&#123;"title":"Fix login bug","priority":"high","labels":["bug"]&#125;'</span> \<br />
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks</span>
+  </MiniCode>
+
+  <p>Request body:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Required</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>title</code></td><td>string</td><td>Yes</td><td>Task title (1&ndash;1000 chars)</td></tr>
+      <tr><td><code>id</code></td><td>string</td><td>No</td><td>Custom ID (for idempotent creates)</td></tr>
+      <tr><td><code>status</code></td><td>string</td><td>No</td><td><code>todo</code>, <code>in_progress</code>, <code>in_review</code>, <code>done</code></td></tr>
+      <tr><td><code>priority</code></td><td>string</td><td>No</td><td><code>low</code>, <code>medium</code>, <code>high</code>, <code>urgent</code></td></tr>
+      <tr><td><code>owner</code></td><td>string?</td><td>No</td><td>Owner name (null to unset)</td></tr>
+      <tr><td><code>due_at</code></td><td>string?</td><td>No</td><td>ISO date: <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:MM</code></td></tr>
+      <tr><td><code>blocked_by</code></td><td>string[]</td><td>No</td><td>Array of blocking task IDs</td></tr>
+      <tr><td><code>labels</code></td><td>string[]</td><td>No</td><td>Array of label strings</td></tr>
+      <tr><td><code>notes</code></td><td>string[]</td><td>No</td><td>Array of note strings</td></tr>
+      <tr><td><code>metadata</code></td><td>object</td><td>No</td><td>Key-value metadata</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>Idempotent creates:</strong> if you provide an <code>id</code> and a task
+    with that ID already exists, the existing task is returned with a <code>200</code>
+    status instead of creating a duplicate.
+  </p>
+
+  <h3>PATCH /tasks/:id</h3>
+  <p>Update a task. All fields are optional.</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-X</span> <span class="val">PATCH</span> \<br />
+    &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
+    &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \<br />
+    &nbsp;&nbsp;<span class="flag">-d</span> <span class="str">'&#123;"status":"done","note":"Completed in sprint 12"&#125;'</span> \<br />
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+  </MiniCode>
+
+  <p>Request body:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>title</code></td><td>string</td><td>New title</td></tr>
+      <tr><td><code>status</code></td><td>string</td><td>New status</td></tr>
+      <tr><td><code>priority</code></td><td>string</td><td>New priority</td></tr>
+      <tr><td><code>owner</code></td><td>string?</td><td>New owner (null to clear)</td></tr>
+      <tr><td><code>due_at</code></td><td>string?</td><td>New due date (null to clear)</td></tr>
+      <tr><td><code>blocked_by</code></td><td>string[]</td><td>Replace blocker list</td></tr>
+      <tr><td><code>labels</code></td><td>string[]</td><td>Replace labels list</td></tr>
+      <tr><td><code>note</code></td><td>string</td><td>Append a note</td></tr>
+      <tr><td><code>clear_notes</code></td><td>boolean</td><td>Remove all notes before adding new one</td></tr>
+      <tr><td><code>metadata</code></td><td>object</td><td>Replace metadata</td></tr>
+    </tbody>
+  </table>
+
+  <h3>DELETE /tasks/:id</h3>
+  <p>Delete a task permanently.</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-X</span> <span class="val">DELETE</span> \<br />
+    &nbsp;&nbsp;<span class="flag">-H</span> <span class="str">"Authorization: Bearer $TOKEN"</span> \<br />
+    &nbsp;&nbsp;<span class="val">http://localhost:2358/tasks/019414a3</span>
+  </MiniCode>
+  <p>Response:</p>
+  <MiniCode>
+    &#123;<span class="key">"id"</span>: <span class="str">"019414a3-..."</span>, <span class="key">"deleted"</span>: <span class="val">true</span>&#125;
+  </MiniCode>
+
+  <h3>POST /pair</h3>
+  <p>Exchange a one-time pairing code for an auth token.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>code</code></td><td>query string</td><td>The pairing code displayed on server start</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Returns <code>403</code> if the code is invalid or already used.
+  </p>
+
+  <hr />
+
+  <h2>Task schema</h2>
+  <p>A task object has the following shape:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>string</td><td>UUIDv7 identifier</td></tr>
+      <tr><td><code>title</code></td><td>string</td><td>Task title</td></tr>
+      <tr><td><code>status</code></td><td>string</td><td><code>todo</code>, <code>in_progress</code>, <code>in_review</code>, <code>done</code></td></tr>
+      <tr><td><code>priority</code></td><td>string</td><td><code>low</code>, <code>medium</code>, <code>high</code>, <code>urgent</code></td></tr>
+      <tr><td><code>owner</code></td><td>string | null</td><td>Assigned owner</td></tr>
+      <tr><td><code>due_at</code></td><td>string | null</td><td>ISO date string</td></tr>
+      <tr><td><code>blocked_by</code></td><td>string[]</td><td>IDs of blocking tasks</td></tr>
+      <tr><td><code>labels</code></td><td>string[]</td><td>Label strings</td></tr>
+      <tr><td><code>notes</code></td><td>string[]</td><td>Append-only notes</td></tr>
+      <tr><td><code>metadata</code></td><td>object</td><td>Arbitrary key-value data</td></tr>
+      <tr><td><code>created_at</code></td><td>string</td><td>ISO timestamp</td></tr>
+      <tr><td><code>updated_at</code></td><td>string</td><td>ISO timestamp</td></tr>
+      <tr><td><code>deleted_at</code></td><td>string | null</td><td>ISO timestamp (soft delete)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Validation constraints</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Constraint</th>
+        <th>Limit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Title length</td><td>1000 characters</td></tr>
+      <tr><td>Note length</td><td>10,000 characters</td></tr>
+      <tr><td>Label length</td><td>200 characters</td></tr>
+      <tr><td>Max labels per task</td><td>100</td></tr>
+      <tr><td>Max notes per task</td><td>100</td></tr>
+      <tr><td>Max blocked_by entries</td><td>100</td></tr>
+      <tr><td>Max metadata keys</td><td>50</td></tr>
+      <tr><td>Metadata key length</td><td>100 characters</td></tr>
+      <tr><td>Metadata value length</td><td>5000 characters</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Error responses</h2>
+  <p>All errors return a JSON object with an <code>error</code> field:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Error</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>400</code></td><td><code>validation</code></td><td>Invalid request body or query parameters</td></tr>
+      <tr><td><code>401</code></td><td><code>unauthorized</code></td><td>Missing or invalid auth token</td></tr>
+      <tr><td><code>403</code></td><td><code>invalid_code</code></td><td>Invalid or expired pairing code</td></tr>
+      <tr><td><code>404</code></td><td><code>not_found</code></td><td>Task not found</td></tr>
+      <tr><td><code>409</code></td><td><code>ambiguous_prefix</code></td><td>ID prefix matches multiple tasks</td></tr>
+    </tbody>
+  </table>
+
+  <p>Example error response:</p>
+  <MiniCode>
+    &#123;<span class="key">"error"</span>: <span class="str">"not_found"</span>, <span class="key">"id"</span>: <span class="str">"019414a3"</span>&#125;
+  </MiniCode>
+
+  <p>Ambiguous prefix error includes the matching IDs:</p>
+  <MiniCode>
+    &#123;<span class="key">"error"</span>: <span class="str">"ambiguous_prefix"</span>, <span class="key">"id"</span>: <span class="str">"019"</span>, <span class="key">"matches"</span>: [<span class="str">"019414a3-..."</span>, <span class="str">"019414b7-..."</span>]&#125;
+  </MiniCode>
+</DocsLayout>

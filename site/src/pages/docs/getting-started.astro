@@ -1,0 +1,141 @@
+---
+import DocsLayout from "../../layouts/DocsLayout.astro";
+import MiniCode from "../../components/ui/MiniCode.astro";
+---
+
+<DocsLayout
+  title="Getting started"
+  description="Install oru and manage your first tasks in under a minute."
+>
+  <h2>System requirements</h2>
+  <ul>
+    <li><strong>Node.js 22</strong> or later</li>
+    <li>macOS, Linux, or Windows (WSL)</li>
+  </ul>
+
+  <h2>Installation</h2>
+
+  <h3>npm (recommended)</h3>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">npm</span> <span class="sub">install</span> <span class="flag">-g</span> <span class="val">oru-cli</span>
+  </MiniCode>
+
+  <p>Or with your preferred package manager:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">pnpm</span> <span class="sub">add</span> <span class="flag">-g</span> <span class="val">oru-cli</span><br />
+    <span class="prompt">$ </span><span class="cmd">yarn</span> <span class="sub">global</span> <span class="sub">add</span> <span class="val">oru-cli</span>
+  </MiniCode>
+
+  <h3>Platform tarballs</h3>
+  <p>
+    Download pre-built binaries from the
+    <a href="https://github.com/tchayen/oru/releases">GitHub Releases</a> page.
+    Extract and add to your <code>PATH</code>.
+  </p>
+
+  <h3>Verify installation</h3>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="flag">--version</span>
+  </MiniCode>
+
+  <h2>Quick start</h2>
+  <p>
+    oru stores everything in a local SQLite database. No accounts, no cloud &mdash;
+    just run commands.
+  </p>
+
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Read the oru docs"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Build something great"</span> <span class="flag">-p</span> <span class="val">high</span> <span class="flag">-d</span> <span class="val">friday</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">list</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">start</span> <span class="val">&lt;id&gt;</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">done</span> <span class="val">&lt;id&gt;</span>
+  </MiniCode>
+
+  <p>
+    Replace <code>&lt;id&gt;</code> with the task ID shown in the list output.
+    You only need to type enough characters for a unique prefix &mdash;
+    <code>oru done 019</code> works if no other ID starts with <code>019</code>.
+  </p>
+
+  <h2>Shell completions</h2>
+  <p>Tab completion makes oru much faster to use. Install for your shell:</p>
+
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span>
+  </MiniCode>
+
+  <p>
+    This auto-detects your shell and installs completions interactively. You can also
+    target a specific shell:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span> <span class="val">bash</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span> <span class="val">zsh</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span> <span class="val">fish</span>
+  </MiniCode>
+
+  <h2>Configuration</h2>
+  <p>Create a config file with documented defaults:</p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">config</span> <span class="sub">init</span>
+  </MiniCode>
+
+  <p>This creates <code>~/.config/oru/config.toml</code>. Key options:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Option</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>output_format</code></td>
+        <td><code>"text"</code></td>
+        <td>Default output format (<code>text</code> or <code>json</code>)</td>
+      </tr>
+      <tr>
+        <td><code>date_format</code></td>
+        <td><code>"us"</code></td>
+        <td>Date parsing format (<code>us</code> or <code>eu</code>)</td>
+      </tr>
+      <tr>
+        <td><code>first_day_of_week</code></td>
+        <td><code>"sunday"</code></td>
+        <td>First day of the week</td>
+      </tr>
+      <tr>
+        <td><code>backup_path</code></td>
+        <td>&mdash;</td>
+        <td>Directory for automatic backups</td>
+      </tr>
+      <tr>
+        <td><code>telemetry</code></td>
+        <td><code>true</code></td>
+        <td>Anonymous usage telemetry</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>You can also set <code>output_format</code> per-command with <code>--json</code> or <code>--plaintext</code>, or globally via the <code>ORU_FORMAT</code> environment variable.</p>
+
+  <h2>Database location</h2>
+  <p>
+    By default, oru stores its database at <code>~/.oru/oru.db</code>. Override with
+    the <code>ORU_DB_PATH</code> environment variable:
+  </p>
+
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">ORU_DB_PATH</span>=<span class="str">/tmp/test.db</span> <span class="cmd">oru</span> <span class="sub">list</span>
+  </MiniCode>
+
+  <hr />
+
+  <p>
+    Ready to dive deeper? The <a href="/docs/guide">usage guide</a> covers every
+    command and feature in detail.
+  </p>
+</DocsLayout>
