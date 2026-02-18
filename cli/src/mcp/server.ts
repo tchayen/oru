@@ -61,6 +61,13 @@ export function createMcpServer(service: TaskService): McpServer {
           .array(z.string())
           .optional()
           .describe("Initial notes to add to the task, e.g. ['Started migration']"),
+        recurrence: z
+          .string()
+          .nullable()
+          .optional()
+          .describe(
+            "Recurrence rule in RRULE format, e.g. 'FREQ=DAILY', 'FREQ=WEEKLY;BYDAY=MO,WE,FR'. Prefix with 'after:' for completion-based recurrence (next due computed from completion time instead of current due date), e.g. 'after:FREQ=WEEKLY'. Set to null to remove recurrence.",
+          ),
         metadata: z
           .record(z.string(), z.unknown())
           .optional()
@@ -116,6 +123,13 @@ export function createMcpServer(service: TaskService): McpServer {
           .optional()
           .describe(
             "Array of string labels. Replaces the existing list, e.g. ['bug', 'frontend'].",
+          ),
+        recurrence: z
+          .string()
+          .nullable()
+          .optional()
+          .describe(
+            "Recurrence rule in RRULE format, e.g. 'FREQ=DAILY', 'FREQ=WEEKLY;BYDAY=MO,WE,FR'. Prefix with 'after:' for completion-based (next due from completion time). Set to null to remove recurrence.",
           ),
         metadata: z
           .record(z.string(), z.unknown())

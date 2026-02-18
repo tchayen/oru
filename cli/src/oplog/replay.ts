@@ -89,6 +89,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
       ? (data.owner as string)
       : null;
   let dueAt: string | null = typeof data.due_at === "string" ? data.due_at : null;
+  let recurrence: string | null = typeof data.recurrence === "string" ? data.recurrence : null;
   let blockedBy = JSON.stringify(
     Array.isArray(data.blocked_by) ? filterStringArray(data.blocked_by) : [],
   );
@@ -238,6 +239,10 @@ function rebuildTask(db: Database.Database, taskId: string): void {
             }
           }
           break;
+        case "recurrence":
+          recurrence = op.value && op.value.trim().length > 0 ? op.value : null;
+          applied = true;
+          break;
       }
 
       if (applied) {
@@ -257,14 +262,15 @@ function rebuildTask(db: Database.Database, taskId: string): void {
 
   // Upsert the task
   db.prepare(
-    `INSERT INTO tasks (id, title, status, priority, owner, due_at, blocked_by, labels, notes, metadata, created_at, updated_at, deleted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO tasks (id, title, status, priority, owner, due_at, recurrence, blocked_by, labels, notes, metadata, created_at, updated_at, deleted_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        status = excluded.status,
        priority = excluded.priority,
        owner = excluded.owner,
        due_at = excluded.due_at,
+       recurrence = excluded.recurrence,
        blocked_by = excluded.blocked_by,
        labels = excluded.labels,
        notes = excluded.notes,
@@ -278,6 +284,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     priority,
     owner,
     dueAt,
+    recurrence,
     blockedBy,
     labels,
     JSON.stringify(notes),

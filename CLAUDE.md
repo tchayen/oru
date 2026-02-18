@@ -25,6 +25,7 @@ Agent-friendly todo CLI with offline-first sync via oplog.
 - Service layer (`cli/src/main.ts`) wraps repo + oplog writes in single transactions.
 - Conflict resolution: last-write-wins per field, updates beat deletes, notes append-only with dedup.
 - Sync uses sequence-based cursoring (not timestamps) to avoid same-millisecond bugs.
+- Recurring tasks spawn next occurrence via deterministic child IDs (`uuid.v5(parentId, namespace)`), ensuring offline devices that complete the same task produce identical children.
 
 ## App conventions
 

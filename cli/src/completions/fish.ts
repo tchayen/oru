@@ -125,6 +125,7 @@ complete -c oru -n '__oru_using_command add' -l id -d 'Task ID' -r
 complete -c oru -n '__oru_using_command add' -l assign -d 'Assign to owner' -r
 complete -c oru -n '__oru_using_command add' -s b -l blocked-by -d 'Blocked by task ID' -r
 complete -c oru -n '__oru_using_command add' -l meta -d 'Metadata key=value' -r
+complete -c oru -n '__oru_using_command add' -s r -l repeat -d 'Recurrence rule' -r
 complete -c oru -n '__oru_using_command list' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command list' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command list' -l search -d 'Search by title' -r
@@ -147,6 +148,7 @@ complete -c oru -n '__oru_using_command update' -l assign -d 'Assign to owner' -
 complete -c oru -n '__oru_using_command update' -l clear-notes -d 'Remove all notes'
 complete -c oru -n '__oru_using_command update' -s b -l blocked-by -d 'Blocked by task ID' -r
 complete -c oru -n '__oru_using_command update' -l meta -d 'Metadata key=value' -r
+complete -c oru -n '__oru_using_command update' -s r -l repeat -d 'Recurrence rule' -r
 complete -c oru -n '__oru_using_command edit' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command edit' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command edit' -s t -l title -d 'New title' -r

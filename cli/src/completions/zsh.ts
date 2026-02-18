@@ -60,6 +60,7 @@ _oru() {
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '(-b --blocked-by)'{-b,--blocked-by}'[Blocked by task ID]:task:' \\
             '(-n --note)'{-n,--note}'[Add a note]:note:' \\
+            '(-r --repeat)'{-r,--repeat}'[Recurrence rule]:rule:' \\
             '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\
@@ -105,6 +106,7 @@ _oru() {
             '(-b --blocked-by)'{-b,--blocked-by}'[Blocked by task ID]:task:' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\
             '--clear-notes[Remove all notes]' \\
+            '(-r --repeat)'{-r,--repeat}'[Recurrence rule]:rule:' \\
             '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\
