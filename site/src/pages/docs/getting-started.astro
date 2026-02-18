@@ -15,7 +15,16 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Installation</h2>
 
-  <h3>npm (recommended)</h3>
+  <h3>Install script (recommended)</h3>
+  <p>
+    The install script auto-detects your platform, downloads the right binary,
+    and adds oru to your <code>PATH</code>:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">curl</span> <span class="flag">-fsSL</span> <span class="val">https://oru.sh/install</span> <span class="sub">|</span> <span class="cmd">bash</span>
+  </MiniCode>
+
+  <h3>npm</h3>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">npm</span> <span class="sub">install</span> <span class="flag">-g</span> <span class="val">@tchayen/oru</span>
   </MiniCode>
