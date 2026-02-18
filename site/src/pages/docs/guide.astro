@@ -211,14 +211,38 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h3>Calendar-based vs. completion-based</h3>
   <p>
-    By default, the next due date advances from the current <code>due_at</code>. This is
-    <strong>calendar-based</strong> &mdash; good for tasks that happen on fixed schedules
-    regardless of when you complete them.
+    There are two ways the next due date is computed. The difference matters when you
+    complete a task late.
   </p>
+
+  <h4>Calendar-based (default)</h4>
   <p>
-    Prefix with <code>after:</code> for <strong>completion-based</strong> recurrence. The
-    next due date is computed from when you complete the task. Good for tasks like &ldquo;every
-    3 days after I last did it.&rdquo;
+    The next due date advances from the current <code>due_at</code>, regardless of when
+    you actually complete it. Good for fixed schedules like standups, reports, or
+    meetings.
+  </p>
+  <MiniCode>
+    <span class="flag"># Task due Monday, completed on Wednesday</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Standup"</span> <span class="flag">-r</span> <span class="val">weekly</span> <span class="flag">-d</span> <span class="val">monday</span><br />
+    <span class="flag"># After marking done: next due = following Monday</span><br />
+    <span class="flag"># (advances from the old due date, not from today)</span>
+  </MiniCode>
+
+  <h4>Completion-based (<code>after:</code> prefix)</h4>
+  <p>
+    The next due date is computed from when you complete it. Good for tasks where the
+    interval should reset each time &mdash; watering plants, laundry, backups.
+  </p>
+  <MiniCode>
+    <span class="flag"># Due every 3 days from when you finish it</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Water plants"</span> <span class="flag">-r</span> <span class="str">"after:every 3 days"</span> <span class="flag">-d</span> <span class="val">today</span><br />
+    <span class="flag"># After marking done: next due = today + 3 days</span><br />
+    <span class="flag"># (always counts from when you completed it)</span>
+  </MiniCode>
+
+  <p>
+    In short: calendar-based keeps a fixed rhythm, completion-based keeps a fixed gap
+    between completions.
   </p>
 
   <h3>Supported formats</h3>

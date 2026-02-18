@@ -90,6 +90,25 @@ import Terminal from "./ui/Terminal.astro";
       </div>
 
       <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
+        <h3>Recurring tasks, handled.</h3>
+        <p class="body text-text-secondary">
+          Set a schedule once. When you mark a recurring task as done, the next
+          occurrence appears automatically with the right due date.
+        </p>
+        <Terminal title="recurring tasks">
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Water plants"</span> <span class="flag">-r</span> <span class="str">"every 3 days"</span> <span class="flag">-d</span> <span class="val">today</span></span>
+          <span class="line"><span class="output">019414a9  </span><span class="cmd">Water plants</span></span>
+          <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
+          <span class="line"><span class="output">  Due: 2026-02-18  Recurrence: every 3 days</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">done</span> <span class="val">019414a9</span></span>
+          <span class="line"><span class="output">Next occurrence: every 3 days</span></span>
+          <span class="line"><span class="output">019414aa  </span><span class="cmd">Water plants</span></span>
+          <span class="line"><span class="output">  Status: todo  Due: 2026-02-21</span></span>
+        </Terminal>
+      </div>
+
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
         <h3>Pipe-friendly by default.</h3>
         <p class="body text-text-secondary">
           Non-interactive by design. Compose with jq, grep, and scripts – or
@@ -103,7 +122,7 @@ import Terminal from "./ui/Terminal.astro";
         </Terminal>
       </div>
 
-      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
         <h3>Shell completions for everything.</h3>
         <p class="body text-text-secondary">
           Tab-complete commands, flags, and values. Ships with scripts for bash,
@@ -120,7 +139,7 @@ import Terminal from "./ui/Terminal.astro";
         </Terminal>
       </div>
 
-      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
         <h3>Agents retry. oru handles it.</h3>
         <p class="body text-text-secondary">
           The <code
@@ -140,7 +159,7 @@ import Terminal from "./ui/Terminal.astro";
         </Terminal>
       </div>
 
-      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="80">
+      <div class="flex flex-col gap-4 min-w-0 reveal" data-delay="0">
         <h3>Key-value metadata on any task.</h3>
         <p class="body text-text-secondary">
           Link tasks to PRs, projects, sprints, or anything else. The <code
