@@ -3,8 +3,16 @@ name: CI
 on:
   push:
     branches: [main]
+    paths:
+      - "cli/**"
+      - "types/**"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "cli/**"
+      - "types/**"
+      - ".github/workflows/ci.yml"
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -40,6 +48,13 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Upload build artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-dist
+          path: cli/dist/
+
   changes:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -61,7 +76,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   integration:
-    needs: changes
+    needs: [check, changes]
     if: needs.changes.outputs.cli == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -76,11 +91,14 @@ jobs:
 
       - run: pnpm install
 
-      - name: Build
-        run: pnpm --filter @tchayen/oru build
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-dist
+          path: cli/dist/
 
       - name: Create production deployment
-        run: pnpm --filter @tchayen/oru deploy --prod cli/staging
+        run: pnpm --filter @tchayen/oru --config.inject-workspace-packages=true deploy --prod cli/staging
 
       - name: Create wrapper script
         working-directory: cli/staging
@@ -141,7 +159,7 @@ jobs:
           /tmp/npm-test/node_modules/.bin/oru list --json
 
   bundle-size:
-    needs: changes
+    needs: [check, changes]
     if: needs.changes.outputs.cli == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -171,14 +189,11 @@ jobs:
           echo "mcp=$(stat -c%s cli/dist/mcp/index.js)" >> "$GITHUB_OUTPUT"
           echo "server=$(stat -c%s cli/dist/server/index.js)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
+      - name: Download PR build artifact
+        uses: actions/download-artifact@v4
         with:
-          clean: false
-
-      - run: pnpm install
-
-      - name: Build PR
-        run: ORU_BUILD_SERVER=1 pnpm build
+          name: cli-dist
+          path: cli/dist/
 
       - name: Report bundle size
         uses: actions/github-script@v7
