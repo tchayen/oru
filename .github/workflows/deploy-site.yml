@@ -34,7 +34,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
       - name: Build main site
         if: github.event_name == 'pull_request'
@@ -55,7 +55,7 @@ jobs:
 
       - name: Install PR dependencies
         if: github.event_name == 'pull_request'
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build site
         run: pnpm --filter oru-site build
