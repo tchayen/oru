@@ -91,32 +91,34 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     source line is only added once.
   </p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Shell</th>
-        <th>Script written to</th>
-        <th>RC file updated</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>bash</td>
-        <td><code>~/.oru/completions.bash</code></td>
-        <td><code>~/.bashrc</code></td>
-      </tr>
-      <tr>
-        <td>zsh</td>
-        <td><code>~/.oru/completions.zsh</code></td>
-        <td><code>~/.zshrc</code></td>
-      </tr>
-      <tr>
-        <td>fish</td>
-        <td><code>~/.config/fish/completions/oru.fish</code></td>
-        <td>none (fish auto-loads from that directory)</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Shell</th>
+          <th>Script written to</th>
+          <th>RC file updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>bash</td>
+          <td><code>~/.oru/completions.bash</code></td>
+          <td><code>~/.bashrc</code></td>
+        </tr>
+        <tr>
+          <td>zsh</td>
+          <td><code>~/.oru/completions.zsh</code></td>
+          <td><code>~/.zshrc</code></td>
+        </tr>
+        <tr>
+          <td>fish</td>
+          <td><code>~/.config/fish/completions/oru.fish</code></td>
+          <td>none (fish auto-loads from that directory)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <h3>Applying completions</h3>
   <p>
@@ -150,77 +152,81 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <p>Key options:</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Option</th>
-        <th>Default</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>output_format</code></td>
-        <td><code>"text"</code></td>
-        <td>Default output format (<code>text</code> or <code>json</code>)</td>
-      </tr>
-      <tr>
-        <td><code>date_format</code></td>
-        <td><code>"mdy"</code></td>
-        <td>Slash date order: <code>mdy</code> (MM/DD/YYYY) or <code>dmy</code> (DD/MM/YYYY)</td>
-      </tr>
-      <tr>
-        <td><code>first_day_of_week</code></td>
-        <td><code>"monday"</code></td>
-        <td>First day of the week (affects "next week", "end of week")</td>
-      </tr>
-      <tr>
-        <td><code>next_month</code></td>
-        <td><code>"same_day"</code></td>
-        <td>What "next month" means: <code>same_day</code> (Mar 15 -> Apr 15) or <code>first</code> (Mar 15 -> Apr 1)</td>
-      </tr>
-      <tr>
-        <td><code>auto_update_check</code></td>
-        <td><code>true</code></td>
-        <td>Check for new versions on startup (at most once per 24 h)</td>
-      </tr>
-      <tr>
-        <td><code>backup_path</code></td>
-        <td>&ndash;</td>
-        <td>Directory for automatic backups on every command</td>
-      </tr>
-      <tr>
-        <td><code>backup_interval</code></td>
-        <td><code>60</code></td>
-        <td>Minimum minutes between auto-backups</td>
-      </tr>
-      <tr>
-        <td><code>telemetry</code></td>
-        <td><code>true</code></td>
-        <td>Anonymous usage telemetry (see also: <code>oru telemetry</code>)</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>output_format</code></td>
+          <td><code>"text"</code></td>
+          <td>Default output format (<code>text</code> or <code>json</code>)</td>
+        </tr>
+        <tr>
+          <td><code>date_format</code></td>
+          <td><code>"mdy"</code></td>
+          <td>Slash date order: <code>mdy</code> (MM/DD/YYYY) or <code>dmy</code> (DD/MM/YYYY)</td>
+        </tr>
+        <tr>
+          <td><code>first_day_of_week</code></td>
+          <td><code>"monday"</code></td>
+          <td>First day of the week (affects "next week", "end of week")</td>
+        </tr>
+        <tr>
+          <td><code>next_month</code></td>
+          <td><code>"same_day"</code></td>
+          <td>What "next month" means: <code>same_day</code> (Mar 15 -> Apr 15) or <code>first</code> (Mar 15 -> Apr 1)</td>
+        </tr>
+        <tr>
+          <td><code>auto_update_check</code></td>
+          <td><code>true</code></td>
+          <td>Check for new versions on startup (at most once per 24 h)</td>
+        </tr>
+        <tr>
+          <td><code>backup_path</code></td>
+          <td>&ndash;</td>
+          <td>Directory for automatic backups on every command</td>
+        </tr>
+        <tr>
+          <td><code>backup_interval</code></td>
+          <td><code>60</code></td>
+          <td>Minimum minutes between auto-backups</td>
+        </tr>
+        <tr>
+          <td><code>telemetry</code></td>
+          <td><code>true</code></td>
+          <td>Anonymous usage telemetry (see also: <code>oru telemetry</code>)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <p>You can also set <code>output_format</code> per-command with <code>--json</code> or <code>--plaintext</code>, or globally via the <code>ORU_FORMAT</code> environment variable.</p>
 
   <h2>Environment variables</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Variable</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td><code>ORU_DB_PATH</code></td><td>Override database file path (default: <code>~/.oru/oru.db</code>)</td></tr>
-      <tr><td><code>ORU_CONFIG_PATH</code></td><td>Override config file path</td></tr>
-      <tr><td><code>ORU_CONFIG_DIR</code></td><td>Override config directory (default: <code>~/.oru</code>)</td></tr>
-      <tr><td><code>ORU_FORMAT</code></td><td>Set default output format (<code>json</code> or <code>text</code>)</td></tr>
-      <tr><td><code>ORU_DEBUG=1</code></td><td>Enable verbose error output</td></tr>
-      <tr><td><code>DO_NOT_TRACK=1</code></td><td>Disable telemetry</td></tr>
-    </tbody>
-  </table>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ORU_DB_PATH</code></td><td>Override database file path (default: <code>~/.oru/oru.db</code>)</td></tr>
+        <tr><td><code>ORU_CONFIG_PATH</code></td><td>Override config file path</td></tr>
+        <tr><td><code>ORU_CONFIG_DIR</code></td><td>Override config directory (default: <code>~/.oru</code>)</td></tr>
+        <tr><td><code>ORU_FORMAT</code></td><td>Set default output format (<code>json</code> or <code>text</code>)</td></tr>
+        <tr><td><code>ORU_DEBUG=1</code></td><td>Enable verbose error output</td></tr>
+        <tr><td><code>DO_NOT_TRACK=1</code></td><td>Disable telemetry</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <h2>Database location</h2>
   <p>
