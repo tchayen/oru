@@ -1564,15 +1564,15 @@ describe("CLI parse", () => {
     expect(output).toContain("Task");
   });
 
-  it("get --json with empty ID returns the task", async () => {
+  it("get --json with empty ID returns not_found", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Task", "--json"]);
 
     const p2 = createProgram(db, capture());
     await p2.parseAsync(["node", "oru", "get", "", "--json"]);
     const parsed = JSON.parse(output.trim());
-    // Empty prefix with LIKE '%' matches the single task
-    expect(parsed.title).toBe("Task");
+    // Empty string now returns null early instead of matching via LIKE '%'
+    expect(parsed.error).toBe("not_found");
   });
 
   // Multi-value filter tests
