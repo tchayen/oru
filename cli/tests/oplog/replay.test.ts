@@ -1109,4 +1109,57 @@ describe("oplog replay", () => {
     const task = await getTask(ky, "t1");
     expect(task!.blocked_by).toEqual(["valid", "also-valid"]);
   });
+
+  it("notes_clear sorts before notes ops at the same timestamp regardless of ID order", async () => {
+    // The notes op ID ("AAAnotes") sorts before the notes_clear ID ("ZZZclear")
+    // alphabetically. Without the fix, notes would be applied first and then cleared,
+    // leaving the task with empty notes. With the fix, notes_clear runs first so the
+    // notes added in the same batch are kept.
+    const ts = "2026-01-01T00:00:00.000Z";
+    replayOps(db, [
+      makeOp({
+        id: "op-create",
+        task_id: "t1",
+        op_type: "create",
+        field: null,
+        value: JSON.stringify({
+          title: "Task",
+          status: "todo",
+          priority: "medium",
+          labels: [],
+          notes: ["old note"],
+          metadata: {},
+        }),
+        timestamp: "2025-01-01T00:00:00.000Z",
+      }),
+      // notes op ID sorts BEFORE notes_clear ID: "AAAnotes" < "ZZZclear"
+      makeOp({
+        id: "AAAnotes",
+        task_id: "t1",
+        op_type: "update",
+        field: "notes",
+        value: "Kept note",
+        timestamp: ts,
+      }),
+      makeOp({
+        id: "ZZZclear",
+        task_id: "t1",
+        op_type: "update",
+        field: "notes_clear",
+        value: "",
+        timestamp: ts,
+      }),
+      makeOp({
+        id: "ZZZnote2",
+        task_id: "t1",
+        op_type: "update",
+        field: "notes",
+        value: "Also kept",
+        timestamp: ts,
+      }),
+    ]);
+    const task = await getTask(ky, "t1");
+    // notes_clear runs first (sort weight 0), then both notes are appended
+    expect(task!.notes).toEqual(["Kept note", "Also kept"]);
+  });
 });
