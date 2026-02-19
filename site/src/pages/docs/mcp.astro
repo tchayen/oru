@@ -74,9 +74,10 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     <span class="prompt">$ </span><span class="cmd">claude</span> <span class="sub">mcp</span> <span class="sub">add</span> <span class="val">oru</span> <span class="flag">--</span> <span class="cmd">oru</span> <span class="sub">mcp</span>
   </MiniCode>
   <p>
-    This writes to <code>~/.claude.json</code> (user scope) or
-    <code>.claude/settings.json</code> in the project root (project scope).
-    Add <code>--scope project</code> to register it for the current project only.
+    This writes to <code>~/.claude.json</code> by default. Add
+    <code>--scope project</code> to instead write to <code>.mcp.json</code> in
+    the project root, which can be checked into version control to share with
+    your team.
   </p>
 
   <h3>Cursor</h3>
@@ -141,10 +142,8 @@ import MiniCode from "../../components/ui/MiniCode.astro";
     <span class="flag">&#123;</span><br />
     &nbsp;&nbsp;<span class="key">"context_servers"</span>: <span class="flag">&#123;</span><br />
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"oru"</span>: <span class="flag">&#123;</span><br />
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"command"</span>: <span class="flag">&#123;</span><br />
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"path"</span>: <span class="str">"oru"</span>,<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"args"</span>: [<span class="str">"mcp"</span>]<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">&#125;</span><br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"command"</span>: <span class="str">"oru"</span>,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"args"</span>: [<span class="str">"mcp"</span>]<br />
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="flag">&#125;</span><br />
     &nbsp;&nbsp;<span class="flag">&#125;</span><br />
     <span class="flag">&#125;</span>
