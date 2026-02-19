@@ -5,4 +5,4 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "oru-telemetry"
-database_id = "" # Set after terraform creates the D1 database
+database_id = "b8eae1a2-8adb-4fb2-acd6-6c56b8cc35ad"
