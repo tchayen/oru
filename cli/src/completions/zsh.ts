@@ -126,17 +126,6 @@ _oru() {
           ;;
         edit)
           _arguments \\
-            '(-t --title)'{-t,--title}'[New title]:title:' \\
-            '(-s --status)'{-s,--status}'[New status]:status:('"$status_values"')' \\
-            '(-p --priority)'{-p,--priority}'[New priority]:priority:('"$priority_values"')' \\
-            '(-d --due)'{-d,--due}'[Due date]:date:' \\
-            '--assign[Assign to owner]:owner:' \\
-            '*'{-l,--label}'[Add labels]:label:->labels' \\
-            '*--unlabel[Remove labels]:label:->labels' \\
-            '(-b --blocked-by)'{-b,--blocked-by}'[Blocked by task ID]:task:' \\
-            '(-n --note)'{-n,--note}'[Append a note]:note:' \\
-            '--clear-notes[Remove all notes]' \\
-            '--meta[Metadata key=value]:meta:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]' \\
             '1:task:->tasks'

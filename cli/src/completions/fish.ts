@@ -118,21 +118,17 @@ complete -c oru -n '__oru_using_command sync' -F
 complete -c oru -n '__oru_using_command add' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
 complete -c oru -n '__oru_using_command list' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
 complete -c oru -n '__oru_using_command update' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
-complete -c oru -n '__oru_using_command edit' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
 
 # Priority flag for add, list, update, edit
 complete -c oru -n '__oru_using_command add' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
 complete -c oru -n '__oru_using_command list' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
 complete -c oru -n '__oru_using_command update' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
-complete -c oru -n '__oru_using_command edit' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
 
 # Label flag
 complete -c oru -n '__oru_using_command add' -s l -l label -a '(__oru_labels)' -d 'Label' -r
 complete -c oru -n '__oru_using_command list' -s l -l label -a '(__oru_labels)' -d 'Label' -r
 complete -c oru -n '__oru_using_command update' -s l -l label -a '(__oru_labels)' -d 'Label' -r
-complete -c oru -n '__oru_using_command edit' -s l -l label -a '(__oru_labels)' -d 'Label' -r
 complete -c oru -n '__oru_using_command update' -l unlabel -a '(__oru_labels)' -d 'Remove label' -r
-complete -c oru -n '__oru_using_command edit' -l unlabel -a '(__oru_labels)' -d 'Remove label' -r
 
 # Common flags
 complete -c oru -n '__oru_using_command labels' -l json -d 'Output as JSON'
@@ -172,13 +168,6 @@ complete -c oru -n '__oru_using_command update' -l meta -d 'Metadata key=value' 
 complete -c oru -n '__oru_using_command update' -s r -l repeat -d 'Recurrence rule' -r
 complete -c oru -n '__oru_using_command edit' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command edit' -l plaintext -d 'Output as plain text'
-complete -c oru -n '__oru_using_command edit' -s t -l title -d 'New title' -r
-complete -c oru -n '__oru_using_command edit' -s d -l due -d 'Due date' -r
-complete -c oru -n '__oru_using_command edit' -s n -l note -d 'Append a note' -r
-complete -c oru -n '__oru_using_command edit' -l assign -d 'Assign to owner' -r
-complete -c oru -n '__oru_using_command edit' -l clear-notes -d 'Remove all notes'
-complete -c oru -n '__oru_using_command edit' -s b -l blocked-by -d 'Blocked by task ID' -r
-complete -c oru -n '__oru_using_command edit' -l meta -d 'Metadata key=value' -r
 complete -c oru -n '__oru_using_command delete' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command delete' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command done' -l json -d 'Output as JSON'

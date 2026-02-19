@@ -142,13 +142,20 @@ ${serverBlock}
         COMPREPLY=($(compgen -W "--id -s --status -p --priority -d --due --assign -l --label -b --blocked-by -n --note -r --repeat --meta --json --plaintext" -- "$cur"))
       fi
       ;;
-    update|edit)
+    update)
       if [[ "$cur" != -* ]]; then
         local tasks
         tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
         COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
       else
         COMPREPLY=($(compgen -W "-t --title -s --status -p --priority -d --due --assign -l --label --unlabel -b --blocked-by -n --note --clear-notes -r --repeat --meta --json --plaintext" -- "$cur"))
+      fi
+      ;;
+    edit)
+      if [[ "$cur" != -* ]]; then
+        local tasks
+        tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
+        COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
       fi
       ;;
     context)
