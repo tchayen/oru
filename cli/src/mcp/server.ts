@@ -5,7 +5,7 @@ import { STATUSES, PRIORITIES } from "../tasks/types";
 import type { CreateTaskInput, UpdateTaskInput } from "../tasks/types";
 import type { ListFilters } from "../tasks/repository";
 
-import { VERSION } from "../version.js";
+import { VERSION } from "../version";
 
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);

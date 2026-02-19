@@ -2,7 +2,7 @@ import type { Config } from "../config/config";
 import { setConfigValue } from "../config/config";
 import { SHOW_SERVER } from "../flags";
 
-import { VERSION } from "../version.js";
+import { VERSION } from "../version";
 
 export interface TelemetryEvent {
   cli_version: string;

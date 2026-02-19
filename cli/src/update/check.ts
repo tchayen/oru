@@ -3,7 +3,7 @@ import path from "path";
 import os from "os";
 import type { Config } from "../config/config";
 
-import { VERSION } from "../version.js";
+import { VERSION } from "../version";
 
 interface UpdateState {
   lastChecked: number;
