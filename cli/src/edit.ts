@@ -42,7 +42,7 @@ export function serializeTask(task: Task): string {
   if (task.notes.length > 0) {
     doc += "\n";
     for (const note of task.notes) {
-      doc += `- ${note}\n`;
+      doc += `- ${note.replace(/\r?\n/g, "\\n")}\n`;
     }
   }
 
@@ -172,7 +172,7 @@ export function parseDocument(
   const noteLines = afterFrontmatter
     .split("\n")
     .filter((line) => line.startsWith("- "))
-    .map((line) => line.slice(2));
+    .map((line) => line.slice(2).replace(/\\n/g, "\n"));
 
   const existingSet = new Set(existing.notes);
   const newNotes = noteLines.filter((note) => !existingSet.has(note));
