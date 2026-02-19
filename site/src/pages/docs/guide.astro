@@ -363,17 +363,10 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h3>MCP server</h3>
   <p>
-    oru includes a built-in <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server
-    that exposes task management as tools your AI can call directly:
-  </p>
-  <MiniCode copy>
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">mcp</span>
-  </MiniCode>
-  <p>
-    Add it to your MCP client configuration (e.g. Claude Desktop). Available tools:
-    <code>add_task</code>, <code>update_task</code>, <code>delete_task</code>,
-    <code>list_tasks</code>, <code>get_task</code>, <code>get_context</code>,
-    <code>add_note</code>, <code>list_labels</code>.
+    oru includes a built-in <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server.
+    Run <code>oru mcp</code> and connect it to Claude Desktop, Cursor, VS Code, Windsurf, Zed, or any
+    other MCP client. See the <a href="/docs/mcp">MCP server page</a> for setup instructions
+    and the full list of available tools.
   </p>
 
   <h3>AGENTS.md</h3>
