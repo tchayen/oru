@@ -66,7 +66,9 @@ function tick(time: number) {
 
     for (let i = 0; i < col.tailLength; i++) {
       const charY = col.y - i * FONT_SIZE * 1.4;
-      if (charY < -FONT_SIZE || charY > canvas.height + FONT_SIZE) continue;
+      if (charY < -FONT_SIZE || charY > canvas.height + FONT_SIZE) {
+        continue;
+      }
       const t = i / (col.tailLength - 1);
       const alpha = i === 0 ? 0.9 : (1 - t) * 0.18 + 0.02;
       ctx.fillStyle = `rgba(250, 250, 250, ${alpha})`;
@@ -80,7 +82,9 @@ function tick(time: number) {
 function init() {
   resize();
   window.addEventListener("resize", resize);
-  for (let i = 0; i < 6; i++) spawnColumn();
+  for (let i = 0; i < 6; i++) {
+    spawnColumn();
+  }
   lastTime = performance.now();
   animId = requestAnimationFrame(tick);
 }
