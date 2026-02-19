@@ -244,27 +244,13 @@ describe("getConfigPath", () => {
   });
 
   it("returns default path when no env vars set", () => {
-    delete process.env.ORU_CONFIG_PATH;
     delete process.env.ORU_CONFIG_DIR;
     expect(getConfigPath()).toBe(path.join(os.homedir(), ".oru", "config.toml"));
   });
 
-  it("respects ORU_CONFIG_PATH", () => {
-    process.env.ORU_CONFIG_PATH = "/tmp/custom/my-config.toml";
-    delete process.env.ORU_CONFIG_DIR;
-    expect(getConfigPath()).toBe("/tmp/custom/my-config.toml");
-  });
-
   it("respects ORU_CONFIG_DIR", () => {
-    delete process.env.ORU_CONFIG_PATH;
     process.env.ORU_CONFIG_DIR = "/tmp/custom-dir";
     expect(getConfigPath()).toBe(path.join("/tmp/custom-dir", "config.toml"));
-  });
-
-  it("prefers ORU_CONFIG_PATH over ORU_CONFIG_DIR", () => {
-    process.env.ORU_CONFIG_PATH = "/tmp/explicit.toml";
-    process.env.ORU_CONFIG_DIR = "/tmp/custom-dir";
-    expect(getConfigPath()).toBe("/tmp/explicit.toml");
   });
 });
 
@@ -276,7 +262,7 @@ describe("setConfigValue", () => {
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-config-set-test-"));
     configPath = path.join(tmpDir, "config.toml");
-    process.env.ORU_CONFIG_PATH = configPath;
+    process.env.ORU_CONFIG_DIR = tmpDir;
   });
 
   afterEach(() => {
