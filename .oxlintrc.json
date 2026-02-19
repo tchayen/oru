@@ -48,6 +48,11 @@
     "import/no-duplicates": "warn",
     "import/no-absolute-path": "error",
     "import/no-namespace": "warn",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      { "js": "never", "ts": "never", "tsx": "never" }
+    ],
 
     "jest/no-focused-tests": "error",
     "jest/no-conditional-expect": "off",
