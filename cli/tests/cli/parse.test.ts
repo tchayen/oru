@@ -717,6 +717,24 @@ describe("CLI parse", () => {
     expect(parsed.due_at).toBeNull();
   });
 
+  it("update --due respects config next_month = first", async () => {
+    const config = {
+      date_format: "mdy" as const,
+      first_day_of_week: "monday" as const,
+      output_format: "text" as const,
+      next_month: "first" as const,
+    };
+    const p1 = createProgram(db, capture(), config);
+    await p1.parseAsync(["node", "oru", "add", "Next month task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture(), config);
+    await p2.parseAsync(["node", "oru", "update", id, "--due", "next month", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    // With next_month = "first", due date must land on the 1st of the month
+    expect(parsed.due_at.slice(8, 10)).toBe("01");
+  });
+
   it("add --due respects config date_format = dmy", async () => {
     const config = {
       date_format: "dmy" as const,
