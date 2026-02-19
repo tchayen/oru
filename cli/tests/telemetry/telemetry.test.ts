@@ -8,6 +8,7 @@ import {
   detectCI,
   extractCommandAndFlags,
   showFirstRunNotice,
+  buildEvent,
 } from "../../src/telemetry/telemetry";
 import type { Config } from "../../src/config/config";
 
@@ -178,6 +179,18 @@ describe("extractCommandAndFlags", () => {
     expect(result.flags).toEqual(["--title", "--status"]);
     expect(result.flags).not.toContain("secret title");
     expect(result.flags).not.toContain("done");
+  });
+});
+
+describe("buildEvent", () => {
+  it("omits error field when not provided", () => {
+    const event = buildEvent("list", [], 100, 0);
+    expect("error" in event).toBe(false);
+  });
+
+  it("includes error field when provided", () => {
+    const event = buildEvent("foobar", [], 5, 1, "commander.unknownCommand");
+    expect(event.error).toBe("commander.unknownCommand");
   });
 });
 

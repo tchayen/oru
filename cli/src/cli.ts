@@ -1,6 +1,7 @@
 import { fileURLToPath } from "url";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { spawn } from "child_process";
 import { Command, Option, Help } from "commander";
 import type Database from "better-sqlite3";
@@ -1091,6 +1092,9 @@ export function createProgram(
     )
     .action(async (remotePath: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const remote = new FsRemote(remotePath);
+      const dbPath = db.name;
+      const backupPath = path.join(os.tmpdir(), `oru-sync-backup-${Date.now()}.db`);
+      db.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`);
       try {
         const engine = new SyncEngine(db, remote, deviceId);
         const result = await engine.sync();
@@ -1101,8 +1105,21 @@ export function createProgram(
             ? JSON.stringify(result, null, 2)
             : `Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`,
         );
+      } catch (err) {
+        db.close();
+        for (const ext of ["-wal", "-shm"]) {
+          try {
+            fs.unlinkSync(dbPath + ext);
+          } catch {}
+        }
+        fs.copyFileSync(backupPath, dbPath);
+        process.stderr.write("Sync failed, database restored from backup.\n");
+        throw err;
       } finally {
         remote.close();
+        try {
+          fs.unlinkSync(backupPath);
+        } catch {}
       }
     });
 
@@ -1493,14 +1510,19 @@ async function main() {
     }
   }
 
+  // Capture commander parse errors (unknown command, unknown flag, etc.) without
+  // calling process.exit() immediately, so telemetry still fires below.
+  let parseErrorCode: string | undefined;
   try {
     await program.parseAsync(process.argv);
   } catch (err: unknown) {
-    // Commander throws on --help, --version, etc.
+    // Commander throws on --help, --version, unknown commands, unknown flags, etc.
     if (err instanceof Error && "exitCode" in err) {
-      process.exit((err as { exitCode: number }).exitCode);
+      process.exitCode = (err as { exitCode: number }).exitCode;
+      parseErrorCode = "code" in err ? String((err as { code: unknown }).code) : "commander.error";
+    } else {
+      throw err;
     }
-    throw err;
   } finally {
     db.close();
   }
@@ -1513,7 +1535,13 @@ async function main() {
     // Don't send telemetry for the telemetry command itself
     if (isTelemetryEnabled(config) && !command.startsWith("telemetry")) {
       const durationMs = Date.now() - startTime;
-      const event = buildEvent(command, flags, durationMs, Number(process.exitCode ?? 0));
+      const event = buildEvent(
+        command,
+        flags,
+        durationMs,
+        Number(process.exitCode ?? 0),
+        parseErrorCode,
+      );
       sendEvent(event);
     }
   } catch (err) {

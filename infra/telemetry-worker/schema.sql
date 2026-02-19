@@ -9,7 +9,8 @@ CREATE TABLE events (
   node_version TEXT NOT NULL,
   is_ci INTEGER NOT NULL,
   duration_ms INTEGER NOT NULL,
-  exit_code INTEGER NOT NULL
+  exit_code INTEGER NOT NULL,
+  error TEXT
 );
 
 CREATE INDEX idx_events_received_at ON events(received_at);

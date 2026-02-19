@@ -14,6 +14,7 @@ export interface TelemetryEvent {
   is_ci: boolean;
   duration_ms: number;
   exit_code: number;
+  error?: string;
 }
 
 const TELEMETRY_URL = "https://telemetry.oru.sh/v1/events";
@@ -146,8 +147,9 @@ export function buildEvent(
   flags: string[],
   durationMs: number,
   exitCode: number,
+  error?: string,
 ): TelemetryEvent {
-  return {
+  const event: TelemetryEvent = {
     cli_version: VERSION,
     command,
     flags,
@@ -158,4 +160,8 @@ export function buildEvent(
     duration_ms: durationMs,
     exit_code: exitCode,
   };
+  if (error !== undefined) {
+    event.error = error;
+  }
+  return event;
 }
