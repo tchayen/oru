@@ -52,13 +52,93 @@ jobs:
         id: filter
         run: |
           FILES=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq '.[].filename')
-          if echo "$FILES" | grep -q '^cli/'; then
+          if echo "$FILES" | grep -qE '^(cli/|\.github/workflows/ci\.yml)'; then
             echo "cli=true" >> "$GITHUB_OUTPUT"
           else
             echo "cli=false" >> "$GITHUB_OUTPUT"
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  integration:
+    needs: changes
+    if: needs.changes.outputs.cli == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Build
+        run: pnpm --filter @tchayen/oru build
+
+      - name: Create production deployment
+        run: pnpm --filter @tchayen/oru deploy --prod cli/staging
+
+      - name: Create wrapper script
+        working-directory: cli/staging
+        run: |
+          cat > oru <<'WRAPPER'
+          #!/bin/sh
+          exec node "$(dirname "$0")/dist/cli.js" "$@"
+          WRAPPER
+          chmod +x oru
+
+      - name: Verify CLI binary
+        working-directory: cli/staging
+        env:
+          ORU_DB_PATH: /tmp/oru-integration.db
+          DO_NOT_TRACK: "1"
+        run: |
+          node dist/cli.js --version
+          node dist/cli.js add "Integration test task"
+          node dist/cli.js list
+          node dist/cli.js list --json
+
+      - name: Verify wrapper script
+        working-directory: cli/staging
+        env:
+          ORU_DB_PATH: /tmp/oru-integration.db
+          DO_NOT_TRACK: "1"
+        run: |
+          ./oru --version
+          ./oru list
+
+      - name: Verify MCP binary starts
+        env:
+          ORU_DB_PATH: /tmp/oru-mcp-integration.db
+          DO_NOT_TRACK: "1"
+        run: |
+          timeout 3 node cli/staging/dist/mcp/index.js
+          EXIT=$?
+          if [ "$EXIT" -eq 0 ] || [ "$EXIT" -eq 124 ]; then
+            echo "MCP binary OK (exit $EXIT)"
+          else
+            echo "MCP binary failed with exit code $EXIT"
+            exit 1
+          fi
+
+      - name: Pack npm tarball
+        working-directory: cli
+        run: npm pack
+
+      - name: Verify npm pack installs and runs
+        env:
+          ORU_DB_PATH: /tmp/oru-npm.db
+          DO_NOT_TRACK: "1"
+        run: |
+          npm install --prefix /tmp/npm-test "$GITHUB_WORKSPACE"/cli/tchayen-oru-*.tgz
+          /tmp/npm-test/node_modules/.bin/oru --version
+          /tmp/npm-test/node_modules/.bin/oru add "npm install test task"
+          /tmp/npm-test/node_modules/.bin/oru list
+          /tmp/npm-test/node_modules/.bin/oru list --json
 
   bundle-size:
     needs: changes
