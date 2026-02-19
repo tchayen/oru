@@ -450,4 +450,34 @@ describe("TaskService", () => {
       expect(noteOps).toHaveLength(0);
     });
   });
+
+  describe("getContext", () => {
+    it("in_progress task with a past due date stays in in_progress, not overdue", async () => {
+      const pastDue = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const task = await service.add({
+        title: "Active work",
+        status: "in_progress",
+        due_at: pastDue.toISOString().slice(0, 19),
+      });
+
+      const { sections } = await service.getContext();
+
+      expect(sections.in_progress.map((t) => t.id)).toContain(task.id);
+      expect(sections.overdue.map((t) => t.id)).not.toContain(task.id);
+    });
+
+    it("in_review task with a past due date stays in in_progress section", async () => {
+      const pastDue = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const task = await service.add({
+        title: "Under review",
+        status: "in_review",
+        due_at: pastDue.toISOString().slice(0, 19),
+      });
+
+      const { sections } = await service.getContext();
+
+      expect(sections.in_progress.map((t) => t.id)).toContain(task.id);
+      expect(sections.overdue.map((t) => t.id)).not.toContain(task.id);
+    });
+  });
 });
