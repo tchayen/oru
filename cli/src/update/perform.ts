@@ -4,7 +4,7 @@ import path from "path";
 import os from "os";
 import { compareVersions } from "./check";
 
-import { VERSION } from "../version.js";
+import { VERSION } from "../version";
 
 const REQUEST_TIMEOUT_MS = 10000;
 

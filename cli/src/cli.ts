@@ -67,7 +67,7 @@ import {
   MAX_METADATA_VALUE_LENGTH,
 } from "./validation";
 
-import { VERSION, GIT_COMMIT } from "./version.js";
+import { VERSION, GIT_COMMIT } from "./version";
 function parseMetadata(pairs: string[]): Record<string, string | null> {
   const meta: Record<string, string | null> = {};
   for (const pair of pairs) {
