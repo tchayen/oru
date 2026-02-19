@@ -18,10 +18,13 @@ interface Column {
 
 let columns: Column[] = [];
 let lastTime = 0;
+let dpr = 1;
 
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 function randomChar() {
@@ -46,7 +49,7 @@ function tick(time: number) {
   const dt = Math.min((time - lastTime) / 1000, 0.05);
   lastTime = time;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   ctx.font = `${FONT_SIZE}px "Geist Mono", monospace`;
   ctx.textAlign = "center";
 
@@ -54,7 +57,9 @@ function tick(time: number) {
     spawnColumn();
   }
 
-  columns = columns.filter((col) => col.y - col.tailLength * FONT_SIZE * 1.4 < canvas.height + 60);
+  columns = columns.filter(
+    (col) => col.y - col.tailLength * FONT_SIZE * 1.4 < window.innerHeight + 60,
+  );
 
   for (const col of columns) {
     col.y += col.speed * dt;
@@ -65,7 +70,7 @@ function tick(time: number) {
 
     for (let i = 0; i < col.tailLength; i++) {
       const charY = col.y - i * FONT_SIZE * 1.4;
-      if (charY < -FONT_SIZE || charY > canvas.height + FONT_SIZE) {
+      if (charY < -FONT_SIZE || charY > window.innerHeight + FONT_SIZE) {
         continue;
       }
       const t = i / (col.tailLength - 1);
