@@ -35,7 +35,9 @@ function randomChar() {
 function spawnColumn(): RainColumn {
   const available: number[] = [];
   for (let i = 0; i < numCols; i++) {
-    if (!usedCols.has(i)) available.push(i);
+    if (!usedCols.has(i)) {
+      available.push(i);
+    }
   }
   const col =
     available.length > 0
@@ -82,7 +84,9 @@ function drawFrame(now: number) {
     const cx = x0 + c.col * CELL;
     for (let i = 0; i <= c.tailLen; i++) {
       const row = c.headRow - i;
-      if (row < 0 || row > numRows) continue;
+      if (row < 0 || row > numRows) {
+        continue;
+      }
       const cy = row * CELL;
       let alpha: number;
       if (i === 0) {
@@ -91,7 +95,9 @@ function drawFrame(now: number) {
         const t = i / c.tailLen;
         alpha = (1 - t) * (1 - t) * 0.22;
       }
-      if (alpha < 0.01) continue;
+      if (alpha < 0.01) {
+        continue;
+      }
       ctx.fillStyle = `rgba(250,250,250,${alpha.toFixed(3)})`;
       ctx.fillText(c.chars[i] ?? randomChar(), cx, cy);
     }
@@ -106,9 +112,13 @@ function init() {
     usedCols.clear();
     cols = [];
     resize();
-    for (let i = 0; i < ACTIVE_COLUMNS; i++) cols.push(spawnColumn());
+    for (let i = 0; i < ACTIVE_COLUMNS; i++) {
+      cols.push(spawnColumn());
+    }
   });
-  for (let i = 0; i < ACTIVE_COLUMNS; i++) cols.push(spawnColumn());
+  for (let i = 0; i < ACTIVE_COLUMNS; i++) {
+    cols.push(spawnColumn());
+  }
   lastStep = performance.now();
   animId = requestAnimationFrame(drawFrame);
 }
