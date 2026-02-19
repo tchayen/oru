@@ -2,8 +2,8 @@ const canvas = document.getElementById("bg-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
 
 const PARTICLE_COUNT = 280;
-const SPEED = 0.6;
-const TRAIL_LENGTH = 18;
+const SPEED = 1.4;
+const TRAIL_LENGTH = 30;
 const RESPAWN_MARGIN = 60;
 
 interface Particle {
@@ -32,11 +32,11 @@ function flowAngle(x: number, y: number): number {
 
 function randomParticle(forceNew = false): Particle {
   const x = forceNew
-    ? Math.random() * canvas.width
-    : -RESPAWN_MARGIN + Math.random() * (canvas.width + RESPAWN_MARGIN * 2);
+    ? Math.random() * window.innerWidth
+    : -RESPAWN_MARGIN + Math.random() * (window.innerWidth + RESPAWN_MARGIN * 2);
   const y = forceNew
-    ? Math.random() * canvas.height
-    : -RESPAWN_MARGIN + Math.random() * (canvas.height + RESPAWN_MARGIN * 2);
+    ? Math.random() * window.innerHeight
+    : -RESPAWN_MARGIN + Math.random() * (window.innerHeight + RESPAWN_MARGIN * 2);
   return {
     x,
     y,
@@ -78,9 +78,9 @@ function tick() {
 
     const offscreen =
       p.x < -RESPAWN_MARGIN ||
-      p.x > canvas.width + RESPAWN_MARGIN ||
+      p.x > window.innerWidth + RESPAWN_MARGIN ||
       p.y < -RESPAWN_MARGIN ||
-      p.y > canvas.height + RESPAWN_MARGIN;
+      p.y > window.innerHeight + RESPAWN_MARGIN;
 
     if (offscreen || p.age > p.maxAge) {
       Object.assign(p, randomParticle());
@@ -95,7 +95,7 @@ function tick() {
 
     for (let i = 1; i < p.trail.length; i++) {
       const segRatio = i / p.trail.length;
-      const alpha = segRatio * lifeRatio * 0.22;
+      const alpha = segRatio * lifeRatio * 0.45;
       ctx.beginPath();
       ctx.moveTo(p.trail[i - 1].x, p.trail[i - 1].y);
       ctx.lineTo(p.trail[i].x, p.trail[i].y);
