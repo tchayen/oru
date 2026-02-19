@@ -36,13 +36,7 @@ const { title = "terminal", class: className = "" } = Astro.props;
       0 24px 80px rgba(0, 0, 0, 0.4);
   }
 
-  .terminal:hover .terminal-dot:nth-child(1) {
-    background: #666;
-  }
-  .terminal:hover .terminal-dot:nth-child(2) {
-    background: #666;
-  }
-  .terminal:hover .terminal-dot:nth-child(3) {
+  .terminal:hover .terminal-dot {
     background: #666;
   }
 
@@ -50,59 +44,9 @@ const { title = "terminal", class: className = "" } = Astro.props;
     color: var(--color-text-primary);
     user-select: none;
   }
-  .terminal-body :global(.cmd) {
-    color: var(--color-text-primary);
-  }
-  .terminal-body :global(.sub) {
-    color: var(--color-syn-command);
-  }
-  .terminal-body :global(.flag) {
-    color: var(--color-syn-flag);
-  }
-  .terminal-body :global(.str) {
-    color: var(--color-syn-string);
-  }
-  .terminal-body :global(.val) {
-    color: var(--color-syn-value);
-  }
-  .terminal-body :global(.key) {
-    color: var(--color-syn-key);
-  }
+
   .terminal-body :global(.output) {
     color: var(--color-text-tertiary);
-  }
-  .terminal-body :global(.line) {
-    display: block;
-    white-space: pre;
-  }
-  .terminal-body :global(.line + .line) {
-    margin-top: 0;
-  }
-  .terminal-body :global(.blank) {
-    display: block;
-    height: 1.7em;
-  }
-
-  .terminal-body {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-  }
-
-  .terminal-body::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .terminal-body::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .terminal-body::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
-  }
-
-  .terminal-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
   }
 
   @media (prefers-reduced-motion: reduce) {

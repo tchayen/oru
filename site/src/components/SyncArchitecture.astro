@@ -1,5 +1,15 @@
 ---
 import Card from "./ui/Card.astro";
+
+const oplogEntries = [
+  { label: "create", source: "CLI" },
+  { label: "update", source: "CLI" },
+  { label: "update", source: "Mobile" },
+  { label: "note", source: "CLI" },
+  { label: "note", source: "Mobile" },
+  { label: "delete", source: "CLI" },
+  { label: "update", source: "Mobile" },
+] as const;
 ---
 
 <section class="py-24 bg-bg-elevated">
@@ -7,7 +17,7 @@ import Card from "./ui/Card.astro";
     <div class="text-center mb-16 reveal">
       <p class="section-label">Sync</p>
       <h2 class="mb-4">Sync that actually works offline.</h2>
-      <p class="body-lg max-w-[640px] mx-auto text-text-secondary">
+      <p class="body-lg max-w-content mx-auto text-text-secondary">
         oru does not sync task snapshots. It syncs operations. Every create,
         update, and delete is appended to an oplog – an ordered, immutable log
         of everything that happened. The CLI runs a lightweight HTTP server on
@@ -22,122 +32,39 @@ import Card from "./ui/Card.astro";
           class="absolute top-[39px] left-0 right-0 h-px bg-border-default"
         ></div>
         <div class="flex justify-between relative max-md:gap-2">
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-cli w-3.5 h-3.5 rounded-full border-2 border-accent bg-accent shadow-[0_0_12px_rgba(234,88,12,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >create</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >CLI</span
-              >
+          {oplogEntries.map(({ label, source }) => (
+            <div class="flex flex-col items-center gap-3">
+              <div
+                class:list={[
+                  "w-3.5 h-3.5 rounded-full border-2 relative z-1",
+                  source === "CLI"
+                    ? "border-accent bg-accent shadow-[var(--shadow-oplog-cli)]"
+                    : "border-accent bg-accent shadow-[var(--shadow-oplog-mobile)]",
+                ]}
+              ></div>
+              <div class="flex flex-col items-center gap-0.5">
+                <span
+                  class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
+                  >{label}</span
+                >
+                <span
+                  class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
+                  >{source}</span
+                >
+              </div>
             </div>
-          </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-cli w-3.5 h-3.5 rounded-full border-2 border-accent bg-accent shadow-[0_0_12px_rgba(234,88,12,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >update</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >CLI</span
-              >
-            </div>
-          </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >update</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >Mobile</span
-              >
-            </div>
-          </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-cli w-3.5 h-3.5 rounded-full border-2 border-accent bg-accent shadow-[0_0_12px_rgba(234,88,12,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >note</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >CLI</span
-              >
-            </div>
-          </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >note</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >Mobile</span
-              >
-            </div>
-          </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-cli w-3.5 h-3.5 rounded-full border-2 border-accent bg-accent shadow-[0_0_12px_rgba(234,88,12,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >delete</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >CLI</span
-              >
-            </div>
-          </div>
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="dot-mobile w-3.5 h-3.5 rounded-full border-2 border-syn-command bg-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)] relative z-1"
-            ></div>
-            <div class="flex flex-col items-center gap-0.5">
-              <span
-                class="font-mono text-[11px] text-text-secondary max-md:text-[10px]"
-                >update</span
-              >
-              <span
-                class="text-[10px] text-text-muted uppercase tracking-[0.05em]"
-                >Mobile</span
-              >
-            </div>
-          </div>
+          ))}
         </div>
       </div>
       <div class="flex justify-center gap-6 mt-4">
         <span class="flex items-center gap-2 text-xs text-text-tertiary">
           <span
-            class="w-2 h-2 rounded-full bg-accent border-accent shadow-[0_0_12px_rgba(234,88,12,0.3)]"
+            class="w-2 h-2 rounded-full bg-accent shadow-[var(--shadow-oplog-cli)]"
           ></span> CLI
         </span>
         <span class="flex items-center gap-2 text-xs text-text-tertiary">
           <span
-            class="w-2 h-2 rounded-full bg-syn-command border-syn-command shadow-[0_0_12px_rgba(96,165,250,0.3)]"
+            class="w-2 h-2 rounded-full bg-accent shadow-[var(--shadow-oplog-mobile)]"
           ></span> Mobile
         </span>
       </div>
@@ -145,7 +72,7 @@ import Card from "./ui/Card.astro";
 
     <div class="sync-rules grid grid-cols-3 gap-6 max-md:grid-cols-1">
       <Card class="sync-card reveal" data-delay="80">
-        <h4 class="mb-3 ">Last-write-wins per field</h4>
+        <h4 class="mb-3">Last-write-wins per field</h4>
         <p class="body-sm text-text-tertiary">
           Change the title on your phone and the priority on your laptop. Both
           edits survive. Conflicts are resolved at the field level, not the task
@@ -153,14 +80,14 @@ import Card from "./ui/Card.astro";
         </p>
       </Card>
       <Card class="sync-card reveal" data-delay="160">
-        <h4 class="mb-3 ">Updates beat deletes</h4>
+        <h4 class="mb-3">Updates beat deletes</h4>
         <p class="body-sm text-text-tertiary">
           If one device deletes a task and another updates it, the task comes
           back. Intent to modify is stronger than intent to remove.
         </p>
       </Card>
       <Card class="sync-card reveal" data-delay="240">
-        <h4 class="mb-3 ">Sequence-based cursoring</h4>
+        <h4 class="mb-3">Sequence-based cursoring</h4>
         <p class="body-sm text-text-tertiary">
           Sync uses monotonic sequence numbers, not timestamps. No
           same-millisecond bugs. No clock drift issues. Each device tracks
