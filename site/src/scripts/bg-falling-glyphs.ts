@@ -18,7 +18,6 @@ interface Column {
 
 let columns: Column[] = [];
 let lastTime = 0;
-let animId: number;
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -76,7 +75,7 @@ function tick(time: number) {
     }
   }
 
-  animId = requestAnimationFrame(tick);
+  requestAnimationFrame(tick);
 }
 
 function init() {
@@ -86,7 +85,7 @@ function init() {
     spawnColumn();
   }
   lastTime = performance.now();
-  animId = requestAnimationFrame(tick);
+  requestAnimationFrame(tick);
 }
 
 if (document.readyState === "loading") {
