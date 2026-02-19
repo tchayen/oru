@@ -24,7 +24,8 @@ _oru() {
     'context:Show a summary of what needs your attention'
     'log:Show change history of a task'
     'sync:Sync with a filesystem remote'
-    'config:Manage configuration'${SHOW_SERVER ? "\n    'server:Manage the HTTP server'" : ""}
+    'config:Manage configuration'
+    'filter:Manage saved list filters'${SHOW_SERVER ? "\n    'server:Manage the HTTP server'" : ""}
     'completions:Generate shell completions'
     'backup:Create a database backup snapshot'
     'self-update:Update oru to the latest version'
@@ -80,8 +81,19 @@ _oru() {
             '--actionable[Show only actionable tasks]' \\
             '--limit[Maximum number of tasks to return]:number:' \\
             '--offset[Number of tasks to skip]:number:' \\
+            '--filter[Apply a saved filter]:name:' \\
             '--json[Output as JSON]' \\
             '--plaintext[Output as plain text]'
+          ;;
+        filter)
+          local -a filter_commands
+          filter_commands=(
+            'list:List all saved filters'
+            'show:Show a filter definition'
+            'add:Save a new named filter'
+            'remove:Delete a saved filter'
+          )
+          _describe -t commands 'filter command' filter_commands
           ;;
         labels)
           _arguments \\

@@ -2335,4 +2335,166 @@ describe("CLI parse", () => {
     const parsed = JSON.parse(output.trim());
     expect(parsed.title).toBe("Updated with 'apostrophe'");
   });
+
+  describe("filter command", () => {
+    let tmpDir: string;
+    let savedConfigDir: string | undefined;
+
+    beforeEach(() => {
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-filter-parse-test-"));
+      savedConfigDir = process.env.ORU_CONFIG_DIR;
+      process.env.ORU_CONFIG_DIR = tmpDir;
+    });
+
+    afterEach(() => {
+      if (savedConfigDir === undefined) {
+        delete process.env.ORU_CONFIG_DIR;
+      } else {
+        process.env.ORU_CONFIG_DIR = savedConfigDir;
+      }
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    it("filter add saves a filter", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+      expect(output).toContain("Saved filter 'mine'");
+      const filtersPath = path.join(tmpDir, "filters.toml");
+      expect(fs.existsSync(filtersPath)).toBe(true);
+      const content = fs.readFileSync(filtersPath, "utf-8");
+      expect(content).toContain("owner");
+      expect(content).toContain("alice");
+    });
+
+    it("filter add with no flags shows error", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "add", "empty"]);
+      expect(output).toContain("No filter fields specified");
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+
+    it("filter list shows saved filters", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "filter", "list"]);
+      expect(output).toContain("mine");
+    });
+
+    it("filter list shows message when no filters", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "list"]);
+      expect(output).toContain("No saved filters");
+    });
+
+    it("filter show displays filter definition", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync([
+        "node",
+        "oru",
+        "filter",
+        "add",
+        "upcoming",
+        "--sort",
+        "due",
+        "--due",
+        "this-week",
+      ]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "filter", "show", "upcoming"]);
+      expect(output).toContain("[upcoming]");
+      expect(output).toContain("sort");
+      expect(output).toContain("due");
+    });
+
+    it("filter show unknown filter shows error", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "show", "notexist"]);
+      expect(output).toContain("not found");
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+
+    it("filter remove deletes a filter", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "filter", "remove", "mine"]);
+      expect(output).toContain("Removed filter 'mine'");
+
+      const p3 = createProgram(db, capture());
+      await p3.parseAsync(["node", "oru", "filter", "list"]);
+      expect(output).not.toContain("mine");
+    });
+
+    it("filter remove unknown filter shows error", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "remove", "ghost"]);
+      expect(output).toContain("not found");
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+
+    it("list --filter applies saved filter", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "add", "Alice task", "--assign", "alice"]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "add", "Bob task", "--assign", "bob"]);
+
+      const p3 = createProgram(db, capture());
+      await p3.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+
+      const p4 = createProgram(db, capture());
+      await p4.parseAsync(["node", "oru", "list", "--filter", "mine"]);
+      expect(output).toContain("Alice task");
+      expect(output).not.toContain("Bob task");
+    });
+
+    it("list --filter unknown name shows error", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "list", "--filter", "notexist"]);
+      expect(output).toContain("not found");
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+
+    it("list --filter with CLI flag override: CLI wins", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "add", "Alice task", "--assign", "alice"]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "add", "Bob task", "--assign", "bob"]);
+
+      const p3 = createProgram(db, capture());
+      await p3.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+
+      // --owner bob overrides the filter's owner=alice
+      const p4 = createProgram(db, capture());
+      await p4.parseAsync(["node", "oru", "list", "--filter", "mine", "--owner", "bob"]);
+      expect(output).toContain("Bob task");
+      expect(output).not.toContain("Alice task");
+    });
+
+    it("filter add with --status saves multi-value", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync([
+        "node",
+        "oru",
+        "filter",
+        "add",
+        "active",
+        "--status",
+        "todo,in_progress",
+      ]);
+      expect(output).toContain("Saved filter 'active'");
+      const content = fs.readFileSync(path.join(tmpDir, "filters.toml"), "utf-8");
+      expect(content).toContain("todo");
+      expect(content).toContain("in_progress");
+    });
+  });
 });

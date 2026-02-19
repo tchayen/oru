@@ -18,6 +18,7 @@ export function generateBashCompletions(): string {
     "log",
     "sync",
     "config",
+    "filter",
     ...(SHOW_SERVER ? ["server"] : []),
     "backup",
     "completions",
@@ -39,6 +40,7 @@ export function generateBashCompletions(): string {
     "log",
     "sync",
     "config",
+    "filter",
     ...(SHOW_SERVER ? ["server"] : []),
     "backup",
     "completions",
@@ -65,7 +67,8 @@ _oru_completions() {
   _init_completion || return
 
   local commands="${commands}"
-  local config_subcommands="init path"${SHOW_SERVER ? '\n  local server_subcommands="start"' : ""}
+  local config_subcommands="init path"
+  local filter_subcommands="list show add remove"${SHOW_SERVER ? '\n  local server_subcommands="start"' : ""}
   local telemetry_subcommands="status enable disable"
   local completion_shells="bash zsh fish"
   local status_values="${STATUSES.join(" ")}"
@@ -123,8 +126,11 @@ ${serverBlock}
       ;;
     list)
       if [[ "$cur" == -* ]]; then
-        COMPREPLY=($(compgen -W "-s --status -p --priority -l --label --owner --due --overdue --sort --search -a --all --actionable --limit --offset --json --plaintext" -- "$cur"))
+        COMPREPLY=($(compgen -W "-s --status -p --priority -l --label --owner --due --overdue --sort --search -a --all --actionable --limit --offset --filter --json --plaintext" -- "$cur"))
       fi
+      ;;
+    filter)
+      COMPREPLY=($(compgen -W "$filter_subcommands" -- "$cur"))
       ;;
     labels)
       if [[ "$cur" == -* ]]; then
