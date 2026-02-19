@@ -507,6 +507,11 @@ export class TaskService {
         continue;
       }
 
+      if (t.status === "in_progress" || t.status === "in_review") {
+        sections.in_progress.push(t);
+        continue;
+      }
+
       if (t.due_at && isOverdue(t.due_at, now)) {
         sections.overdue.push(t);
         continue;
@@ -514,11 +519,6 @@ export class TaskService {
 
       if (t.due_at && isDueSoon(t.due_at, now)) {
         sections.due_soon.push(t);
-        continue;
-      }
-
-      if (t.status === "in_progress" || t.status === "in_review") {
-        sections.in_progress.push(t);
         continue;
       }
 
