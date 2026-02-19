@@ -51,6 +51,7 @@ import {
   formatSuccessMessage,
 } from "./completions/index.js";
 import { bold, dim, white } from "./format/colors.js";
+import { loadFilters, saveFilters, applyFilter, type FilterDefinition } from "./filters/filters.js";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
 import { performBackup } from "./backup.js";
 import { isValidId } from "./id.js";
@@ -461,24 +462,21 @@ export function createProgram(
     .option("--owner <owner>", "Filter by owner")
     .addOption(new Option("--due <range>", "Filter by due date").choices(["today", "this-week"]))
     .option("--overdue", "Show only overdue tasks")
-    .addOption(
-      new Option("--sort <field>", "Sort order")
-        .choices(SORT_FIELDS as readonly string[])
-        .default("priority"),
-    )
+    .addOption(new Option("--sort <field>", "Sort order").choices(SORT_FIELDS as readonly string[]))
     .option("--search <query>", "Search tasks by title")
     .option("-a, --all", "Include done tasks")
     .option("--actionable", "Show only tasks with no incomplete blockers")
     .option("--limit <n>", "Maximum number of tasks to return", Number)
     .option("--offset <n>", "Number of tasks to skip", Number)
+    .option("--filter <name>", "Apply a saved filter (see 'oru filter list')")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .addHelpText(
       "after",
-      '\nExamples:\n  $ oru list\n  $ oru list -s in_progress -p high\n  $ oru list -l backend --sort due --actionable\n  $ oru list --search "login" --all',
+      '\nExamples:\n  $ oru list\n  $ oru list -s in_progress -p high\n  $ oru list -l backend --sort due --actionable\n  $ oru list --search "login" --all\n  $ oru list --filter mine',
     )
     .action(
-      async (opts: {
+      async (rawOpts: {
         status?: Status | Status[];
         priority?: Priority | Priority[];
         label?: string;
@@ -491,9 +489,28 @@ export function createProgram(
         actionable?: boolean;
         limit?: number;
         offset?: number;
+        filter?: string;
         json?: boolean;
         plaintext?: boolean;
       }) => {
+        const json = useJson(rawOpts);
+        let opts = rawOpts;
+        let sqlFilter: string | undefined;
+
+        if (rawOpts.filter) {
+          const allFilters = loadFilters();
+          const savedFilter = allFilters[rawOpts.filter];
+          if (!savedFilter) {
+            validationError(
+              json,
+              `Filter '${rawOpts.filter}' not found. Run 'oru filter list' to see available filters.`,
+            );
+            return;
+          }
+          opts = { ...rawOpts, ...applyFilter(rawOpts, savedFilter) };
+          sqlFilter = savedFilter.sql;
+        }
+
         let tasks = await service.list({
           status: opts.status,
           priority: opts.priority,
@@ -504,6 +521,7 @@ export function createProgram(
           actionable: opts.actionable,
           limit: opts.limit,
           offset: opts.offset,
+          sql: sqlFilter,
         });
         // Hide done tasks unless --all or --status is specified
         if (!opts.all && !opts.status) {
@@ -520,7 +538,6 @@ export function createProgram(
         if (opts.overdue) {
           tasks = filterByDue(tasks, "overdue");
         }
-        const json = useJson(opts);
         write(json ? formatTasksJson(tasks) : formatTasksText(tasks));
       },
     );
@@ -1098,6 +1115,176 @@ export function createProgram(
     .action(() => {
       write(getConfigPath());
     });
+
+  // filter
+  const filterCmd = program.command("filter").description("Manage saved list filters");
+
+  filterCmd
+    .command("list")
+    .description("List all saved filters")
+    .action(() => {
+      const filters = loadFilters();
+      const names = Object.keys(filters);
+      if (names.length === 0) {
+        write("No saved filters. Use 'oru filter add <name> [flags]' to create one.");
+        return;
+      }
+      for (const name of names) {
+        write(name);
+      }
+    });
+
+  filterCmd
+    .command("show <name>")
+    .description("Show a filter's definition")
+    .action((name: string) => {
+      const filters = loadFilters();
+      const filter = filters[name];
+      if (!filter) {
+        write(`Filter '${name}' not found.`);
+        process.exitCode = 1;
+        return;
+      }
+      const lines: string[] = [`[${name}]`];
+      for (const [key, value] of Object.entries(filter)) {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            lines.push(`${key} = ${value.join(", ")}`);
+          } else {
+            lines.push(`${key} = ${value}`);
+          }
+        }
+      }
+      write(lines.join("\n"));
+    });
+
+  filterCmd
+    .command("remove <name>")
+    .description("Delete a saved filter")
+    .action((name: string) => {
+      const filters = loadFilters();
+      if (!(name in filters)) {
+        write(`Filter '${name}' not found.`);
+        process.exitCode = 1;
+        return;
+      }
+      delete filters[name];
+      saveFilters(filters);
+      write(`Removed filter '${name}'.`);
+    });
+
+  filterCmd
+    .command("add <name>")
+    .description("Save a new named filter (accepts the same flags as 'oru list' plus --sql)")
+    .option("-s, --status <status>", "Filter by status (comma-separated for multiple)", (value) => {
+      const parts = value.split(",");
+      for (const p of parts) {
+        if (!STATUSES.includes(p as Status)) {
+          throw new Error(`Invalid status: ${p}. Allowed: ${STATUSES.join(", ")}`);
+        }
+      }
+      return parts.length === 1 ? (parts[0] as Status) : (parts as Status[]);
+    })
+    .option(
+      "-p, --priority <priority>",
+      "Filter by priority (comma-separated for multiple)",
+      (value) => {
+        const parts = value.split(",");
+        for (const p of parts) {
+          if (!PRIORITIES.includes(p as Priority)) {
+            throw new Error(`Invalid priority: ${p}. Allowed: ${PRIORITIES.join(", ")}`);
+          }
+        }
+        return parts.length === 1 ? (parts[0] as Priority) : (parts as Priority[]);
+      },
+    )
+    .option("-l, --label <label>", "Filter by label")
+    .option("--owner <owner>", "Filter by owner")
+    .addOption(new Option("--due <range>", "Filter by due date").choices(["today", "this-week"]))
+    .option("--overdue", "Show only overdue tasks")
+    .addOption(new Option("--sort <field>", "Sort order").choices(SORT_FIELDS as readonly string[]))
+    .option("--search <query>", "Search tasks by title")
+    .option("-a, --all", "Include done tasks")
+    .option("--actionable", "Show only tasks with no incomplete blockers")
+    .option("--limit <n>", "Maximum number of tasks to return", Number)
+    .option("--offset <n>", "Number of tasks to skip", Number)
+    .option("--sql <condition>", "Raw SQL WHERE condition (e.g. \"priority = 'urgent'\")")
+    .addHelpText(
+      "after",
+      "\nExamples:\n  $ oru filter add mine --owner tchayen --status todo\n  $ oru filter add upcoming --due this-week --sort due\n  $ oru filter add edge --sql \"priority = 'urgent'\"",
+    )
+    .action(
+      (
+        name: string,
+        opts: {
+          status?: Status | Status[];
+          priority?: Priority | Priority[];
+          label?: string;
+          owner?: string;
+          due?: "today" | "this-week";
+          overdue?: boolean;
+          sort?: SortField;
+          search?: string;
+          all?: boolean;
+          actionable?: boolean;
+          limit?: number;
+          offset?: number;
+          sql?: string;
+        },
+      ) => {
+        const def: FilterDefinition = {};
+        if (opts.status !== undefined) {
+          def.status = opts.status;
+        }
+        if (opts.priority !== undefined) {
+          def.priority = opts.priority;
+        }
+        if (opts.owner !== undefined) {
+          def.owner = opts.owner;
+        }
+        if (opts.label !== undefined) {
+          def.label = opts.label;
+        }
+        if (opts.search !== undefined) {
+          def.search = opts.search;
+        }
+        if (opts.sort !== undefined) {
+          def.sort = opts.sort;
+        }
+        if (opts.actionable !== undefined) {
+          def.actionable = opts.actionable;
+        }
+        if (opts.due !== undefined) {
+          def.due = opts.due;
+        }
+        if (opts.overdue !== undefined) {
+          def.overdue = opts.overdue;
+        }
+        if (opts.all !== undefined) {
+          def.all = opts.all;
+        }
+        if (opts.limit !== undefined) {
+          def.limit = opts.limit;
+        }
+        if (opts.offset !== undefined) {
+          def.offset = opts.offset;
+        }
+        if (opts.sql !== undefined) {
+          def.sql = opts.sql;
+        }
+
+        if (Object.keys(def).length === 0) {
+          write("No filter fields specified. Pass at least one flag.");
+          process.exitCode = 1;
+          return;
+        }
+
+        const filters = loadFilters();
+        filters[name] = def;
+        saveFilters(filters);
+        write(`Saved filter '${name}'.`);
+      },
+    );
 
   // server (hidden behind feature flag until mobile app ships)
   if (SHOW_SERVER) {

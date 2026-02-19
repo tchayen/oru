@@ -119,6 +119,7 @@ export interface ListFilters {
   actionable?: boolean;
   limit?: number;
   offset?: number;
+  sql?: string;
 }
 
 export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<Task[]> {
@@ -161,6 +162,9 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
           WHERE blocker.status != 'done' AND blocker.deleted_at IS NULL
         )`,
     );
+  }
+  if (filters?.sql) {
+    query = query.where(sql<SqlBool>`(${sql.raw(filters.sql)})`);
   }
 
   const sort = filters?.sort ?? "priority";

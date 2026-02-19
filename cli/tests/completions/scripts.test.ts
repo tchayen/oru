@@ -103,6 +103,14 @@ describe("bash completions script", () => {
   it("registers the completion function", () => {
     expect(script).toContain("complete -F");
   });
+
+  it("contains filter command", () => {
+    expect(script).toContain("filter");
+  });
+
+  it("contains --filter flag for list", () => {
+    expect(script).toContain("--filter");
+  });
 });
 
 describe("zsh completions script", () => {
@@ -209,6 +217,14 @@ describe("zsh completions script", () => {
 
   it("contains --blocked-by for add and update", () => {
     expect(script).toContain("--blocked-by");
+  });
+
+  it("contains filter command", () => {
+    expect(script).toContain("filter:Manage saved list filters");
+  });
+
+  it("contains --filter flag for list", () => {
+    expect(script).toContain("--filter");
   });
 });
 
@@ -321,5 +337,13 @@ describe("fish completions script", () => {
 
   it("contains --blocked-by for add and update", () => {
     expect(script).toContain("blocked-by");
+  });
+
+  it("contains filter command", () => {
+    expect(script).toContain("filter");
+  });
+
+  it("contains --filter flag for list", () => {
+    expect(script).toContain("-l filter");
   });
 });

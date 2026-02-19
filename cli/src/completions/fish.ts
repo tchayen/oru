@@ -52,6 +52,7 @@ complete -c oru -n __oru_needs_command -a log -d 'Show change history of a task'
 complete -c oru -n __oru_needs_command -a sync -d 'Sync with a filesystem remote'
 complete -c oru -n __oru_needs_command -a backup -d 'Create a database backup snapshot'
 complete -c oru -n __oru_needs_command -a config -d 'Manage configuration'
+complete -c oru -n __oru_needs_command -a filter -d 'Manage saved list filters'
 ${SHOW_SERVER ? "complete -c oru -n __oru_needs_command -a server -d 'Manage the HTTP server'" : ""}
 complete -c oru -n __oru_needs_command -a completions -d 'Generate shell completions'
 complete -c oru -n __oru_needs_command -a self-update -d 'Update oru to the latest version'
@@ -60,6 +61,25 @@ complete -c oru -n __oru_needs_command -a telemetry -d 'Manage anonymous usage t
 # config subcommands
 complete -c oru -n '__oru_using_command config' -a init -d 'Create a default config file'
 complete -c oru -n '__oru_using_command config' -a path -d 'Print the config file path'
+
+# filter subcommands
+complete -c oru -n '__oru_using_command filter' -a list -d 'List all saved filters'
+complete -c oru -n '__oru_using_command filter' -a show -d 'Show a filter definition'
+complete -c oru -n '__oru_using_command filter' -a add -d 'Save a new named filter'
+complete -c oru -n '__oru_using_command filter' -a remove -d 'Delete a saved filter'
+complete -c oru -n '__oru_using_subcommand filter add' -s s -l status -a '${STATUSES.join(" ")}' -d 'Status' -r
+complete -c oru -n '__oru_using_subcommand filter add' -s p -l priority -a '${PRIORITIES.join(" ")}' -d 'Priority' -r
+complete -c oru -n '__oru_using_subcommand filter add' -s l -l label -a '(__oru_labels)' -d 'Label' -r
+complete -c oru -n '__oru_using_subcommand filter add' -l owner -d 'Filter by owner' -r
+complete -c oru -n '__oru_using_subcommand filter add' -l due -d 'Filter by due date' -r
+complete -c oru -n '__oru_using_subcommand filter add' -l overdue -d 'Show only overdue tasks'
+complete -c oru -n '__oru_using_subcommand filter add' -l sort -a '${SORT_FIELDS.join(" ")}' -d 'Sort order' -r
+complete -c oru -n '__oru_using_subcommand filter add' -l search -d 'Search by title' -r
+complete -c oru -n '__oru_using_subcommand filter add' -s a -l all -d 'Include done tasks'
+complete -c oru -n '__oru_using_subcommand filter add' -l actionable -d 'Show only actionable tasks'
+complete -c oru -n '__oru_using_subcommand filter add' -l limit -d 'Maximum number of tasks' -r
+complete -c oru -n '__oru_using_subcommand filter add' -l offset -d 'Number of tasks to skip' -r
+complete -c oru -n '__oru_using_subcommand filter add' -l sql -d 'Raw SQL WHERE condition' -r
 
 ${
   SHOW_SERVER
@@ -137,6 +157,7 @@ complete -c oru -n '__oru_using_command list' -s a -l all -d 'Include done tasks
 complete -c oru -n '__oru_using_command list' -l actionable -d 'Show only actionable tasks'
 complete -c oru -n '__oru_using_command list' -l limit -d 'Maximum number of tasks' -r
 complete -c oru -n '__oru_using_command list' -l offset -d 'Number of tasks to skip' -r
+complete -c oru -n '__oru_using_command list' -l filter -d 'Apply a saved filter' -r
 complete -c oru -n '__oru_using_command get' -l json -d 'Output as JSON'
 complete -c oru -n '__oru_using_command get' -l plaintext -d 'Output as plain text'
 complete -c oru -n '__oru_using_command update' -l json -d 'Output as JSON'
