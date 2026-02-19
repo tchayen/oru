@@ -111,6 +111,35 @@ describe("loadFilters / saveFilters", () => {
     const filters = loadFilters(filtersPath);
     expect(filters).toEqual({});
   });
+
+  it("round-trips a filter name containing a dot", () => {
+    saveFilters({ "my.filter": { owner: "alice" } }, filtersPath);
+    const loaded = loadFilters(filtersPath);
+    expect(loaded["my.filter"]).toBeDefined();
+    expect(loaded["my.filter"].owner).toBe("alice");
+  });
+
+  it("round-trips a filter name containing brackets", () => {
+    saveFilters({ "arr[0]": { status: "todo" } }, filtersPath);
+    const loaded = loadFilters(filtersPath);
+    expect(loaded["arr[0]"]).toBeDefined();
+    expect(loaded["arr[0]"].status).toBe("todo");
+  });
+
+  it("round-trips a filter name containing a space", () => {
+    saveFilters({ "my filter": { priority: "high" } }, filtersPath);
+    const loaded = loadFilters(filtersPath);
+    expect(loaded["my filter"]).toBeDefined();
+    expect(loaded["my filter"].priority).toBe("high");
+  });
+
+  it("round-trips a filter name containing double quotes", () => {
+    const name = 'say "hi"';
+    saveFilters({ [name]: { owner: "bob" } }, filtersPath);
+    const loaded = loadFilters(filtersPath);
+    expect(loaded[name]).toBeDefined();
+    expect(loaded[name].owner).toBe("bob");
+  });
 });
 
 describe("applyFilter", () => {
