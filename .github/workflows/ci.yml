@@ -31,7 +31,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
       - name: Lint
         run: pnpm lint
@@ -89,7 +89,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -177,7 +177,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
       - name: Build main
         run: ORU_BUILD_SERVER=1 pnpm build
