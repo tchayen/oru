@@ -210,7 +210,7 @@ describe("parseDocument", () => {
     const task = makeTask({ due_at: null });
     // Build frontmatter manually with an unquoted TOML local date
     const doc =
-      "+++\ntitle = \"Buy groceries\"\nstatus = \"todo\"\npriority = \"medium\"\ndue = 2026-06-15\nlabels = []\n+++\n\n# Notes\n\n";
+      '+++\ntitle = "Buy groceries"\nstatus = "todo"\npriority = "medium"\ndue = 2026-06-15\nlabels = []\n+++\n\n# Notes\n\n';
     const { fields } = parseDocument(doc, task);
     expect(fields.due_at).toBeDefined();
     expect(typeof fields.due_at).toBe("string");
