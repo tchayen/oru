@@ -54,7 +54,9 @@ export function replayOps(db: Database.Database, ops: OplogEntry[]): void {
 function rebuildTask(db: Database.Database, taskId: string): void {
   // Get ALL ops for this task, sorted by timestamp
   const ops = db
-    .prepare("SELECT * FROM oplog WHERE task_id = ? ORDER BY timestamp ASC, id ASC")
+    .prepare(
+      "SELECT * FROM oplog WHERE task_id = ? ORDER BY timestamp ASC, CASE WHEN field = 'notes_clear' THEN 0 ELSE 1 END ASC, id ASC",
+    )
     .all(taskId) as OplogEntry[];
 
   if (ops.length === 0) {
