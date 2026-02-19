@@ -18,7 +18,6 @@ let cols: RainColumn[] = [];
 let numCols = 0;
 let numRows = 0;
 let lastStep = 0;
-let animId: number;
 const usedCols = new Set<number>();
 
 function resize() {
@@ -103,7 +102,7 @@ function drawFrame(now: number) {
     }
   }
 
-  animId = requestAnimationFrame(drawFrame);
+  requestAnimationFrame(drawFrame);
 }
 
 function init() {
@@ -120,7 +119,7 @@ function init() {
     cols.push(spawnColumn());
   }
   lastStep = performance.now();
-  animId = requestAnimationFrame(drawFrame);
+  requestAnimationFrame(drawFrame);
 }
 
 if (document.readyState === "loading") {
