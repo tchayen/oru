@@ -24,7 +24,7 @@ function filterStringArray(arr: unknown[]): string[] {
  * - Last-write-wins per field (based on timestamp, then id as tiebreaker)
  * - Updates beat deletes (an update at or after a delete restores the task)
  * - Notes are append-only and deduped
- * - Idempotent — replaying same ops has no extra effect
+ * - Idempotent - replaying same ops has no extra effect
  */
 export function replayOps(db: Database.Database, ops: OplogEntry[]): void {
   db.transaction(() => {
@@ -182,7 +182,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
         }
       }
 
-      // Validate and apply — only update fieldWinners if the value is actually applied
+      // Validate and apply - only update fieldWinners if the value is actually applied
       let applied = false;
       switch (field) {
         case "title":

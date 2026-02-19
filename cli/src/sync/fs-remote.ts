@@ -25,7 +25,7 @@ export class FsRemote implements RemoteBackend {
     try {
       fs.chmodSync(dbPath, 0o600);
     } catch {
-      // Best-effort — may fail on some platforms
+      // Best-effort - may fail on some platforms
     }
   }
 

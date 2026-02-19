@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Backgrounds — dark B&W */
+  /* Backgrounds - dark B&W */
   --color-bg-base: #000000;
   --color-bg-elevated: #0a0a0a;
   --color-bg-surface: #111111;
@@ -14,7 +14,7 @@
   --color-text-tertiary: #737373;
   --color-text-muted: #525252;
 
-  /* Accent — monochrome */
+  /* Accent - monochrome */
   --color-accent: #fafafa;
   --color-accent-hover: #e5e5e5;
   --color-accent-active: #ffffff;
@@ -26,7 +26,7 @@
   --color-border-subtle: #1a1a1a;
   --color-border-hover: #404040;
 
-  /* Syntax — monochrome */
+  /* Syntax - monochrome */
   --color-syn-command: #e5e5e5;
   --color-syn-flag: #a3a3a3;
   --color-syn-string: #d4d4d4;
@@ -288,7 +288,7 @@
   }
 }
 
-/* Prose — docs content styling */
+/* Prose - docs content styling */
 .prose h2 {
   font-family: var(--font-sans);
   font-size: 32px;

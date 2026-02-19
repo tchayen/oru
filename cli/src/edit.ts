@@ -103,7 +103,7 @@ export function parseDocument(
   // Due date
   const parsedDue = parsed.due;
   if (parsedDue === undefined || parsedDue === "") {
-    // Due line removed or emptied — clear it if it was previously set
+    // Due line removed or emptied - clear it if it was previously set
     if (existing.due_at !== null) {
       fields.due_at = null;
     }
@@ -167,7 +167,7 @@ export function parseDocument(
     fields.metadata = {};
   }
 
-  // Notes — find lines after the +++ block that start with "- "
+  // Notes - find lines after the +++ block that start with "- "
   const afterFrontmatter = content.slice(match[0].length);
   const noteLines = afterFrontmatter
     .split("\n")

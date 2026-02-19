@@ -245,7 +245,7 @@ describe("e2e sync scenarios", () => {
     await eDeleter.pull();
     await eUpdater.pull();
 
-    // Update wins — task should exist on both
+    // Update wins - task should exist on both
     const tDel = await getTask(deleterKy, "t1");
     const tUpd = await getTask(updaterKy, "t1");
     expect(tDel).toBeDefined();

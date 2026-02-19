@@ -84,7 +84,7 @@ export function installCompletions(
     try {
       existing = fs.readFileSync(rcPath, "utf-8");
     } catch {
-      // File doesn't exist yet — that's fine
+      // File doesn't exist yet - that's fine
     }
 
     if (!existing.includes(sourceLine) && !existing.includes(tildeForm)) {

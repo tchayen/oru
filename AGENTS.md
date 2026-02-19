@@ -1,4 +1,4 @@
-# AGENTS.md — Guide for AI Agents
+# AGENTS.md - Guide for AI Agents
 
 oru is an agent-friendly task management CLI. It stores tasks in a local SQLite
 database, works offline, and exposes every command as JSON. It also ships an MCP
@@ -40,17 +40,17 @@ If oru is installed globally (`npm install -g @tchayen/oru`), use
 
 Each task has the following fields:
 
-- **id** — UUIDv7, or supply your own for idempotent creates
-- **title** — Short description of the work
-- **status** — `todo`, `in_progress`, `in_review`, `done`
-- **priority** — `low`, `medium`, `high`, `urgent`
-- **owner** — Optional assignee
-- **due_at** — Optional ISO 8601 due date
-- **recurrence** — Optional RRULE string (e.g. `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO`). Prefix with `after:` for completion-based recurrence (next due computed from completion time). When a recurring task is marked done, the next occurrence is automatically spawned.
-- **blocked_by** — Array of task IDs this task depends on
-- **labels** — Array of string labels (e.g. `bug`, `feature`, `refactor`)
-- **notes** — Append-only array of text notes
-- **metadata** — Key-value object for machine-readable data
+- **id** - UUIDv7, or supply your own for idempotent creates
+- **title** - Short description of the work
+- **status** - `todo`, `in_progress`, `in_review`, `done`
+- **priority** - `low`, `medium`, `high`, `urgent`
+- **owner** - Optional assignee
+- **due_at** - Optional ISO 8601 due date
+- **recurrence** - Optional RRULE string (e.g. `FREQ=DAILY`, `FREQ=WEEKLY;BYDAY=MO`). Prefix with `after:` for completion-based recurrence (next due computed from completion time). When a recurring task is marked done, the next occurrence is automatically spawned.
+- **blocked_by** - Array of task IDs this task depends on
+- **labels** - Array of string labels (e.g. `bug`, `feature`, `refactor`)
+- **notes** - Append-only array of text notes
+- **metadata** - Key-value object for machine-readable data
 
 ## Recommended workflows
 
@@ -71,7 +71,7 @@ Each task has the following fields:
 
 1. Call `update_task` to set status to `done`.
 2. Use `add_note` to leave a brief summary of what was done.
-3. Check `get_context` again — completing a task may unblock others.
+3. Check `get_context` again - completing a task may unblock others.
 4. If the task had `recurrence`, the next occurrence was automatically created
    with a new due date. Check the response or call `list_tasks` to see it.
 
@@ -111,7 +111,7 @@ Set `ORU_FORMAT=json` or `output_format = "json"` in
 - **Notes are safe to repeat**: Notes are append-only and deduplicated, so
   adding the same note twice is harmless.
 - **Filtering**: `list_tasks` supports `actionable: true` to get only tasks
-  that are not blocked and not done — useful for finding the next thing to do.
+  that are not blocked and not done - useful for finding the next thing to do.
 - **Dependencies**: Use `blocked_by` to model task dependencies. A task whose
   blockers are all done becomes actionable.
 - **Done tasks are hidden**: `list_tasks` and `list` exclude done tasks by

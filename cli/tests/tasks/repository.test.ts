@@ -486,7 +486,7 @@ describe("task repository", () => {
       await createTask(ky, { id: "abc-def-123", title: "ABC task" });
       await createTask(ky, { id: "xyz-ghi-456", title: "XYZ task" });
 
-      // % is escaped in the LIKE query, so it's treated as literal — no match
+      // % is escaped in the LIKE query, so it's treated as literal - no match
       const found = await getTask(ky, "%");
       expect(found).toBeNull();
     });
@@ -495,7 +495,7 @@ describe("task repository", () => {
       await createTask(ky, { id: "a1c-def-123", title: "A1C task" });
       await createTask(ky, { id: "a2c-def-456", title: "A2C task" });
 
-      // _ is escaped in the LIKE query, so it's treated as literal — no match
+      // _ is escaped in the LIKE query, so it's treated as literal - no match
       const found = await getTask(ky, "a_c");
       expect(found).toBeNull();
     });

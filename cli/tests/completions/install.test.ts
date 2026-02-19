@@ -117,7 +117,7 @@ describe("installCompletions", () => {
     expect(script).toContain("complete -c oru");
   });
 
-  it("is idempotent — does not duplicate source line", () => {
+  it("is idempotent - does not duplicate source line", () => {
     installCompletions("zsh", write, tmpDir);
     messages = [];
     const result = installCompletions("zsh", write, tmpDir);
