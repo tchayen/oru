@@ -10,12 +10,28 @@ import { VERSION } from "../version";
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
 
+function isSqliteError(err: unknown): err is Error & { code: string } {
+  return (
+    err instanceof Error &&
+    "code" in err &&
+    typeof (err as { code: unknown }).code === "string" &&
+    (err as { code: string }).code.startsWith("SQLITE_")
+  );
+}
+
 export function sanitizeError(err: unknown): string {
-  const msg = err instanceof Error ? err.message : String(err);
-  if (msg.includes("SQLITE_") || msg.includes("constraint") || msg.includes("database")) {
+  if (isSqliteError(err)) {
     return "An internal error occurred. Please try again.";
   }
-  return msg;
+  // better-sqlite3 throws TypeErrors for connection-level errors (e.g. closed DB)
+  // without a SQLITE_ code - these are also internal errors.
+  if (err instanceof TypeError) {
+    return "An internal error occurred. Please try again.";
+  }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return "An internal error occurred. Please try again.";
 }
 
 export function createMcpServer(service: TaskService): McpServer {

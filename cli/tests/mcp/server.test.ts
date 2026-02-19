@@ -893,19 +893,23 @@ describe("MCP server", () => {
 });
 
 describe("sanitizeError", () => {
-  it("sanitizes SQLITE_ errors", () => {
-    const err = new Error("SQLITE_CONSTRAINT: UNIQUE constraint failed: tasks.id");
+  it("sanitizes errors with SQLITE_ code", () => {
+    const err = Object.assign(new Error("UNIQUE constraint failed: tasks.id"), {
+      code: "SQLITE_CONSTRAINT_PRIMARYKEY",
+    });
     expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
   });
 
-  it("sanitizes constraint errors", () => {
-    const err = new Error("UNIQUE constraint failed: tasks.id");
+  it("sanitizes errors with any SQLITE_ prefixed code", () => {
+    const err = Object.assign(new Error("unable to open database file"), {
+      code: "SQLITE_CANTOPEN",
+    });
     expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
   });
 
-  it("sanitizes database errors", () => {
+  it("passes through plain Error without SQLITE code unchanged", () => {
     const err = new Error("database is locked");
-    expect(sanitizeError(err)).toBe("An internal error occurred. Please try again.");
+    expect(sanitizeError(err)).toBe("database is locked");
   });
 
   it("passes through application-level errors unchanged", () => {
@@ -918,11 +922,11 @@ describe("sanitizeError", () => {
     expect(sanitizeError(err)).toBe("Title cannot be empty.");
   });
 
-  it("handles non-Error values", () => {
-    expect(sanitizeError("some string error")).toBe("some string error");
-    expect(sanitizeError("SQLITE_ERROR: something")).toBe(
+  it("sanitizes non-Error values to generic message", () => {
+    expect(sanitizeError("some string error")).toBe(
       "An internal error occurred. Please try again.",
     );
+    expect(sanitizeError(42)).toBe("An internal error occurred. Please try again.");
   });
 });
 
