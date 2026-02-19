@@ -203,6 +203,20 @@ describe("parseDocument", () => {
     expect(fields.due_at).toBe("2026-04-01");
   });
 
+  it("accepts unquoted TOML local date (smol-toml returns Date object)", () => {
+    // When the user removes quotes from the due field (e.g. `due = 2026-03-15` instead of
+    // `due = "2026-03-15"`), smol-toml returns a Date object. Previously this was silently
+    // dropped; now it should be converted to an ISO date string.
+    const task = makeTask({ due_at: null });
+    // Build frontmatter manually with an unquoted TOML local date
+    const doc =
+      "+++\ntitle = \"Buy groceries\"\nstatus = \"todo\"\npriority = \"medium\"\ndue = 2026-06-15\nlabels = []\n+++\n\n# Notes\n\n";
+    const { fields } = parseDocument(doc, task);
+    expect(fields.due_at).toBeDefined();
+    expect(typeof fields.due_at).toBe("string");
+    expect((fields.due_at as string).startsWith("2026-06-1")).toBe(true);
+  });
+
   it("detects metadata change", () => {
     const task = makeTask({ metadata: { store: "Whole Foods" } });
     const doc = serializeTask(task).replace("Whole Foods", "Trader Joes");

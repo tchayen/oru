@@ -101,6 +101,12 @@ export function parseDocument(
     if (existing.due_at !== null) {
       fields.due_at = null;
     }
+  } else if (parsedDue instanceof Date) {
+    // smol-toml parses unquoted TOML dates (e.g. `due = 2026-03-15`) as Date objects
+    const iso = parsedDue.toISOString().slice(0, 10);
+    if (iso !== existing.due_at) {
+      fields.due_at = iso;
+    }
   } else if (typeof parsedDue === "string" && parsedDue !== existing.due_at) {
     // Validate due date looks like an ISO date (YYYY-MM-DDTHH:MM:SS)
     if (!/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/.test(parsedDue)) {
