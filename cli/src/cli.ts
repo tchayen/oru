@@ -1475,7 +1475,9 @@ export function createProgram(
       });
       await new Promise<void>((resolve) => {
         child.on("exit", (code) => {
-          if (code !== null) process.exitCode = code;
+          if (code !== null) {
+            process.exitCode = code;
+          }
           resolve();
         });
         child.on("error", (err) => {
