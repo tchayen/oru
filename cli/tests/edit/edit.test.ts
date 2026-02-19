@@ -394,6 +394,29 @@ describe("parseDocument", () => {
     expect(parsed.fields.metadata).toBeDefined();
     expect(Object.keys(parsed.fields.metadata!)).toHaveLength(80);
   });
+
+  it("serializeTask escapes newlines in notes", () => {
+    const task = makeTask({ notes: ["Step 1\nStep 2"] });
+    const doc = serializeTask(task);
+    expect(doc).toContain("- Step 1\\nStep 2");
+    expect(doc).not.toContain("Step 1\nStep 2");
+  });
+
+  it("parseDocument unescapes \\n literal back to real newline", () => {
+    const task = makeTask();
+    const doc = `${serializeTask(task)}- Step 1\\nStep 2\n`;
+    const { newNotes } = parseDocument(doc, task);
+    expect(newNotes).toEqual(["Step 1\nStep 2"]);
+  });
+
+  it("round-trip preserves notes with embedded newlines", () => {
+    const note = "Step 1\nStep 2";
+    const task = makeTask({ notes: [note] });
+    const doc = serializeTask(task);
+    const { fields, newNotes } = parseDocument(doc, task);
+    expect(Object.keys(fields)).toHaveLength(0);
+    expect(newNotes).toHaveLength(0);
+  });
 });
 
 describe("openInEditor", () => {
