@@ -781,3 +781,21 @@ describe("input size limits", () => {
     });
   });
 });
+
+describe("PATCH /tasks/:id metadata merge", () => {
+  it("merges new keys into existing metadata instead of replacing", async () => {
+    const task = await service.add({ title: "Test", metadata: { pr: 42 } });
+    const res = await req("PATCH", `/tasks/${task.id}`, { metadata: { sprint: "5" } });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.metadata).toEqual({ pr: 42, sprint: "5" });
+  });
+
+  it("overwrites a specific metadata key without removing others", async () => {
+    const task = await service.add({ title: "Test", metadata: { pr: 42, sprint: "4" } });
+    const res = await req("PATCH", `/tasks/${task.id}`, { metadata: { sprint: "5" } });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.metadata).toEqual({ pr: 42, sprint: "5" });
+  });
+});
