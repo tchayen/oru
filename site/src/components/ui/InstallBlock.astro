@@ -76,7 +76,7 @@ const { class: className = "" } = Astro.props;
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
           const key = tab.dataset.tab!;
-          tabs.forEach((t) => t.classList.remove("active"));
+          tabs.forEach((t) => { t.classList.remove("active"); });
           tab.classList.add("active");
           cmds.forEach((cmd) => {
             const isActive = cmd.dataset.cmd === key;

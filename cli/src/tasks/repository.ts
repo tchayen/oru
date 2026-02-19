@@ -1,4 +1,5 @@
-import { type Kysely, type SqlBool, sql } from "kysely";
+import { sql } from "kysely";
+import type { Kysely, SqlBool } from "kysely";
 import { generateId } from "../id";
 import type { DB } from "../db/kysely";
 import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types";

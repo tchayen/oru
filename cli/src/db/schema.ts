@@ -1,5 +1,6 @@
 import type Database from "better-sqlite3";
-import { runMigrations, type Migration } from "./migrations";
+import { runMigrations } from "./migrations";
+import type { Migration } from "./migrations";
 
 export function initSchema(db: Database.Database): void {
   db.exec(`

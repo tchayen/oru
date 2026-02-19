@@ -5,7 +5,8 @@ import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { ConnectionContext } from "@/hooks/use-connection";
-import { type Priority, createTask } from "@/utils/api";
+import { createTask } from "@/utils/api";
+import type { Priority } from "@/utils/api";
 import { PRIORITY_LABELS } from "@/utils/task-constants";
 
 export default function AddTaskScreen() {
@@ -146,7 +147,7 @@ export default function AddTaskScreen() {
               <DateTimePicker
                 initialDate={dueAt}
                 onDateSelected={(date: Date) => {
-                  setDueAt(date.toISOString().split("T")[0] + "T00:00:00");
+                  setDueAt(`${date.toISOString().split("T")[0]}T00:00:00`);
                 }}
                 variant="compact"
                 displayedComponents="date"

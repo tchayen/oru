@@ -19,6 +19,16 @@ import { isOverdue, isDueSoon } from "./format/text";
 import { nextOccurrence } from "./recurrence/next";
 import { spawnId } from "./recurrence/spawn-id";
 
+function serializeOpValue(value: unknown): string | null {
+  if (value === null) {
+    return null;
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  return JSON.stringify(value);
+}
+
 export class TaskService {
   constructor(
     private db: Kysely<DB>,
@@ -76,7 +86,14 @@ export class TaskService {
       rrule = rrule.slice(6);
     }
 
-    const anchor = isAfter ? new Date(now) : task.due_at ? new Date(task.due_at) : new Date(now);
+    let anchor: Date;
+    if (isAfter) {
+      anchor = new Date(now);
+    } else if (task.due_at) {
+      anchor = new Date(task.due_at);
+    } else {
+      anchor = new Date(now);
+    }
 
     const nextDue = nextOccurrence(rrule, anchor);
     const dueAt = `${nextDue.getFullYear()}-${String(nextDue.getMonth() + 1).padStart(2, "0")}-${String(nextDue.getDate()).padStart(2, "0")}T${String(nextDue.getHours()).padStart(2, "0")}:${String(nextDue.getMinutes()).padStart(2, "0")}:${String(nextDue.getSeconds()).padStart(2, "0")}`;
@@ -210,8 +227,7 @@ export class TaskService {
             device_id: this.deviceId,
             op_type: "update",
             field,
-            value:
-              value === null ? null : typeof value === "string" ? value : JSON.stringify(value),
+            value: serializeOpValue(value),
           },
           now,
         );
@@ -272,8 +288,7 @@ export class TaskService {
             device_id: this.deviceId,
             op_type: "update",
             field,
-            value:
-              value === null ? null : typeof value === "string" ? value : JSON.stringify(value),
+            value: serializeOpValue(value),
           },
           now,
         );
@@ -388,8 +403,7 @@ export class TaskService {
               device_id: this.deviceId,
               op_type: "update",
               field,
-              value:
-                value === null ? null : typeof value === "string" ? value : JSON.stringify(value),
+              value: serializeOpValue(value),
             },
             now,
           );

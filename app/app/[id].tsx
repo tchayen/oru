@@ -13,7 +13,8 @@ import { Picker, Host, ContextMenu, Button, DateTimePicker } from "@expo/ui/swif
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ConnectionContext } from "@/hooks/use-connection";
-import { type Task, type Priority, fetchTask, updateTask, deleteTask } from "@/utils/api";
+import { fetchTask, updateTask, deleteTask } from "@/utils/api";
+import type { Task, Priority } from "@/utils/api";
 import { STATUSES, STATUS_LABELS, PRIORITY_LABELS } from "@/utils/task-constants";
 
 export default function TaskDetailScreen() {
@@ -153,7 +154,7 @@ export default function TaskDetailScreen() {
       if (!task) {
         return;
       }
-      const due_at = date.toISOString().split("T")[0] + "T00:00:00";
+      const due_at = `${date.toISOString().split("T")[0]}T00:00:00`;
       try {
         const updated = await updateTask(serverUrl, authToken, task.id, { due_at });
         setTask(updated);
@@ -386,7 +387,9 @@ export default function TaskDetailScreen() {
                     <Button
                       systemImage="trash"
                       role="destructive"
-                      onPress={() => handleRemoveLabel(label)}
+                      onPress={() => {
+                        handleRemoveLabel(label);
+                      }}
                     >
                       Remove
                     </Button>

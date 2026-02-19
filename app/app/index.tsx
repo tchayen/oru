@@ -32,37 +32,17 @@ export default function TaskListScreen() {
     ]);
   };
 
-  return (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Tasks",
-          headerLeft: () => (
-            <Pressable onPress={handleDisconnect} hitSlop={8}>
-              <Image
-                source="sf:wifi.slash"
-                style={{ width: 22, height: 22 }}
-                tintColor={PlatformColor("systemRed") as unknown as string}
-              />
-            </Pressable>
-          ),
-          headerRight: () => (
-            <Pressable onPress={() => router.push("/add")} hitSlop={8}>
-              <Image
-                source="sf:plus"
-                style={{ width: 22, height: 22 }}
-                tintColor={PlatformColor("label") as unknown as string}
-              />
-            </Pressable>
-          ),
-        }}
-      />
-
-      {isLoading ? (
+  const renderContent = () => {
+    if (isLoading) {
+      return (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
           <ActivityIndicator size="large" />
         </View>
-      ) : error ? (
+      );
+    }
+
+    if (error) {
+      return (
         <View
           style={{
             flex: 1,
@@ -116,7 +96,11 @@ export default function TaskListScreen() {
             </Pressable>
           </View>
         </View>
-      ) : tasks.length === 0 ? (
+      );
+    }
+
+    if (tasks.length === 0) {
+      return (
         <View
           style={{
             flex: 1,
@@ -144,25 +128,62 @@ export default function TaskListScreen() {
             No open tasks. Tap + to add one.
           </Text>
         </View>
-      ) : (
-        <FlatList
-          contentInsetAdjustmentBehavior="automatic"
-          data={tasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <TaskRow task={item} onToggleStatus={handleToggleStatus} />}
-          refreshing={isRefreshing}
-          onRefresh={refresh}
-          ItemSeparatorComponent={() => (
-            <View
-              style={{
-                height: 0.5,
-                backgroundColor: PlatformColor("separator"),
-                marginLeft: 52,
+      );
+    }
+
+    return (
+      <FlatList
+        contentInsetAdjustmentBehavior="automatic"
+        data={tasks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <TaskRow task={item} onToggleStatus={handleToggleStatus} />}
+        refreshing={isRefreshing}
+        onRefresh={refresh}
+        ItemSeparatorComponent={() => (
+          <View
+            style={{
+              height: 0.5,
+              backgroundColor: PlatformColor("separator"),
+              marginLeft: 52,
+            }}
+          />
+        )}
+      />
+    );
+  };
+
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: "Tasks",
+          headerLeft: () => (
+            <Pressable onPress={handleDisconnect} hitSlop={8}>
+              <Image
+                source="sf:wifi.slash"
+                style={{ width: 22, height: 22 }}
+                tintColor={PlatformColor("systemRed") as unknown as string}
+              />
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable
+              onPress={() => {
+                router.push("/add");
               }}
-            />
-          )}
-        />
-      )}
+              hitSlop={8}
+            >
+              <Image
+                source="sf:plus"
+                style={{ width: 22, height: 22 }}
+                tintColor={PlatformColor("label") as unknown as string}
+              />
+            </Pressable>
+          ),
+        }}
+      />
+
+      {renderContent()}
     </>
   );
 }

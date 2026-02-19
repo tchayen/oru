@@ -34,7 +34,7 @@ export function parseRecurrence(input: string): string {
 
   // Passthrough raw RRULE
   if (body.startsWith("FREQ=")) {
-    const result = prefix + body;
+    const result = `${prefix}${body}`;
     if (!isValidRecurrence(result)) {
       throw new Error(`Invalid RRULE: ${body}`);
     }
@@ -46,15 +46,15 @@ export function parseRecurrence(input: string): string {
   // Simple aliases
   switch (lower) {
     case "daily":
-      return prefix + "FREQ=DAILY";
+      return `${prefix}FREQ=DAILY`;
     case "weekly":
-      return prefix + "FREQ=WEEKLY";
+      return `${prefix}FREQ=WEEKLY`;
     case "monthly":
-      return prefix + "FREQ=MONTHLY";
+      return `${prefix}FREQ=MONTHLY`;
     case "yearly":
-      return prefix + "FREQ=YEARLY";
+      return `${prefix}FREQ=YEARLY`;
     case "weekdays":
-      return prefix + "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR";
+      return `${prefix}FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR`;
   }
 
   // "every N days/weeks/months/years"
@@ -62,15 +62,14 @@ export function parseRecurrence(input: string): string {
   if (intervalMatch) {
     const n = Number(intervalMatch[1]);
     const unit = intervalMatch[2].toUpperCase();
-    const freq =
-      unit === "DAY"
-        ? "DAILY"
-        : unit === "WEEK"
-          ? "WEEKLY"
-          : unit === "MONTH"
-            ? "MONTHLY"
-            : "YEARLY";
-    return prefix + `FREQ=${freq};INTERVAL=${n}`;
+    const UNIT_TO_FREQ: Record<string, string> = {
+      DAY: "DAILY",
+      WEEK: "WEEKLY",
+      MONTH: "MONTHLY",
+      YEAR: "YEARLY",
+    };
+    const freq = UNIT_TO_FREQ[unit] ?? "YEARLY";
+    return `${prefix}FREQ=${freq};INTERVAL=${n}`;
   }
 
   // "every monday", "every mon,wed,fri"
@@ -85,7 +84,7 @@ export function parseRecurrence(input: string): string {
       }
       rrDays.push(mapped);
     }
-    return prefix + `FREQ=WEEKLY;BYDAY=${rrDays.join(",")}`;
+    return `${prefix}FREQ=WEEKLY;BYDAY=${rrDays.join(",")}`;
   }
 
   // "every 15th"
@@ -95,7 +94,7 @@ export function parseRecurrence(input: string): string {
     if (d < 1 || d > 31) {
       throw new Error(`Invalid month day: ${d}. Must be 1-31.`);
     }
-    return prefix + `FREQ=MONTHLY;BYMONTHDAY=${d}`;
+    return `${prefix}FREQ=MONTHLY;BYMONTHDAY=${d}`;
   }
 
   throw new Error(

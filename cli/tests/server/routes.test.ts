@@ -623,7 +623,7 @@ describe("DELETE /tasks/:id", () => {
   });
 });
 
-describe("authentication", () => {
+describe("authentication (unpaired app)", () => {
   it("returns 401 for missing Authorization header", async () => {
     const res = await app.request("/tasks", { method: "GET" });
     expect(res.status).toBe(401);
