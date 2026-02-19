@@ -5,7 +5,7 @@ const CHARS = "[]>|_{};:/\\-+=".split("");
 const CELL = 20;
 const FONT_SIZE = 12;
 const ACTIVE_COLUMNS = 15;
-const STEP_INTERVAL = 80;
+const STEP_INTERVAL = 48;
 
 interface RainColumn {
   col: number;
