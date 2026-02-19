@@ -23,9 +23,7 @@ export function runMigrations(db: Database.Database, migrations: Migration[]): n
   }
 
   const targetVersion = pending[pending.length - 1].version;
-  process.stderr.write(
-    `Migrating database from v${currentVersion} to v${targetVersion}...\n`,
-  );
+  process.stderr.write(`Migrating database from v${currentVersion} to v${targetVersion}...\n`);
 
   const run = db.transaction(() => {
     for (const migration of pending) {
