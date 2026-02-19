@@ -16,7 +16,6 @@ interface Particle {
 
 let particles: Particle[] = [];
 let t = 0;
-let animId: number;
 
 function noise(x: number, y: number): number {
   return (
@@ -103,7 +102,7 @@ function tick() {
     }
   }
 
-  animId = requestAnimationFrame(tick);
+  requestAnimationFrame(tick);
 }
 
 if (document.readyState === "loading") {
