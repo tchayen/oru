@@ -98,7 +98,8 @@ jobs:
           path: cli/dist/
 
       - name: Create production deployment
-        run: pnpm --filter @tchayen/oru deploy --prod --legacy cli/staging
+        working-directory: cli
+        run: pnpm deploy --prod staging
 
       - name: Create wrapper script
         working-directory: cli/staging
