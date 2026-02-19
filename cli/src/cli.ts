@@ -1463,6 +1463,31 @@ export function createProgram(
       write(`Backed up to ${dest}`);
     });
 
+  program
+    .command("mcp")
+    .description("Start the MCP (Model Context Protocol) server over stdio")
+    .action(async () => {
+      const dir = path.dirname(fileURLToPath(import.meta.url));
+      const mcpBin = path.join(dir, "mcp", "index.js");
+      const child = spawn(process.execPath, [mcpBin], {
+        stdio: "inherit",
+        env: process.env,
+      });
+      await new Promise<void>((resolve) => {
+        child.on("exit", (code) => {
+          if (code !== null) {
+            process.exitCode = code;
+          }
+          resolve();
+        });
+        child.on("error", (err) => {
+          process.stderr.write(`Failed to start MCP server: ${err.message}\n`);
+          process.exitCode = 1;
+          resolve();
+        });
+      });
+    });
+
   // hidden _complete command for dynamic completions
   program
     .command("_complete <type> [prefix]", { hidden: true })
