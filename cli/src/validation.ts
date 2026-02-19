@@ -42,6 +42,9 @@ export function validateNote(note: string): ValidationResult {
 
 export function validateLabels(labels: string[]): ValidationResult {
   for (const l of labels) {
+    if (l.length === 0) {
+      return { valid: false, message: "Label cannot be empty." };
+    }
     if (l.length > MAX_LABEL_LENGTH) {
       return {
         valid: false,

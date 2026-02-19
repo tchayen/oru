@@ -130,4 +130,17 @@ describe("validateLabels", () => {
     const result = validateLabels(["ok", "l".repeat(MAX_LABEL_LENGTH + 1), "fine"]);
     expect(result.valid).toBe(false);
   });
+
+  it("rejects empty string label", () => {
+    const result = validateLabels([""]);
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.message).toContain("cannot be empty");
+    }
+  });
+
+  it("rejects array containing empty string among valid labels", () => {
+    const result = validateLabels(["bug", "", "feature"]);
+    expect(result.valid).toBe(false);
+  });
 });
