@@ -99,7 +99,7 @@ jobs:
 
       - name: Create production deployment
         working-directory: cli
-        run: pnpm deploy --prod staging
+        run: pnpm --config.inject-workspace-packages=true deploy --prod staging
 
       - name: Create wrapper script
         working-directory: cli/staging
