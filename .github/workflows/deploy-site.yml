@@ -15,14 +15,45 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  deploy:
+  build-pr:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    permissions:
-      contents: read
-      deployments: write
-      pull-requests: write
+    outputs:
+      html: ${{ steps.sizes.outputs.html }}
+      css: ${{ steps.sizes.outputs.css }}
+    steps:
+      - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter oru-site build
+
+      - name: Save PR sizes
+        if: github.event_name == 'pull_request'
+        id: sizes
+        run: |
+          echo "html=$(stat -c%s site/dist/index.html)" >> "$GITHUB_OUTPUT"
+          echo "css=$(stat -c%s site/dist/_astro/*.css | awk '{s+=$1}END{print s}')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: site/dist/
+
+  build-main:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      html: ${{ steps.sizes.outputs.html }}
+      css: ${{ steps.sizes.outputs.css }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,29 +68,28 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build main site
-        if: github.event_name == 'pull_request'
-        run: pnpm --filter oru-site build
+      - run: pnpm --filter oru-site build
 
-      - name: Save main site sizes
-        if: github.event_name == 'pull_request'
-        id: main-size
+      - name: Save main sizes
+        id: sizes
         run: |
           echo "html=$(stat -c%s site/dist/index.html)" >> "$GITHUB_OUTPUT"
           echo "css=$(stat -c%s site/dist/_astro/*.css | awk '{s+=$1}END{print s}')" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout PR
-        if: github.event_name == 'pull_request'
-        uses: actions/checkout@v4
+  deploy:
+    needs: [build-pr, build-main]
+    if: always() && needs.build-pr.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v4
         with:
-          clean: false
-
-      - name: Install PR dependencies
-        if: github.event_name == 'pull_request'
-        run: pnpm install --frozen-lockfile
-
-      - name: Build site
-        run: pnpm --filter oru-site build
+          name: site-dist
+          path: site/dist/
 
       - name: Deploy to Cloudflare Pages
         id: deploy
@@ -76,15 +106,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require("fs");
-            const path = require("path");
-
-            const mainHtml = Number("${{ steps.main-size.outputs.html }}");
-            const mainCss = Number("${{ steps.main-size.outputs.css }}");
-
-            const prHtml = fs.statSync("site/dist/index.html").size;
-            const cssFiles = fs.readdirSync("site/dist/_astro").filter(f => f.endsWith(".css"));
-            const prCss = cssFiles.reduce((sum, f) => sum + fs.statSync(path.join("site/dist/_astro", f)).size, 0);
+            const mainHtml = Number("${{ needs.build-main.outputs.html }}");
+            const mainCss = Number("${{ needs.build-main.outputs.css }}");
+            const prHtml = Number("${{ needs.build-pr.outputs.html }}");
+            const prCss = Number("${{ needs.build-pr.outputs.css }}");
 
             function fmt(bytes) {
               return (bytes / 1024).toFixed(2);
