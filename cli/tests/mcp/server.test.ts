@@ -41,6 +41,13 @@ describe("MCP server", () => {
     expect(names).toContain("list_labels");
   });
 
+  it("get_context description mentions 48h for due-soon threshold, not 24h", async () => {
+    const { tools } = await client.listTools();
+    const ctxTool = tools.find((t) => t.name === "get_context");
+    expect(ctxTool?.description).toContain("48h");
+    expect(ctxTool?.description).not.toMatch(/due soon \(within 24h\)/);
+  });
+
   it("adds a task", async () => {
     const result = await client.callTool({
       name: "add_task",
