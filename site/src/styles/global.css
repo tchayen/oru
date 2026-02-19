@@ -79,8 +79,8 @@
     line-height: 1.6;
     color: var(--color-text-secondary);
     background-color: var(--color-bg-base);
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+    background-size: 28px 28px;
     overflow-x: hidden;
   }
 
