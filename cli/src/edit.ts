@@ -3,14 +3,8 @@ import path from "path";
 import os from "os";
 import { spawn } from "child_process";
 import { stringify, parse } from "smol-toml";
-import {
-  VALID_STATUSES,
-  VALID_PRIORITIES,
-  type Task,
-  type UpdateTaskInput,
-  type Status,
-  type Priority,
-} from "./tasks/types";
+import { VALID_STATUSES, VALID_PRIORITIES } from "./tasks/types";
+import type { Task, UpdateTaskInput, Status, Priority } from "./tasks/types";
 import { isValidRecurrence } from "./recurrence/validate";
 
 export function serializeTask(task: Task): string {

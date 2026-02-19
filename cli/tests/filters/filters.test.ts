@@ -2,14 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import {
-  loadFilters,
-  saveFilters,
-  applyFilter,
-  getFiltersPath,
-  type FilterDefinition,
-  type ListOptions,
-} from "../../src/filters/filters";
+import { loadFilters, saveFilters, applyFilter, getFiltersPath } from "../../src/filters/filters";
+import type { FilterDefinition, ListOptions } from "../../src/filters/filters";
 
 describe("getFiltersPath", () => {
   it("returns default path under ~/.oru", () => {

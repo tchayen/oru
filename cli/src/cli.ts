@@ -15,8 +15,8 @@ import {
   formatLogText,
   filterByDue,
   formatContextText,
-  type DueFilter,
 } from "./format/text";
+import type { DueFilter } from "./format/text";
 import {
   formatTaskJson,
   formatTasksJson,
@@ -27,19 +27,16 @@ import {
 import { SyncEngine } from "./sync/engine";
 import { FsRemote } from "./sync/fs-remote";
 import { getDeviceId } from "./device";
-import {
-  loadConfig,
-  getConfigPath,
-  setConfigValue,
-  DEFAULT_CONFIG_TOML,
-  type Config,
-} from "./config/config";
+import { loadConfig, getConfigPath, setConfigValue, DEFAULT_CONFIG_TOML } from "./config/config";
+import type { Config } from "./config/config";
 import { parseDate } from "./dates/parse";
 import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "./edit";
-import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types";
+import { STATUSES, PRIORITIES } from "./tasks/types";
+import type { Status, Priority } from "./tasks/types";
 import { parseRecurrence, formatRecurrence } from "./recurrence/index";
 import { SHOW_SERVER } from "./flags";
-import { AmbiguousPrefixError, SORT_FIELDS, type SortField } from "./tasks/repository";
+import { AmbiguousPrefixError, SORT_FIELDS } from "./tasks/repository";
+import type { SortField } from "./tasks/repository";
 import {
   resolveDynamic,
   generateBashCompletions,
@@ -51,7 +48,8 @@ import {
   formatSuccessMessage,
 } from "./completions/index";
 import { bold, dim, white } from "./format/colors";
-import { loadFilters, saveFilters, applyFilter, type FilterDefinition } from "./filters/filters";
+import { loadFilters, saveFilters, applyFilter } from "./filters/filters";
+import type { FilterDefinition } from "./filters/filters";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry";
 import { performBackup } from "./backup";
 import { isValidId } from "./id";
@@ -105,7 +103,7 @@ function colorizeHelp(text: string): string {
       // Usage line: "Usage: oru [options] [command]"
       if (line.startsWith("Usage: ")) {
         section = "";
-        return bold("Usage:") + " " + line.slice(7);
+        return `${bold("Usage:")} ${line.slice(7)}`;
       }
       // Non-indented non-empty lines reset section (e.g. description text)
       if (line.trim() !== "" && !line.startsWith(" ")) {
@@ -146,7 +144,7 @@ function applyHelpColors(cmd: Command): void {
 
 export function createProgram(
   db: Database.Database,
-  write: (text: string) => void = (t) => process.stdout.write(t + "\n"),
+  write: (text: string) => void = (t) => process.stdout.write(`${t}\n`),
   config?: Config,
   writeErr: (text: string) => void = (t) => process.stderr.write(t),
 ): Command {
@@ -1378,13 +1376,13 @@ export function createProgram(
       .option("--print", "Print the completion script to stdout instead of installing")
       .action((opts: { print?: boolean }) => {
         if (opts.print || !process.stdout.isTTY) {
-          write(
-            shell === "bash"
-              ? generateBashCompletions()
-              : shell === "zsh"
-                ? generateZshCompletions()
-                : generateFishCompletions(),
-          );
+          if (shell === "bash") {
+            write(generateBashCompletions());
+          } else if (shell === "zsh") {
+            write(generateZshCompletions());
+          } else {
+            write(generateFishCompletions());
+          }
           return;
         }
         const result = installCompletions(shell, write);

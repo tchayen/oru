@@ -9,8 +9,8 @@ import {
   installCompletions,
   confirm,
   formatSuccessMessage,
-  type InstallResult,
 } from "../../src/completions/install";
+import type { InstallResult } from "../../src/completions/install";
 
 describe("detectShell", () => {
   const origShell = process.env.SHELL;

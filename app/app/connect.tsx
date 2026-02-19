@@ -109,6 +109,42 @@ export default function ConnectScreen() {
     );
   }
 
+  const renderContent = () => {
+    if (validating) {
+      return <ActivityIndicator color="#fff" />;
+    }
+
+    if (error) {
+      return (
+        <>
+          <Text style={{ color: "#FF6961", fontSize: 15, textAlign: "center" }}>{error}</Text>
+          <Pressable
+            onPress={() => {
+              setScanned(false);
+              setError(null);
+            }}
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              borderRadius: 10,
+              borderCurve: "continuous",
+            }}
+          >
+            <Text style={{ color: "#fff", fontSize: 15 }}>Scan Again</Text>
+          </Pressable>
+        </>
+      );
+    }
+
+    return (
+      <Text style={{ color: "#fff", fontSize: 17, textAlign: "center" }}>
+        Scan the QR code from{"\n"}
+        <Text style={{ fontWeight: "600" }}>oru server start</Text>
+      </Text>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <CameraView
@@ -151,33 +187,7 @@ export default function ConnectScreen() {
           paddingHorizontal: 32,
         }}
       >
-        {validating ? (
-          <ActivityIndicator color="#fff" />
-        ) : error ? (
-          <>
-            <Text style={{ color: "#FF6961", fontSize: 15, textAlign: "center" }}>{error}</Text>
-            <Pressable
-              onPress={() => {
-                setScanned(false);
-                setError(null);
-              }}
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                paddingHorizontal: 20,
-                paddingVertical: 10,
-                borderRadius: 10,
-                borderCurve: "continuous",
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 15 }}>Scan Again</Text>
-            </Pressable>
-          </>
-        ) : (
-          <Text style={{ color: "#fff", fontSize: 17, textAlign: "center" }}>
-            Scan the QR code from{"\n"}
-            <Text style={{ fontWeight: "600" }}>oru server start</Text>
-          </Text>
-        )}
+        {renderContent()}
       </View>
     </View>
   );

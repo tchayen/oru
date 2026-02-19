@@ -134,7 +134,7 @@ describe("parseDocument", () => {
 
   it("detects new note", () => {
     const task = makeTask();
-    const doc = serializeTask(task) + "- A new note\n";
+    const doc = `${serializeTask(task)}- A new note\n`;
     const { newNotes } = parseDocument(doc, task);
     expect(newNotes).toEqual(["A new note"]);
   });
@@ -148,7 +148,7 @@ describe("parseDocument", () => {
 
   it("detects multiple new notes while preserving existing", () => {
     const task = makeTask({ notes: ["old note"] });
-    const doc = serializeTask(task) + "- new note 1\n- new note 2\n";
+    const doc = `${serializeTask(task)}- new note 1\n- new note 2\n`;
     const { newNotes } = parseDocument(doc, task);
     expect(newNotes).toEqual(["new note 1", "new note 2"]);
   });
@@ -360,7 +360,7 @@ describe("parseDocument", () => {
     const ids = Array.from({ length: 150 }, (_, i) => `id-${i}`);
     const doc = serializeTask(task).replace(
       'blocked_by = [ "dep-1" ]',
-      "blocked_by = [ " + ids.map((id) => `"${id}"`).join(", ") + " ]",
+      `blocked_by = [ ${ids.map((id) => `"${id}"`).join(", ")} ]`,
     );
     const { fields } = parseDocument(doc, task);
     expect(fields.blocked_by).toHaveLength(150);

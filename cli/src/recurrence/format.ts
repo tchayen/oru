@@ -59,8 +59,13 @@ export function formatRecurrence(recurrence: string): string {
     return `${prefix}${ordinal}${suffix}`;
   }
 
-  const unit =
-    freq === "DAILY" ? "day" : freq === "WEEKLY" ? "week" : freq === "MONTHLY" ? "month" : "year";
+  const FREQ_TO_UNIT: Record<string, string> = {
+    DAILY: "day",
+    WEEKLY: "week",
+    MONTHLY: "month",
+    YEARLY: "year",
+  };
+  const unit = FREQ_TO_UNIT[freq] ?? "year";
 
   if (interval === 1) {
     switch (freq) {

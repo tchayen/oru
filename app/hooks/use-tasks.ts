@@ -1,15 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "expo-router";
-import {
-  type Task,
-  type CreateTaskInput,
-  type UpdateTaskInput,
-  fetchTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-  sortTasks,
-} from "@/utils/api";
+import { fetchTasks, createTask, updateTask, deleteTask, sortTasks } from "@/utils/api";
+import type { Task, CreateTaskInput, UpdateTaskInput } from "@/utils/api";
 
 export function useTasks(serverUrl: string | null, authToken: string | null) {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -35,11 +27,13 @@ export function useTasks(serverUrl: string | null, authToken: string | null) {
     load();
   }, [load]);
 
-  useEffect(() => {
-    return navigation.addListener("focus", () => {
-      load();
-    });
-  }, [navigation, load]);
+  useEffect(
+    () =>
+      navigation.addListener("focus", () => {
+        load();
+      }),
+    [navigation, load],
+  );
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true);

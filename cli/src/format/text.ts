@@ -124,7 +124,7 @@ export function formatTaskText(task: Task, now?: Date): string {
   if (metaKeys.length > 0) {
     lines.push(`  ${dim("Metadata:")}`);
     for (const key of metaKeys) {
-      lines.push(`    ${dim(key + ":")} ${String(task.metadata[key])}`);
+      lines.push(`    ${dim(`${key}:`)} ${String(task.metadata[key])}`);
     }
   }
   return lines.join("\n");
@@ -139,7 +139,7 @@ export function formatLabelsText(labels: string[]): string {
 
 export function formatTasksText(tasks: Task[], now?: Date): string {
   if (tasks.length === 0) {
-    return dim("No tasks found.") + "\n" + dim('Create one with: oru add "Task title"');
+    return `${dim("No tasks found.")}\n${dim('Create one with: oru add "Task title"')}`;
   }
 
   const idW = Math.max(2, ...tasks.map((t) => t.id.length));

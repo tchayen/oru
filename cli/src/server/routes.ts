@@ -1,14 +1,8 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import type { TaskService } from "../main";
-import {
-  STATUSES,
-  PRIORITIES,
-  VALID_STATUSES,
-  VALID_PRIORITIES,
-  type Status,
-  type Priority,
-} from "../tasks/types";
+import { STATUSES, PRIORITIES, VALID_STATUSES, VALID_PRIORITIES } from "../tasks/types";
+import type { Status, Priority } from "../tasks/types";
 import { AmbiguousPrefixError } from "../tasks/repository";
 import {
   MAX_TITLE_LENGTH,

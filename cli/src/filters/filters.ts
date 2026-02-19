@@ -61,7 +61,9 @@ export function loadFilters(filtersPath?: string): Record<string, FilterDefiniti
 
 function serializeValue(value: unknown): string {
   if (Array.isArray(value)) {
-    return `[${value.map((v) => `"${String(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(", ")}]`;
+    return `[${value
+      .map((v) => `"${String(v).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`)
+      .join(", ")}]`;
   }
   if (typeof value === "string") {
     return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;

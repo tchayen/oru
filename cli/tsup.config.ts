@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import { readFileSync } from "fs";
-import { defineConfig, type Options } from "tsup";
+import { defineConfig } from "tsup";
+import type { Options } from "tsup";
 
 const gitCommit = execSync("git rev-parse --short HEAD").toString().trim();
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));

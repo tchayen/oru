@@ -172,7 +172,7 @@ export function setConfigValue(key: string, value: string): void {
   if (pattern.test(content)) {
     content = content.replace(pattern, `${key} = ${value}`);
   } else {
-    content = content.trimEnd() + `\n${key} = ${value}\n`;
+    content = `${content.trimEnd()}\n${key} = ${value}\n`;
   }
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   fs.writeFileSync(configPath, content);

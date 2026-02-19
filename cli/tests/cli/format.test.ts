@@ -319,7 +319,7 @@ describe("overdue highlighting", () => {
       // The header line has the DUE column; check that both date rows
       // are aligned identically - the overdue bold ANSI should NOT add extra padding
       // Strip ANSI codes to compare raw column positions
-      // eslint-disable-next-line no-control-regex
+      // oxlint-disable-next-line no-control-regex
       const stripAnsi = (s: string) => s.replace(/\u001b\[\d+(;\d+)*m/g, "");
       const overdueLine = stripAnsi(lines[1]);
       const futureLine = stripAnsi(lines[2]);

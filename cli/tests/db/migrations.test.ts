@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
 import { initSchema } from "../../src/db/schema";
-import { runMigrations, type Migration } from "../../src/db/migrations";
+import { runMigrations } from "../../src/db/migrations";
+import type { Migration } from "../../src/db/migrations";
 
 function freshDb(): Database.Database {
   const db = new Database(":memory:");

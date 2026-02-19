@@ -13,7 +13,7 @@ describe("CLI parse", () => {
   function capture(): (text: string) => void {
     output = "";
     return (text: string) => {
-      output += text + "\n";
+      output += `${text}\n`;
     };
   }
 
