@@ -15,6 +15,7 @@ interface Particle {
 }
 
 let particles: Particle[] = [];
+let dpr = 1;
 let t = 0;
 
 function noise(x: number, y: number): number {
@@ -46,8 +47,10 @@ function randomParticle(forceNew = false): Particle {
 }
 
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 function init() {
@@ -60,7 +63,7 @@ function init() {
 function tick() {
   t += 0.004;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
   for (const p of particles) {
     const angle = flowAngle(p.x, p.y);
