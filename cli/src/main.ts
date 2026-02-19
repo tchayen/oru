@@ -131,14 +131,18 @@ export class TaskService {
     let resolvedTaskId: string | null = null;
     if (rawTaskId !== null) {
       const self = await getTask(this.db, rawTaskId);
-      if (!self) return { valid: false, error: `Task "${rawTaskId}" not found.` };
+      if (!self) {
+        return { valid: false, error: `Task "${rawTaskId}" not found.` };
+      }
       resolvedTaskId = self.id;
     }
 
     const resolvedBlockerIds: string[] = [];
     for (const bid of blockerIds) {
       const blocker = await getTask(this.db, bid);
-      if (!blocker) return { valid: false, error: `Task "${bid}" not found.` };
+      if (!blocker) {
+        return { valid: false, error: `Task "${bid}" not found.` };
+      }
       if (resolvedTaskId !== null && blocker.id === resolvedTaskId) {
         return { valid: false, error: "A task cannot block itself." };
       }
@@ -160,12 +164,16 @@ export class TaskService {
               error: `Setting blocked_by to "${rid}" would create a circular dependency.`,
             };
           }
-          if (seen.has(curr)) continue;
+          if (seen.has(curr)) {
+            continue;
+          }
           seen.add(curr);
           const t = byId.get(curr);
           if (t) {
             for (const b of t.blocked_by) {
-              if (!seen.has(b)) queue.push(b);
+              if (!seen.has(b)) {
+                queue.push(b);
+              }
             }
           }
         }
