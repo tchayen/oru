@@ -1,6 +1,7 @@
 import { fileURLToPath } from "url";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { spawn } from "child_process";
 import { Command, Option, Help } from "commander";
 import type Database from "better-sqlite3";
@@ -1094,6 +1095,9 @@ export function createProgram(
     )
     .action(async (remotePath: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const remote = new FsRemote(remotePath);
+      const dbPath = db.name;
+      const backupPath = path.join(os.tmpdir(), `oru-sync-backup-${Date.now()}.db`);
+      db.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`);
       try {
         const engine = new SyncEngine(db, remote, deviceId);
         const result = await engine.sync();
@@ -1104,8 +1108,21 @@ export function createProgram(
             ? JSON.stringify(result, null, 2)
             : `Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`,
         );
+      } catch (err) {
+        db.close();
+        for (const ext of ["-wal", "-shm"]) {
+          try {
+            fs.unlinkSync(dbPath + ext);
+          } catch {}
+        }
+        fs.copyFileSync(backupPath, dbPath);
+        process.stderr.write("Sync failed, database restored from backup.\n");
+        throw err;
       } finally {
         remote.close();
+        try {
+          fs.unlinkSync(backupPath);
+        } catch {}
       }
     });
 
