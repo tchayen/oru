@@ -75,14 +75,67 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   </MiniCode>
 
   <p>
-    This auto-detects your shell and installs completions interactively. You can also
-    target a specific shell:
+    This auto-detects your shell from <code>$SHELL</code> and prompts before making
+    any changes. You can also target a specific shell directly:
   </p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span> <span class="val">bash</span><br />
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span> <span class="val">zsh</span><br />
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">completions</span> <span class="val">fish</span>
   </MiniCode>
+
+  <h3>What it does</h3>
+  <p>
+    The command writes a completion script and, for bash and zsh, appends a
+    <code>source</code> line to your RC file. Running it again is safe &ndash; the
+    source line is only added once.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Shell</th>
+        <th>Script written to</th>
+        <th>RC file updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>bash</td>
+        <td><code>~/.oru/completions.bash</code></td>
+        <td><code>~/.bashrc</code></td>
+      </tr>
+      <tr>
+        <td>zsh</td>
+        <td><code>~/.oru/completions.zsh</code></td>
+        <td><code>~/.zshrc</code></td>
+      </tr>
+      <tr>
+        <td>fish</td>
+        <td><code>~/.config/fish/completions/oru.fish</code></td>
+        <td>none (fish auto-loads from that directory)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Applying completions</h3>
+  <p>
+    For bash and zsh, reload your shell after installing:
+  </p>
+  <MiniCode>
+    <span class="prompt">$ </span><span class="cmd">source</span> <span class="val">~/.bashrc</span><span class="sub">  # bash</span><br />
+    <span class="prompt">$ </span><span class="cmd">source</span> <span class="val">~/.zshrc</span><span class="sub">   # zsh</span>
+  </MiniCode>
+  <p>
+    Fish completions take effect automatically the next time you open a shell.
+  </p>
+
+  <h3>Dynamic completions</h3>
+  <p>
+    Task IDs and label names are completed dynamically at runtime &ndash; the
+    completion scripts call <code>oru _complete</code> to fetch live values from
+    your database. This means completions always reflect your current task list.
+  </p>
 
   <h2>Configuration</h2>
   <p>Create a config file with documented defaults:</p>
