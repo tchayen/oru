@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
 import type { Kysely } from "kysely";
-import type { DB } from "../../src/db/kysely.js";
-import { createTestDb, createTestKysely } from "../helpers/test-db.js";
-import { replayOps } from "../../src/oplog/replay.js";
-import type { OplogEntry } from "../../src/oplog/types.js";
-import { getTask } from "../../src/tasks/repository.js";
+import type { DB } from "../../src/db/kysely";
+import { createTestDb, createTestKysely } from "../helpers/test-db";
+import { replayOps } from "../../src/oplog/replay";
+import type { OplogEntry } from "../../src/oplog/types";
+import { getTask } from "../../src/tasks/repository";
 
 function makeOp(overrides: Partial<OplogEntry> & { id: string; task_id: string }): OplogEntry {
   return {

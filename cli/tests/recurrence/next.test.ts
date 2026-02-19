@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nextOccurrence } from "../../src/recurrence/next.js";
+import { nextOccurrence } from "../../src/recurrence/next";
 
 /** Helper: create a Date at midnight UTC-like local for consistent tests. */
 function d(year: number, month: number, day: number): Date {

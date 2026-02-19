@@ -1,7 +1,7 @@
 import type Database from "better-sqlite3";
-import type { RemoteBackend } from "./remote.js";
-import type { OplogEntry } from "../oplog/types.js";
-import { replayOps } from "../oplog/replay.js";
+import type { RemoteBackend } from "./remote";
+import type { OplogEntry } from "../oplog/types";
+import { replayOps } from "../oplog/replay";
 
 export const MAX_PULL_ITERATIONS = 1000;
 

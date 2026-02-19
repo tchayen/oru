@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import { generateId } from "./id.js";
+import { generateId } from "./id";
 
 export function getDeviceId(db: Database.Database): string {
   const row = db.prepare("SELECT value FROM meta WHERE key = 'device_id'").get() as

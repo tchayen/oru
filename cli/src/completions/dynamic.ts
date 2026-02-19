@@ -1,4 +1,4 @@
-import type { TaskService } from "../main.js";
+import type { TaskService } from "../main";
 
 const MAX_RESULTS = 50;
 

@@ -1,7 +1,7 @@
 import { type Kysely, type SqlBool, sql } from "kysely";
-import { generateId } from "../id.js";
-import type { DB } from "../db/kysely.js";
-import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types.js";
+import { generateId } from "../id";
+import type { DB } from "../db/kysely";
+import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types";
 
 export const SORT_FIELDS = ["priority", "due", "title", "created"] as const;
 export type SortField = (typeof SORT_FIELDS)[number];

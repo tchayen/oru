@@ -1,10 +1,10 @@
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
-import type { DB } from "./db/kysely.js";
-import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types.js";
-import type { ListFilters } from "./tasks/repository.js";
-import type { OplogEntry } from "./oplog/types.js";
-import type { ContextSections } from "./format/text.js";
+import type { DB } from "./db/kysely";
+import type { Task, CreateTaskInput, UpdateTaskInput } from "./tasks/types";
+import type { ListFilters } from "./tasks/repository";
+import type { OplogEntry } from "./oplog/types";
+import type { ContextSections } from "./format/text";
 import {
   createTask,
   listTasks,
@@ -13,11 +13,11 @@ import {
   appendNote,
   setNotes,
   deleteTask,
-} from "./tasks/repository.js";
-import { writeOp } from "./oplog/writer.js";
-import { isOverdue, isDueSoon } from "./format/text.js";
-import { nextOccurrence } from "./recurrence/next.js";
-import { spawnId } from "./recurrence/spawn-id.js";
+} from "./tasks/repository";
+import { writeOp } from "./oplog/writer";
+import { isOverdue, isDueSoon } from "./format/text";
+import { nextOccurrence } from "./recurrence/next";
+import { spawnId } from "./recurrence/spawn-id";
 
 export class TaskService {
   constructor(

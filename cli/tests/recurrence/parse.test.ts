@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseRecurrence } from "../../src/recurrence/parse.js";
+import { parseRecurrence } from "../../src/recurrence/parse";
 
 describe("parseRecurrence", () => {
   describe("simple aliases", () => {

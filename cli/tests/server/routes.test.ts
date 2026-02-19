@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDb, createTestKysely } from "../helpers/test-db.js";
-import { TaskService } from "../../src/main.js";
-import { getDeviceId } from "../../src/device.js";
-import { createApp } from "../../src/server/routes.js";
+import { createTestDb, createTestKysely } from "../helpers/test-db";
+import { TaskService } from "../../src/main";
+import { getDeviceId } from "../../src/device";
+import { createApp } from "../../src/server/routes";
 import type { Hono } from "hono";
 
 const token = "test-token";

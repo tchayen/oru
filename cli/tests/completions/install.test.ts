@@ -10,7 +10,7 @@ import {
   confirm,
   formatSuccessMessage,
   type InstallResult,
-} from "../../src/completions/install.js";
+} from "../../src/completions/install";
 
 describe("detectShell", () => {
   const origShell = process.env.SHELL;

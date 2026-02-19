@@ -4,10 +4,10 @@ import path from "path";
 import { spawn } from "child_process";
 import { Command, Option, Help } from "commander";
 import type Database from "better-sqlite3";
-import { TaskService } from "./main.js";
-import { createKysely } from "./db/kysely.js";
-import { openDb } from "./db/connection.js";
-import { initSchema } from "./db/schema.js";
+import { TaskService } from "./main";
+import { createKysely } from "./db/kysely";
+import { openDb } from "./db/connection";
+import { initSchema } from "./db/schema";
 import {
   formatTaskText,
   formatTasksText,
@@ -16,30 +16,30 @@ import {
   filterByDue,
   formatContextText,
   type DueFilter,
-} from "./format/text.js";
+} from "./format/text";
 import {
   formatTaskJson,
   formatTasksJson,
   formatLabelsJson,
   formatLogJson,
   formatContextJson,
-} from "./format/json.js";
-import { SyncEngine } from "./sync/engine.js";
-import { FsRemote } from "./sync/fs-remote.js";
-import { getDeviceId } from "./device.js";
+} from "./format/json";
+import { SyncEngine } from "./sync/engine";
+import { FsRemote } from "./sync/fs-remote";
+import { getDeviceId } from "./device";
 import {
   loadConfig,
   getConfigPath,
   setConfigValue,
   DEFAULT_CONFIG_TOML,
   type Config,
-} from "./config/config.js";
-import { parseDate } from "./dates/parse.js";
-import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "./edit.js";
-import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types.js";
-import { parseRecurrence, formatRecurrence } from "./recurrence/index.js";
-import { SHOW_SERVER } from "./flags.js";
-import { AmbiguousPrefixError, SORT_FIELDS, type SortField } from "./tasks/repository.js";
+} from "./config/config";
+import { parseDate } from "./dates/parse";
+import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "./edit";
+import { STATUSES, PRIORITIES, type Status, type Priority } from "./tasks/types";
+import { parseRecurrence, formatRecurrence } from "./recurrence/index";
+import { SHOW_SERVER } from "./flags";
+import { AmbiguousPrefixError, SORT_FIELDS, type SortField } from "./tasks/repository";
 import {
   resolveDynamic,
   generateBashCompletions,
@@ -49,12 +49,12 @@ import {
   installCompletions,
   confirm,
   formatSuccessMessage,
-} from "./completions/index.js";
-import { bold, dim, white } from "./format/colors.js";
-import { loadFilters, saveFilters, applyFilter, type FilterDefinition } from "./filters/filters.js";
-import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry.js";
-import { performBackup } from "./backup.js";
-import { isValidId } from "./id.js";
+} from "./completions/index";
+import { bold, dim, white } from "./format/colors";
+import { loadFilters, saveFilters, applyFilter, type FilterDefinition } from "./filters/filters";
+import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry";
+import { performBackup } from "./backup";
+import { isValidId } from "./id";
 import {
   sanitizeTitle,
   validateTitle as checkTitle,
@@ -65,7 +65,7 @@ import {
   MAX_METADATA_KEYS,
   MAX_METADATA_KEY_LENGTH,
   MAX_METADATA_VALUE_LENGTH,
-} from "./validation.js";
+} from "./validation";
 
 import { VERSION, GIT_COMMIT } from "./version.js";
 function parseMetadata(pairs: string[]): Record<string, string | null> {

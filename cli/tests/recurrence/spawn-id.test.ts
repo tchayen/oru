@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { spawnId } from "../../src/recurrence/spawn-id.js";
+import { spawnId } from "../../src/recurrence/spawn-id";
 
 describe("spawnId", () => {
   it("returns a deterministic ID for the same parent", () => {

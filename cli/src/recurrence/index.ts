@@ -1,5 +1,5 @@
-export { parseRecurrence } from "./parse.js";
-export { nextOccurrence } from "./next.js";
-export { formatRecurrence } from "./format.js";
-export { isValidRecurrence } from "./validate.js";
-export { spawnId } from "./spawn-id.js";
+export { parseRecurrence } from "./parse";
+export { nextOccurrence } from "./next";
+export { formatRecurrence } from "./format";
+export { isValidRecurrence } from "./validate";
+export { spawnId } from "./spawn-id";

@@ -3,8 +3,8 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import type Database from "better-sqlite3";
-import { createTestDb } from "../helpers/test-db.js";
-import { createProgram } from "../../src/cli.js";
+import { createTestDb } from "../helpers/test-db";
+import { createProgram } from "../../src/cli";
 
 describe("CLI parse", () => {
   let db: Database.Database;

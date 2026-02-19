@@ -1,6 +1,6 @@
-import type { Task } from "../tasks/types.js";
-import type { OplogEntry } from "../oplog/types.js";
-import type { ContextSections } from "./text.js";
+import type { Task } from "../tasks/types";
+import type { OplogEntry } from "../oplog/types";
+import type { ContextSections } from "./text";
 
 export function formatContextJson(sections: ContextSections): string {
   const summary: Record<string, number> = {};

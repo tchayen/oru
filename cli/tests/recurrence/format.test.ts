@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatRecurrence } from "../../src/recurrence/format.js";
+import { formatRecurrence } from "../../src/recurrence/format";
 
 describe("formatRecurrence", () => {
   it.each([

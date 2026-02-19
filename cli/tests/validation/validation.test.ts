@@ -7,7 +7,7 @@ import {
   MAX_TITLE_LENGTH,
   MAX_NOTE_LENGTH,
   MAX_LABEL_LENGTH,
-} from "../../src/validation.js";
+} from "../../src/validation";
 
 describe("sanitizeTitle", () => {
   it("replaces newline with space", () => {

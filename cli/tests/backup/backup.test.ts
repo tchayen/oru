@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { performBackup, shouldAutoBackup } from "../../src/backup.js";
+import { performBackup, shouldAutoBackup } from "../../src/backup";
 
 describe("performBackup", () => {
   let tmpDir: string;

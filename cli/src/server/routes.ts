@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import type { TaskService } from "../main.js";
+import type { TaskService } from "../main";
 import {
   STATUSES,
   PRIORITIES,
@@ -8,8 +8,8 @@ import {
   VALID_PRIORITIES,
   type Status,
   type Priority,
-} from "../tasks/types.js";
-import { AmbiguousPrefixError } from "../tasks/repository.js";
+} from "../tasks/types";
+import { AmbiguousPrefixError } from "../tasks/repository";
 import {
   MAX_TITLE_LENGTH,
   MAX_NOTE_LENGTH,
@@ -21,9 +21,9 @@ import {
   MAX_METADATA_KEY_LENGTH,
   MAX_METADATA_VALUE_LENGTH,
   sanitizeTitle,
-} from "../validation.js";
-import { isValidRecurrence } from "../recurrence/validate.js";
-import { isValidId } from "../id.js";
+} from "../validation";
+import { isValidRecurrence } from "../recurrence/validate";
+import { isValidId } from "../id";
 
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);

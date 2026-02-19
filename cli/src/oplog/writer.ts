@@ -1,7 +1,7 @@
 import type { Kysely } from "kysely";
-import { generateId } from "../id.js";
-import type { DB } from "../db/kysely.js";
-import type { OplogEntry, OpType } from "./types.js";
+import { generateId } from "../id";
+import type { DB } from "../db/kysely";
+import type { OplogEntry, OpType } from "./types";
 
 export interface WriteOpInput {
   task_id: string;

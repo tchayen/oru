@@ -4,14 +4,14 @@ import path from "path";
 import os from "os";
 import type Database from "better-sqlite3";
 import type { Kysely } from "kysely";
-import type { DB } from "../../src/db/kysely.js";
-import { createTestDb, createTestKysely } from "../helpers/test-db.js";
-import { FsRemote } from "../../src/sync/fs-remote.js";
-import { SyncEngine } from "../../src/sync/engine.js";
-import { writeOp } from "../../src/oplog/writer.js";
-import { createTask, getTask } from "../../src/tasks/repository.js";
-import type { RemoteBackend } from "../../src/sync/remote.js";
-import type { OplogEntry } from "../../src/oplog/types.js";
+import type { DB } from "../../src/db/kysely";
+import { createTestDb, createTestKysely } from "../helpers/test-db";
+import { FsRemote } from "../../src/sync/fs-remote";
+import { SyncEngine } from "../../src/sync/engine";
+import { writeOp } from "../../src/oplog/writer";
+import { createTask, getTask } from "../../src/tasks/repository";
+import type { RemoteBackend } from "../../src/sync/remote";
+import type { OplogEntry } from "../../src/oplog/types";
 
 describe("SyncEngine", () => {
   let tmpDir: string;

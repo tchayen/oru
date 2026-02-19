@@ -2,13 +2,13 @@ import crypto from "crypto";
 import os from "os";
 import { serve } from "@hono/node-server";
 import qrcode from "qrcode";
-import { openDb } from "../db/connection.js";
-import { initSchema } from "../db/schema.js";
-import { createKysely } from "../db/kysely.js";
-import { getDeviceId } from "../device.js";
-import { TaskService } from "../main.js";
-import { createApp } from "./routes.js";
-import { bold } from "../format/colors.js";
+import { openDb } from "../db/connection";
+import { initSchema } from "../db/schema";
+import { createKysely } from "../db/kysely";
+import { getDeviceId } from "../device";
+import { TaskService } from "../main";
+import { createApp } from "./routes";
+import { bold } from "../format/colors";
 
 function getLocalIp(): string {
   const interfaces = os.networkInterfaces();

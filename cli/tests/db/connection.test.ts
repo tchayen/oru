@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { openDb, getDbPath } from "../../src/db/connection.js";
+import { openDb, getDbPath } from "../../src/db/connection";
 
 describe("connection", () => {
   const tmpFiles: string[] = [];

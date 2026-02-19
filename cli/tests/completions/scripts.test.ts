@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { generateBashCompletions } from "../../src/completions/bash.js";
-import { generateZshCompletions } from "../../src/completions/zsh.js";
-import { generateFishCompletions } from "../../src/completions/fish.js";
+import { generateBashCompletions } from "../../src/completions/bash";
+import { generateZshCompletions } from "../../src/completions/zsh";
+import { generateFishCompletions } from "../../src/completions/fish";
 
 describe("bash completions script", () => {
   const script = generateBashCompletions();

@@ -9,7 +9,7 @@ import {
   getFiltersPath,
   type FilterDefinition,
   type ListOptions,
-} from "../../src/filters/filters.js";
+} from "../../src/filters/filters";
 
 describe("getFiltersPath", () => {
   it("returns default path under ~/.oru", () => {

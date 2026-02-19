@@ -1,6 +1,6 @@
-import { STATUSES, PRIORITIES } from "../tasks/types.js";
-import { SORT_FIELDS } from "../tasks/repository.js";
-import { SHOW_SERVER } from "../flags.js";
+import { STATUSES, PRIORITIES } from "../tasks/types";
+import { SORT_FIELDS } from "../tasks/repository";
+import { SHOW_SERVER } from "../flags";
 
 export function generateFishCompletions(): string {
   return `# oru shell completions for fish

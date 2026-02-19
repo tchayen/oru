@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { compareVersions } from "./check.js";
+import { compareVersions } from "./check";
 
 import { VERSION } from "../version.js";
 

@@ -10,8 +10,8 @@ import {
   type UpdateTaskInput,
   type Status,
   type Priority,
-} from "./tasks/types.js";
-import { isValidRecurrence } from "./recurrence/validate.js";
+} from "./tasks/types";
+import { isValidRecurrence } from "./recurrence/validate";
 
 export function serializeTask(task: Task): string {
   const frontmatter: Record<string, unknown> = {

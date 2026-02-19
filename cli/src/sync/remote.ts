@@ -1,4 +1,4 @@
-import type { OplogEntry } from "../oplog/types.js";
+import type { OplogEntry } from "../oplog/types";
 
 export interface PullResult {
   entries: OplogEntry[];
