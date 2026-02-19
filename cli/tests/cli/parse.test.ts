@@ -256,6 +256,29 @@ describe("CLI parse", () => {
     expect(result.notes).toEqual(["Fresh note"]);
   });
 
+  it("update --clear-notes + --note + --status applies atomically", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Atomic task", "--note", "Old note", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync([
+      "node",
+      "oru",
+      "update",
+      id,
+      "--clear-notes",
+      "--note",
+      "New note",
+      "--status",
+      "done",
+      "--json",
+    ]);
+    const result = JSON.parse(output.trim());
+    expect(result.notes).toEqual(["New note"]);
+    expect(result.status).toBe("done");
+  });
+
   it("add --id creates task with given ID", async () => {
     const p = createProgram(db, capture());
     await p.parseAsync(["node", "oru", "add", "ID task", "--id", "customIDXaa", "--json"]);
