@@ -61,6 +61,10 @@
       "Bash(git -c *)",
       "Bash(GIT_EDITOR=true git rebase *)",
 
+      "Skill(commit-commands:commit)",
+      "Skill(commit-commands:commit-push-pr)",
+      "Skill(commit-commands:clean_gone)",
+
       "mcp__chrome-devtools__click",
       "mcp__chrome-devtools__close_page",
       "mcp__chrome-devtools__drag",
