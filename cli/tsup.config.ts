@@ -13,6 +13,7 @@ const configs: Options[] = [
     outDir: "dist",
     clean: true,
     minify: true,
+    splitting: false,
     banner: { js: "#!/usr/bin/env node" },
     external: ["better-sqlite3"],
     define: {
@@ -27,6 +28,7 @@ const configs: Options[] = [
     outDir: "dist/mcp",
     clean: false,
     minify: true,
+    splitting: false,
     banner: { js: "#!/usr/bin/env node" },
     external: ["better-sqlite3"],
     define: {
