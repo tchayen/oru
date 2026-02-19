@@ -4,7 +4,7 @@ import path from "path";
 import os from "os";
 import { compareVersions } from "./check.js";
 
-declare const __VERSION__: string;
+import { VERSION } from "../version.js";
 
 const REQUEST_TIMEOUT_MS = 10000;
 
@@ -110,7 +110,7 @@ async function updateViaScript(version: string): Promise<void> {
 
 export async function performUpdate(checkOnly: boolean): Promise<void> {
   const latest = await fetchLatestVersion();
-  const current = __VERSION__;
+  const current = VERSION;
 
   if (compareVersions(latest, current) <= 0) {
     process.stderr.write(`Already up to date (v${current})\n`);

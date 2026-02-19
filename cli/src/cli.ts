@@ -67,8 +67,7 @@ import {
   MAX_METADATA_VALUE_LENGTH,
 } from "./validation.js";
 
-declare const __GIT_COMMIT__: string;
-declare const __VERSION__: string;
+import { VERSION, GIT_COMMIT } from "./version.js";
 function parseMetadata(pairs: string[]): Record<string, string | null> {
   const meta: Record<string, string | null> = {};
   for (const pair of pairs) {
@@ -159,7 +158,7 @@ export function createProgram(
     .description(
       `${bold("oru")} - personal task manager that your agents can operate for you\n\nUse --json on any command for machine-readable output (or set ORU_FORMAT=json, or output_format in config). Run 'oru config init' to create a config file. Set ORU_DEBUG=1 for verbose error output.`,
     )
-    .version(`${__VERSION__} (${__GIT_COMMIT__})`);
+    .version(`${VERSION} (${GIT_COMMIT})`);
 
   program.configureOutput({
     writeOut: write,

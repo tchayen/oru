@@ -2,7 +2,7 @@ import type { Config } from "../config/config.js";
 import { setConfigValue } from "../config/config.js";
 import { SHOW_SERVER } from "../flags.js";
 
-declare const __VERSION__: string;
+import { VERSION } from "../version.js";
 
 export interface TelemetryEvent {
   cli_version: string;
@@ -148,7 +148,7 @@ export function buildEvent(
   exitCode: number,
 ): TelemetryEvent {
   return {
-    cli_version: __VERSION__,
+    cli_version: VERSION,
     command,
     flags,
     os: process.platform,

@@ -5,7 +5,7 @@ import { STATUSES, PRIORITIES } from "../tasks/types.js";
 import type { CreateTaskInput, UpdateTaskInput } from "../tasks/types.js";
 import type { ListFilters } from "../tasks/repository.js";
 
-declare const __VERSION__: string;
+import { VERSION } from "../version.js";
 
 const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
 const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
@@ -19,7 +19,7 @@ export function sanitizeError(err: unknown): string {
 }
 
 export function createMcpServer(service: TaskService): McpServer {
-  const version = typeof __VERSION__ !== "undefined" ? __VERSION__ : "0.0.0";
+  const version = VERSION;
   const server = new McpServer({ name: "oru", version }, { capabilities: { logging: {} } });
 
   server.registerTool(
