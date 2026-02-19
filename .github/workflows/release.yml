@@ -46,7 +46,7 @@ jobs:
         working-directory: cli
         run: |
           mkdir -p staging
-          pnpm deploy --prod staging
+          pnpm --config.inject-workspace-packages=true deploy --prod staging
 
       - name: Package tarball
         working-directory: cli
