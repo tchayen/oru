@@ -424,6 +424,11 @@
   font-weight: 600;
 }
 
+.prose .terminal,
+.prose .mini-code-wrap {
+  margin-bottom: 16px;
+}
+
 .prose > *:first-child {
   margin-top: 0;
 }
