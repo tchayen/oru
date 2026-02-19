@@ -75,9 +75,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.26.0
         version: 1.26.0(zod@4.3.6)
-      '@oru/types':
-        specifier: workspace:*
-        version: link:../types
       better-sqlite3:
         specifier: ^12.6.2
         version: 12.6.2
@@ -103,6 +100,9 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
+      '@oru/types':
+        specifier: workspace:*
+        version: link:../types
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
