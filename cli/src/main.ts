@@ -124,6 +124,65 @@ export class TaskService {
     return getTask(this.db, childId);
   }
 
+  async validateBlockedBy(
+    rawTaskId: string | null,
+    blockerIds: string[],
+  ): Promise<{ valid: true } | { valid: false; error: string }> {
+    let resolvedTaskId: string | null = null;
+    if (rawTaskId !== null) {
+      const self = await getTask(this.db, rawTaskId);
+      if (!self) {
+        return { valid: false, error: `Task "${rawTaskId}" not found.` };
+      }
+      resolvedTaskId = self.id;
+    }
+
+    const resolvedBlockerIds: string[] = [];
+    for (const bid of blockerIds) {
+      const blocker = await getTask(this.db, bid);
+      if (!blocker) {
+        return { valid: false, error: `Task "${bid}" not found.` };
+      }
+      if (resolvedTaskId !== null && blocker.id === resolvedTaskId) {
+        return { valid: false, error: "A task cannot block itself." };
+      }
+      resolvedBlockerIds.push(blocker.id);
+    }
+
+    if (resolvedTaskId !== null && resolvedBlockerIds.length > 0) {
+      const allTasks = await listTasks(this.db);
+      const byId = new Map(allTasks.map((t) => [t.id, t]));
+
+      for (const rid of resolvedBlockerIds) {
+        const queue: string[] = [rid];
+        const seen = new Set<string>();
+        while (queue.length > 0) {
+          const curr = queue.shift()!;
+          if (curr === resolvedTaskId) {
+            return {
+              valid: false,
+              error: `Setting blocked_by to "${rid}" would create a circular dependency.`,
+            };
+          }
+          if (seen.has(curr)) {
+            continue;
+          }
+          seen.add(curr);
+          const t = byId.get(curr);
+          if (t) {
+            for (const b of t.blocked_by) {
+              if (!seen.has(b)) {
+                queue.push(b);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return { valid: true };
+  }
+
   async list(filters?: ListFilters): Promise<Task[]> {
     return listTasks(this.db, filters);
   }
