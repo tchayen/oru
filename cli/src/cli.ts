@@ -1,7 +1,6 @@
 import { fileURLToPath } from "url";
 import fs from "fs";
 import path from "path";
-import os from "os";
 import { spawn } from "child_process";
 import { Command, Option, Help } from "commander";
 import type Database from "better-sqlite3";
@@ -25,8 +24,8 @@ import {
   formatLogJson,
   formatContextJson,
 } from "./format/json";
-import { SyncEngine } from "./sync/engine";
 import { FsRemote } from "./sync/fs-remote";
+import { syncWithBackup } from "./sync/backup-restore";
 import { getDeviceId } from "./device";
 import { loadConfig, getConfigPath, setConfigValue, DEFAULT_CONFIG_TOML } from "./config/config";
 import type { Config } from "./config/config";
@@ -1095,13 +1094,8 @@ export function createProgram(
     )
     .action(async (remotePath: string, opts: { json?: boolean; plaintext?: boolean }) => {
       const remote = new FsRemote(remotePath);
-      const dbPath = db.name;
-      const backupPath = path.join(os.tmpdir(), `oru-sync-backup-${Date.now()}.db`);
-      db.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`);
       try {
-        const engine = new SyncEngine(db, remote, deviceId);
-        const result = await engine.sync();
-
+        const result = await syncWithBackup(db, remote, deviceId);
         const json = useJson(opts);
         write(
           json
@@ -1109,20 +1103,8 @@ export function createProgram(
             : `Pushed ${result.pushed} ops, pulled ${result.pulled} ops.`,
         );
       } catch (err) {
-        db.close();
-        for (const ext of ["-wal", "-shm"]) {
-          try {
-            fs.unlinkSync(dbPath + ext);
-          } catch {}
-        }
-        fs.copyFileSync(backupPath, dbPath);
         process.stderr.write("Sync failed, database restored from backup.\n");
         throw err;
-      } finally {
-        remote.close();
-        try {
-          fs.unlinkSync(backupPath);
-        } catch {}
       }
     });
 
