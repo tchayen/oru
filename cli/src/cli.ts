@@ -361,6 +361,13 @@ export function createProgram(
         if (opts.blockedBy && !validateBlockedBy(opts.blockedBy, json)) {
           return;
         }
+        if (opts.blockedBy) {
+          const result = await service.validateBlockedBy(null, opts.blockedBy);
+          if (!result.valid) {
+            validationError(json, result.error);
+            return;
+          }
+        }
 
         if (opts.id && !isValidId(opts.id)) {
           validationError(
@@ -634,6 +641,13 @@ export function createProgram(
         if (opts.blockedBy && !validateBlockedBy(opts.blockedBy, json)) {
           return;
         }
+        if (opts.blockedBy) {
+          const result = await service.validateBlockedBy(id, opts.blockedBy);
+          if (!result.valid) {
+            validationError(json, result.error);
+            return;
+          }
+        }
 
         try {
           const updateFields: Record<string, unknown> = {};
@@ -878,6 +892,13 @@ export function createProgram(
         }
         if (fields.blocked_by && !validateBlockedBy(fields.blocked_by, json)) {
           return;
+        }
+        if (fields.blocked_by) {
+          const result = await service.validateBlockedBy(task.id, fields.blocked_by);
+          if (!result.valid) {
+            validationError(json, result.error);
+            return;
+          }
         }
         if (fields.metadata && !validateMetadata(fields.metadata, json)) {
           return;
