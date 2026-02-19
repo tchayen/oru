@@ -98,8 +98,7 @@ jobs:
           path: cli/dist/
 
       - name: Create production deployment
-        working-directory: cli
-        run: pnpm --config.inject-workspace-packages=true deploy --prod staging
+        run: pnpm --filter @tchayen/oru --config.inject-workspace-packages=true deploy --prod cli/staging
 
       - name: Create wrapper script
         working-directory: cli/staging
