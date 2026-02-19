@@ -2018,7 +2018,7 @@ describe("CLI parse", () => {
   it("telemetry enable writes config file", async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-telemetry-cli-"));
     const configPath = path.join(tmpDir, "config.toml");
-    process.env.ORU_CONFIG_PATH = configPath;
+    process.env.ORU_CONFIG_DIR = tmpDir;
     try {
       fs.writeFileSync(configPath, "telemetry = false\n");
       const p = createProgram(db, capture());
@@ -2027,7 +2027,7 @@ describe("CLI parse", () => {
       const content = fs.readFileSync(configPath, "utf-8");
       expect(content).toContain("telemetry = true");
     } finally {
-      delete process.env.ORU_CONFIG_PATH;
+      delete process.env.ORU_CONFIG_DIR;
       fs.rmSync(tmpDir, { recursive: true });
     }
   });
@@ -2035,7 +2035,7 @@ describe("CLI parse", () => {
   it("telemetry disable writes config file", async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-telemetry-cli-"));
     const configPath = path.join(tmpDir, "config.toml");
-    process.env.ORU_CONFIG_PATH = configPath;
+    process.env.ORU_CONFIG_DIR = tmpDir;
     try {
       fs.writeFileSync(configPath, "telemetry = true\n");
       const p = createProgram(db, capture());
@@ -2044,7 +2044,7 @@ describe("CLI parse", () => {
       const content = fs.readFileSync(configPath, "utf-8");
       expect(content).toContain("telemetry = false");
     } finally {
-      delete process.env.ORU_CONFIG_PATH;
+      delete process.env.ORU_CONFIG_DIR;
       fs.rmSync(tmpDir, { recursive: true });
     }
   });

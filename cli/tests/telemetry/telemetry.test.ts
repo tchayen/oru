@@ -190,7 +190,7 @@ describe("showFirstRunNotice", () => {
 
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-telemetry-test-"));
-    process.env.ORU_CONFIG_PATH = path.join(tmpDir, "config.toml");
+    process.env.ORU_CONFIG_DIR = tmpDir;
     stderrOutput = "";
     process.stderr.write = ((chunk: string) => {
       stderrOutput += chunk;

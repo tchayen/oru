@@ -53,9 +53,6 @@ const VALID_OUTPUT_FORMATS = new Set<string>(["text", "json"]);
 const VALID_NEXT_MONTH = new Set<string>(["same_day", "first"]);
 
 export function getConfigPath(): string {
-  if (process.env.ORU_CONFIG_PATH) {
-    return process.env.ORU_CONFIG_PATH;
-  }
   if (process.env.ORU_CONFIG_DIR) {
     return path.join(process.env.ORU_CONFIG_DIR, "config.toml");
   }
