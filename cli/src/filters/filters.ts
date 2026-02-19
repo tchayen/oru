@@ -74,10 +74,14 @@ function serializeValue(value: unknown): string {
   return `"${String(value)}"`;
 }
 
+function tomlSectionKey(name: string): string {
+  return `["${name.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"]`;
+}
+
 function serializeFilters(filters: Record<string, FilterDefinition>): string {
   const sections: string[] = [];
   for (const [name, def] of Object.entries(filters)) {
-    const lines: string[] = [`[${name}]`];
+    const lines: string[] = [tomlSectionKey(name)];
     for (const [key, value] of Object.entries(def)) {
       if (value !== undefined) {
         lines.push(`${key} = ${serializeValue(value)}`);
