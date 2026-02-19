@@ -175,7 +175,7 @@ describe("SyncEngine", () => {
     db2.close();
   });
 
-  it("push is idempotent – double push does not duplicate", async () => {
+  it("push is idempotent - double push does not duplicate", async () => {
     await writeOp(ky, {
       task_id: "t1",
       device_id: "device-a",

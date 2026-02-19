@@ -246,7 +246,7 @@ describe("MCP server", () => {
     }
     expect(rawError).toContain("database");
 
-    // Now call through MCP – the same kind of error hits service.add(),
+    // Now call through MCP - the same kind of error hits service.add(),
     // but sanitizeError should replace it before it reaches the client.
     const result = await client.callTool({
       name: "add_task",

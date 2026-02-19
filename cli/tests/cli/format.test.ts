@@ -220,7 +220,7 @@ describe("filterByDue", () => {
     };
     const tasks = [taskOnSunday, taskOnPrevMonday, taskOnSaturday, taskOnNextSunday];
 
-    // With first_day_of_week="sunday", week is Sun 2/15 – Sat 2/21
+    // With first_day_of_week="sunday", week is Sun 2/15 - Sat 2/21
     const result = filterByDue(tasks, "this-week", sunday, "sunday");
     const ids = result.map((t) => t.id);
     expect(ids).toContain("sun1");
@@ -248,7 +248,7 @@ describe("filterByDue", () => {
       due_at: "2026-02-09T00:00:00",
     };
 
-    // With first_day_of_week="monday", on Sunday 2/15 the week is Mon 2/9 – Sun 2/15
+    // With first_day_of_week="monday", on Sunday 2/15 the week is Mon 2/9 - Sun 2/15
     const result = filterByDue(
       [taskOnSunday, taskOnPrevMonday, taskOnMonday],
       "this-week",
@@ -311,13 +311,13 @@ describe("overdue highlighting", () => {
         ...sampleTask,
         id: "def45678",
         title: "Future task",
-        due_at: "2099-12-31T15:30:00", // datetime (16 chars visual) – forces dueW=16
+        due_at: "2099-12-31T15:30:00", // datetime (16 chars visual) - forces dueW=16
         labels: [],
       };
       const output = formatTasksText([overdue, future]);
       const lines = output.split("\n");
       // The header line has the DUE column; check that both date rows
-      // are aligned identically – the overdue bold ANSI should NOT add extra padding
+      // are aligned identically - the overdue bold ANSI should NOT add extra padding
       // Strip ANSI codes to compare raw column positions
       // eslint-disable-next-line no-control-regex
       const stripAnsi = (s: string) => s.replace(/\u001b\[\d+(;\d+)*m/g, "");

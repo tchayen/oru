@@ -391,7 +391,7 @@ describe("openInEditor", () => {
       const { edited, tmpFile } = await openInEditor(content);
       expect(edited).toBe(content);
       expect(tmpFile).toMatch(/oru-edit-.*\.toml$/);
-      // Temp file should still exist – openInEditor no longer cleans up
+      // Temp file should still exist - openInEditor no longer cleans up
       expect(fs.existsSync(tmpFile)).toBe(true);
       fs.unlinkSync(tmpFile);
     } finally {

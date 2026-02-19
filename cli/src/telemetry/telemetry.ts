@@ -73,7 +73,7 @@ export function extractCommandAndFlags(argv: string[]): { command: string; flags
       // Extract flag name, strip value
       const flag = arg.includes("=") ? arg.slice(0, arg.indexOf("=")) : arg;
       flags.push(flag);
-      // If next arg doesn't start with -, it's a value – skip it
+      // If next arg doesn't start with -, it's a value - skip it
       if (!arg.includes("=") && i + 1 < args.length && !args[i + 1].startsWith("-")) {
         i++;
       }

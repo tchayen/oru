@@ -270,7 +270,7 @@ describe("CLI parse", () => {
     expect(parsed.error).toBe("validation");
   });
 
-  it("add --id is idempotent – returns existing task on re-run", async () => {
+  it("add --id is idempotent - returns existing task on re-run", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "First run", "--id", "idemIDXaaaa", "--json"]);
     const first = JSON.parse(output.trim());

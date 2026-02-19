@@ -3,9 +3,9 @@
 # Usage: curl -fsSL https://oru.dev/install | bash
 #
 # Environment variables:
-#   ORU_VERSION          – install a specific version (default: latest)
-#   ORU_INSTALL_DIR      – installation directory (default: ~/.oru)
-#   ORU_NO_MODIFY_PATH   – set to 1 to skip PATH modification
+#   ORU_VERSION          - install a specific version (default: latest)
+#   ORU_INSTALL_DIR      - installation directory (default: ~/.oru)
+#   ORU_NO_MODIFY_PATH   - set to 1 to skip PATH modification
 
 set -e
 

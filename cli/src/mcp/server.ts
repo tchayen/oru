@@ -27,7 +27,7 @@ export function createMcpServer(service: TaskService): McpServer {
     {
       title: "Add task",
       description:
-        "Create a new task. Returns the created task. Defaults to status 'todo' and priority 'medium' if not specified. Pass an 'id' field to enable idempotent creates – if a task with that ID already exists, the existing task is returned instead of creating a duplicate.",
+        "Create a new task. Returns the created task. Defaults to status 'todo' and priority 'medium' if not specified. Pass an 'id' field to enable idempotent creates - if a task with that ID already exists, the existing task is returned instead of creating a duplicate.",
       inputSchema: z.object({
         title: z.string().describe("Task title, e.g. 'Fix login bug'"),
         id: z
@@ -96,7 +96,7 @@ export function createMcpServer(service: TaskService): McpServer {
     {
       title: "Update task",
       description:
-        "Update fields on an existing task. Only send the fields you want to change – omitted fields are left unchanged. Notes are append-only: use the 'note' field to add a new note without affecting existing ones. Returns the updated task.",
+        "Update fields on an existing task. Only send the fields you want to change - omitted fields are left unchanged. Notes are append-only: use the 'note' field to add a new note without affecting existing ones. Returns the updated task.",
       inputSchema: z.object({
         id: z.string().describe("Task ID or unique ID prefix, e.g. '0196b8e0' or full UUID"),
         title: z.string().optional().describe("New title"),
@@ -138,7 +138,7 @@ export function createMcpServer(service: TaskService): McpServer {
         note: z
           .string()
           .optional()
-          .describe("A note to append to the task. Append-only – existing notes are not affected."),
+          .describe("A note to append to the task. Append-only - existing notes are not affected."),
       }),
     },
     async (input) => {
@@ -185,7 +185,7 @@ export function createMcpServer(service: TaskService): McpServer {
     {
       title: "List tasks",
       description:
-        "List tasks with optional filters. Returns a JSON array of tasks. Done tasks are excluded by default – pass all: true to include them, or status='done' to see only completed tasks. Use 'actionable' filter to get only tasks that are not blocked and not done. The 'search' filter performs a case-insensitive substring match on task titles.",
+        "List tasks with optional filters. Returns a JSON array of tasks. Done tasks are excluded by default - pass all: true to include them, or status='done' to see only completed tasks. Use 'actionable' filter to get only tasks that are not blocked and not done. The 'search' filter performs a case-insensitive substring match on task titles.",
       inputSchema: z.object({
         status: StatusEnum.optional().describe(
           "Filter by status. Valid values: todo, in_progress, in_review, done. Pass 'done' to see completed tasks.",
@@ -207,7 +207,7 @@ export function createMcpServer(service: TaskService): McpServer {
           .boolean()
           .optional()
           .describe(
-            "When true, returns only actionable tasks – those with status 'todo' that are not blocked by other incomplete tasks.",
+            "When true, returns only actionable tasks - those with status 'todo' that are not blocked by other incomplete tasks.",
           ),
         all: z
           .boolean()
@@ -237,7 +237,7 @@ export function createMcpServer(service: TaskService): McpServer {
     {
       title: "Get task",
       description:
-        "Get a single task by its full ID or a unique ID prefix. Supports prefix matching – e.g. passing '0196b8' will match if only one task ID starts with that prefix.",
+        "Get a single task by its full ID or a unique ID prefix. Supports prefix matching - e.g. passing '0196b8' will match if only one task ID starts with that prefix.",
       inputSchema: z.object({
         id: z.string().describe("Task ID or unique ID prefix, e.g. '0196b8e0' or full UUID"),
       }),
@@ -286,7 +286,7 @@ export function createMcpServer(service: TaskService): McpServer {
     {
       title: "Add note",
       description:
-        "Append a note to an existing task. Notes are append-only and deduplicated – adding the same note text twice has no effect. Returns the updated task.",
+        "Append a note to an existing task. Notes are append-only and deduplicated - adding the same note text twice has no effect. Returns the updated task.",
       inputSchema: z.object({
         id: z.string().describe("Task ID or unique ID prefix, e.g. '0196b8e0' or full UUID"),
         note: z.string().describe("Note text to append, e.g. 'Blocked on API review'"),

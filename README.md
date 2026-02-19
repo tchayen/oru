@@ -133,11 +133,11 @@ oru config init # creates ~/.oru/config.toml with documented options
 
 Key options:
 
-- `date_format` – `"mdy"` (US) or `"dmy"` (international)
-- `first_day_of_week` – `"monday"` or `"sunday"`
-- `output_format` – `"text"` or `"json"`
-- `backup_path` – directory for automatic backups
-- `backup_interval` – minutes between auto-backups (default: 60)
+- `date_format` - `"mdy"` (US) or `"dmy"` (international)
+- `first_day_of_week` - `"monday"` or `"sunday"`
+- `output_format` - `"text"` or `"json"`
+- `backup_path` - directory for automatic backups
+- `backup_interval` - minutes between auto-backups (default: 60)
 
 ## Sync
 
