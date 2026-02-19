@@ -125,6 +125,21 @@ jobs:
             exit 1
           fi
 
+      - name: Pack npm tarball
+        working-directory: cli
+        run: npm pack
+
+      - name: Verify npm pack installs and runs
+        env:
+          ORU_DB_PATH: /tmp/oru-npm.db
+          DO_NOT_TRACK: "1"
+        run: |
+          npm install --prefix /tmp/npm-test "$GITHUB_WORKSPACE"/cli/tchayen-oru-*.tgz
+          /tmp/npm-test/node_modules/.bin/oru --version
+          /tmp/npm-test/node_modules/.bin/oru add "npm install test task"
+          /tmp/npm-test/node_modules/.bin/oru list
+          /tmp/npm-test/node_modules/.bin/oru list --json
+
   bundle-size:
     needs: changes
     if: needs.changes.outputs.cli == 'true'
