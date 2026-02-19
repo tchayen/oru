@@ -3,7 +3,7 @@
     "name": "oru",
     "slug": "oru",
     "scheme": "oru",
-    "version": "1.0.0",
+    "private": true,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
