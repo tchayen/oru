@@ -43,6 +43,7 @@
 
   /* Animations */
   --animate-cursor-blink: cursor-blink 800ms step-end infinite;
+  --animate-glow-breathe: glow-breathe 8s ease-in-out infinite;
 
   /* Layout */
   --nav-height: 64px;
@@ -61,6 +62,18 @@
   }
   50% {
     opacity: 0;
+  }
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
   }
 }
 
