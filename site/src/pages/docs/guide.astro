@@ -185,21 +185,66 @@ import MiniCode from "../../components/ui/MiniCode.astro";
   </p>
 
   <h2>Due dates</h2>
-  <p>oru supports natural language date parsing:</p>
+  <p>oru supports natural language date parsing. Input is case-insensitive — <code>monday</code> and <code>Monday</code> both work.</p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Ship feature"</span> <span class="flag">-d</span> <span class="val">tomorrow</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Sprint review"</span> <span class="flag">-d</span> <span class="val">friday</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Sprint review"</span> <span class="flag">-d</span> <span class="val">Friday</span><br />
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Quarterly report"</span> <span class="flag">-d</span> <span class="val">2026-03-01</span><br />
-    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Standup"</span> <span class="flag">-d</span> <span class="str">"tod 10a"</span>
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Standup"</span> <span class="flag">-d</span> <span class="str">"tod 10a"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Call"</span> <span class="flag">-d</span> <span class="str">"in 3 days"</span><br />
+    <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Deadline"</span> <span class="flag">-d</span> <span class="str">"end of month"</span>
   </MiniCode>
-  <p>Supported formats include:</p>
-  <ul>
-    <li><code>today</code>, <code>tomorrow</code>, <code>yesterday</code></li>
-    <li>Day names: <code>monday</code>, <code>friday</code>, <code>next tuesday</code></li>
-    <li>Month + day: <code>march 15</code>, <code>jan 1</code></li>
-    <li>ISO dates: <code>2026-03-01</code></li>
-    <li>Time suffixes: <code>tod 10a</code>, <code>tomorrow 2pm</code></li>
-  </ul>
+  <table>
+    <thead>
+      <tr>
+        <th>Format</th>
+        <th>Examples</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Shortcuts</td>
+        <td><code>today</code>, <code>tod</code>, <code>tomorrow</code>, <code>tom</code>, <code>tonight</code></td>
+        <td><code>tonight</code> sets time to 18:00</td>
+      </tr>
+      <tr>
+        <td>Day names</td>
+        <td><code>monday</code>, <code>mon</code>, <code>Friday</code>, <code>next tue</code>, <code>next Wednesday</code></td>
+        <td>Full name or 3-letter abbreviation. Always advances to the next occurrence.</td>
+      </tr>
+      <tr>
+        <td>Week / month</td>
+        <td><code>next week</code>, <code>end of week</code>, <code>next month</code>, <code>end of month</code></td>
+        <td>Calendar-relative keywords</td>
+      </tr>
+      <tr>
+        <td>Relative duration</td>
+        <td><code>in 3 days</code>, <code>in 2 weeks</code>, <code>in 1 month</code></td>
+        <td>N days / weeks / months from today</td>
+      </tr>
+      <tr>
+        <td>Month + day</td>
+        <td><code>march 15</code>, <code>mar 15</code>, <code>15th march</code>, <code>March 3rd</code></td>
+        <td>Ordinal suffix optional. Rolls to next year if the date is in the past.</td>
+      </tr>
+      <tr>
+        <td>ISO date</td>
+        <td><code>2026-03-01</code>, <code>2026-03-01T14:30</code></td>
+        <td>Date only or date + time with <code>T</code> separator</td>
+      </tr>
+      <tr>
+        <td>Slash date</td>
+        <td><code>03/15</code>, <code>03/15/2026</code></td>
+        <td>Interpreted as MM/DD or DD/MM based on <code>date_format</code> config (default: <code>mdy</code>)</td>
+      </tr>
+      <tr>
+        <td>Time suffix</td>
+        <td><code>tod 10a</code>, <code>Monday 2pm</code>, <code>tomorrow 14:30</code>, <code>fri 9:30am</code></td>
+        <td>Append a time to any date. Supports 12-hour (<code>10a</code>, <code>2pm</code>, <code>9:30am</code>) and 24-hour (<code>14:30</code>).</td>
+      </tr>
+    </tbody>
+  </table>
 
   <h2>Blocked-by dependencies</h2>
   <p>

@@ -310,7 +310,10 @@ export function createProgram(
         .choices(PRIORITIES)
         .default("medium"),
     )
-    .option("-d, --due <date>", "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20')")
+    .option(
+      "-d, --due <date>",
+      "Due date (e.g. 'tomorrow', 'Monday', 'mon 9am', 'in 3 days', 'end of week', '2026-03-20')",
+    )
     .option("--assign <owner>", "Assign to owner")
     .option("-l, --label <labels...>", "Add labels")
     .option("-b, --blocked-by <ids...>", "IDs of tasks that block this task")
@@ -586,7 +589,7 @@ export function createProgram(
     .addOption(new Option("-p, --priority <priority>", "New priority").choices(PRIORITIES))
     .option(
       "-d, --due <date>",
-      "Due date (e.g. 'tomorrow', 'tod 10a', '2026-03-20', 'none' to clear)",
+      "Due date (e.g. 'tomorrow', 'Monday', 'in 3 days', 'end of week', '2026-03-20', 'none' to clear)",
     )
     .option("--assign <owner>", "Assign to owner ('none' to clear)")
     .option("-l, --label <labels...>", "Add labels")
