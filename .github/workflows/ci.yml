@@ -100,7 +100,7 @@ jobs:
           node dist/cli.js --version
           node dist/cli.js add "Integration test task"
           node dist/cli.js list
-          node dist/cli.js list --format json
+          node dist/cli.js list --json
 
       - name: Verify wrapper script
         working-directory: cli/staging
