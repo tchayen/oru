@@ -192,10 +192,10 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
       break;
   }
 
-  if (filters?.limit || filters?.offset) {
-    query = query.limit(filters?.limit ?? -1);
+  if (filters?.limit !== undefined || filters?.offset !== undefined) {
+    query = query.limit(filters.limit ?? -1);
   }
-  if (filters?.offset) {
+  if (filters?.offset !== undefined) {
     query = query.offset(filters.offset);
   }
 

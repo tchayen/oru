@@ -380,6 +380,31 @@ describe("task repository", () => {
     expect(task.blocked_by).toEqual([]);
   });
 
+  it("listTasks limit: 0 returns empty array", async () => {
+    await createTask(ky, { title: "A" });
+    await createTask(ky, { title: "B" });
+
+    const tasks = await listTasks(ky, { limit: 0 });
+    expect(tasks).toHaveLength(0);
+  });
+
+  it("listTasks limit: 1 returns one row", async () => {
+    await createTask(ky, { title: "A" });
+    await createTask(ky, { title: "B" });
+
+    const tasks = await listTasks(ky, { limit: 1 });
+    expect(tasks).toHaveLength(1);
+  });
+
+  it("listTasks offset: 0 is the same as no offset", async () => {
+    await createTask(ky, { title: "A" }, "2024-01-01T00:00:00.000Z");
+    await createTask(ky, { title: "B" }, "2024-01-02T00:00:00.000Z");
+
+    const withOffset = await listTasks(ky, { offset: 0, sort: "created" });
+    const withoutOffset = await listTasks(ky, { sort: "created" });
+    expect(withOffset.map((t) => t.title)).toEqual(withoutOffset.map((t) => t.title));
+  });
+
   it("actionable filter excludes tasks with incomplete blockers", async () => {
     const blocker = await createTask(ky, { title: "Blocker", status: "todo" });
     await createTask(ky, { title: "Blocked task", blocked_by: [blocker.id] });
