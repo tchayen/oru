@@ -1,6 +1,6 @@
 #!/bin/sh
 # oru install script
-# Usage: curl -fsSL https://oru.dev/install | bash
+# Usage: curl -fsSL https://oru.sh/install.sh | bash
 #
 # Environment variables:
 #   ORU_VERSION          - install a specific version (default: latest)
