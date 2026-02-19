@@ -102,6 +102,16 @@ export function nextOccurrence(rrule: string, anchor: Date): Date {
           if (result.getMonth() !== anchor.getMonth()) {
             result = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
           }
+          // If the clamped result is still not after anchor (e.g. BYMONTHDAY=31 on Feb 28
+          // clamps back to Feb 28 = anchor), fall through to the next-interval branch.
+          if (result.getTime() <= anchor.getTime()) {
+            result = addMonths(anchor, rule.interval);
+            const newMonth = result.getMonth();
+            result.setDate(targetDay);
+            if (result.getMonth() !== newMonth) {
+              result = new Date(result.getFullYear(), newMonth + 1, 0);
+            }
+          }
         } else {
           // Advance interval months
           result = addMonths(anchor, rule.interval);

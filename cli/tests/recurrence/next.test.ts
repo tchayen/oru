@@ -89,6 +89,18 @@ describe("nextOccurrence", () => {
         const result = nextOccurrence("FREQ=MONTHLY;BYMONTHDAY=31", d(2026, 2, 1));
         expect(result).toEqual(d(2026, 2, 28));
       });
+
+      it("does not get stuck when anchor equals clamped result (BYMONTHDAY=31 on Feb 28)", () => {
+        // Feb 28 + BYMONTHDAY=31: clamps to Feb 28 = anchor → must advance to March 31
+        const result = nextOccurrence("FREQ=MONTHLY;BYMONTHDAY=31", d(2026, 2, 28));
+        expect(result).toEqual(d(2026, 3, 31));
+      });
+
+      it("does not get stuck on last day of Feb in leap year (BYMONTHDAY=31 on Feb 29)", () => {
+        // 2024 is a leap year; Feb 29 + BYMONTHDAY=31 → clamps to Feb 29 = anchor → advance
+        const result = nextOccurrence("FREQ=MONTHLY;BYMONTHDAY=31", d(2024, 2, 29));
+        expect(result).toEqual(d(2024, 3, 31));
+      });
     });
   });
 
