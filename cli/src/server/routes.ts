@@ -361,7 +361,8 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
         updateFields.recurrence = recurrence;
       }
       if (metadata) {
-        updateFields.metadata = metadata;
+        const existing = await service.get(id);
+        updateFields.metadata = { ...(existing?.metadata ?? {}), ...metadata };
       }
 
       const hasFields = Object.keys(updateFields).length > 0;
