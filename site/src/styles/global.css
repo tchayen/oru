@@ -79,7 +79,23 @@
     line-height: 1.6;
     color: var(--color-text-secondary);
     background-color: var(--color-bg-base);
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
     overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(
+      ellipse 90% 70% at 50% 30%,
+      transparent 35%,
+      rgba(0, 0, 0, 0.6) 70%,
+      rgba(0, 0, 0, 0.95) 100%
+    );
   }
 
   img,
