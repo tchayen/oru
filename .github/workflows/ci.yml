@@ -88,6 +88,7 @@ jobs:
         id: main-size
         run: |
           echo "cli=$(stat -c%s cli/dist/cli.js)" >> "$GITHUB_OUTPUT"
+          echo "mcp=$(stat -c%s cli/dist/mcp/index.js)" >> "$GITHUB_OUTPUT"
           echo "server=$(stat -c%s cli/dist/server/index.js)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
@@ -106,9 +107,11 @@ jobs:
             const fs = require("fs");
 
             const mainCli = Number("${{ steps.main-size.outputs.cli }}");
+            const mainMcp = Number("${{ steps.main-size.outputs.mcp }}");
             const mainServer = Number("${{ steps.main-size.outputs.server }}");
 
             const prCli = fs.statSync("cli/dist/cli.js").size;
+            const prMcp = fs.statSync("cli/dist/mcp/index.js").size;
             const prServer = fs.statSync("cli/dist/server/index.js").size;
 
             function fmt(bytes) {
@@ -129,6 +132,7 @@ jobs:
               "| File | main | PR | Delta |",
               "| --- | ---: | ---: | ---: |",
               `| \`cli.js\` | ${fmt(mainCli)} KB | ${fmt(prCli)} KB | ${delta(mainCli, prCli)} |`,
+              `| \`mcp/index.js\` | ${fmt(mainMcp)} KB | ${fmt(prMcp)} KB | ${delta(mainMcp, prMcp)} |`,
               `| \`server/index.js\` | ${fmt(mainServer)} KB | ${fmt(prServer)} KB | ${delta(mainServer, prServer)} |`,
             ].join("\n");
 
