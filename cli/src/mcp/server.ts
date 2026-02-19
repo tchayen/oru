@@ -260,7 +260,7 @@ export function createMcpServer(service: TaskService): McpServer {
     {
       title: "Get context",
       description:
-        "Get a quick status overview of what needs attention. Returns counts and full task lists for: overdue, due soon (within 24h), in progress, actionable (todo + not blocked), blocked, and recently completed (last 24h). Use this for a high-level summary before deciding what to work on next.",
+        "Get a quick status overview of what needs attention. Returns counts and full task lists for: overdue, due soon (within 48h), in progress, actionable (todo + not blocked), blocked, and recently completed (last 24h). Use this for a high-level summary before deciding what to work on next.",
       inputSchema: z.object({
         owner: z.string().optional().describe("Scope to a specific owner, e.g. 'alice'"),
         label: z.string().optional().describe("Filter by label, e.g. 'backend'"),
