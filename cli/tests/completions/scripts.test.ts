@@ -111,6 +111,16 @@ describe("bash completions script", () => {
   it("contains --filter flag for list", () => {
     expect(script).toContain("--filter");
   });
+
+  it("edit and update are separate completion cases (not merged)", () => {
+    expect(script).not.toContain("update|edit)");
+  });
+
+  it("edit case does not offer --status flag", () => {
+    // Split on 'edit)' to isolate the edit case block
+    const editBlock = script.split("edit)")[1]?.split(";;")[0] ?? "";
+    expect(editBlock).not.toContain("--status");
+  });
 });
 
 describe("zsh completions script", () => {
@@ -225,6 +235,12 @@ describe("zsh completions script", () => {
 
   it("contains --filter flag for list", () => {
     expect(script).toContain("--filter");
+  });
+
+  it("edit block does not include --status or --priority", () => {
+    const editBlock = script.split("edit)")[1]?.split(";;")[0] ?? "";
+    expect(editBlock).not.toContain("--status");
+    expect(editBlock).not.toContain("--priority");
   });
 });
 
@@ -345,5 +361,18 @@ describe("fish completions script", () => {
 
   it("contains --filter flag for list", () => {
     expect(script).toContain("-l filter");
+  });
+
+  it("does not add status completion for edit command", () => {
+    expect(script).not.toContain("'__oru_using_command edit' -s s -l status");
+  });
+
+  it("does not add priority completion for edit command", () => {
+    expect(script).not.toContain("'__oru_using_command edit' -s p -l priority");
+  });
+
+  it("does not add label or unlabel completion for edit command", () => {
+    expect(script).not.toContain("'__oru_using_command edit' -s l -l label");
+    expect(script).not.toContain("'__oru_using_command edit' -l unlabel");
   });
 });
