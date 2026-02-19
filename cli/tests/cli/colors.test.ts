@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { bold, dim, italic, white } from "../../src/format/colors.js";
+import { bold, dim, italic, white } from "../../src/format/colors";
 
 let savedForceColor: string | undefined;
 let savedNoColor: string | undefined;

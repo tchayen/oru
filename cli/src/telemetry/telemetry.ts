@@ -1,6 +1,6 @@
-import type { Config } from "../config/config.js";
-import { setConfigValue } from "../config/config.js";
-import { SHOW_SERVER } from "../flags.js";
+import type { Config } from "../config/config";
+import { setConfigValue } from "../config/config";
+import { SHOW_SERVER } from "../flags";
 
 declare const __VERSION__: string;
 

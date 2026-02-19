@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
 import type { Kysely } from "kysely";
-import type { DB } from "../../src/db/kysely.js";
-import { createTestDb, createTestKysely } from "../helpers/test-db.js";
-import { writeOp } from "../../src/oplog/writer.js";
+import type { DB } from "../../src/db/kysely";
+import { createTestDb, createTestKysely } from "../helpers/test-db";
+import { writeOp } from "../../src/oplog/writer";
 
 describe("oplog writer", () => {
   let db: Database.Database;

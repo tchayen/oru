@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "fs";
-import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "../../src/edit.js";
-import type { Task } from "../../src/tasks/types.js";
+import { serializeTask, parseDocument, openInEditor, cleanupTmpFile } from "../../src/edit";
+import type { Task } from "../../src/tasks/types";
 
 function makeTask(overrides: Partial<Task> = {}): Task {
   return {

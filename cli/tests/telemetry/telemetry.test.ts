@@ -8,8 +8,8 @@ import {
   detectCI,
   extractCommandAndFlags,
   showFirstRunNotice,
-} from "../../src/telemetry/telemetry.js";
-import type { Config } from "../../src/config/config.js";
+} from "../../src/telemetry/telemetry";
+import type { Config } from "../../src/config/config";
 
 function makeConfig(overrides: Partial<Config> = {}): Config {
   return {

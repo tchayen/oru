@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
-import { createTestDb } from "../helpers/test-db.js";
-import { createKysely } from "../../src/db/kysely.js";
-import { TaskService } from "../../src/main.js";
-import { createMcpServer, sanitizeError } from "../../src/mcp/server.js";
+import { createTestDb } from "../helpers/test-db";
+import { createKysely } from "../../src/db/kysely";
+import { TaskService } from "../../src/main";
+import { createMcpServer, sanitizeError } from "../../src/mcp/server";
 import type Database from "better-sqlite3";
 
 describe("MCP server", () => {

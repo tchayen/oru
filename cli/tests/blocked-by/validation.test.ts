@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
 import type { Kysely } from "kysely";
-import type { DB } from "../../src/db/kysely.js";
-import { createTestDb, createTestKysely } from "../helpers/test-db.js";
-import { TaskService } from "../../src/main.js";
+import type { DB } from "../../src/db/kysely";
+import { createTestDb, createTestKysely } from "../helpers/test-db";
+import { TaskService } from "../../src/main";
 
 describe("validateBlockedBy", () => {
   let db: Database.Database;

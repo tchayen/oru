@@ -1,4 +1,4 @@
-import type { DateFormat, NextMonthBehavior, Weekday } from "../config/config.js";
+import type { DateFormat, NextMonthBehavior, Weekday } from "../config/config";
 
 const WEEKDAY_NUMBERS: Record<Weekday, number> = {
   sunday: 0,

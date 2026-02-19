@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
 import type { Kysely } from "kysely";
-import type { DB } from "../src/db/kysely.js";
-import { createTestDb, createTestKysely } from "./helpers/test-db.js";
-import { TaskService } from "../src/main.js";
-import { replayOps } from "../src/oplog/replay.js";
-import { getTask } from "../src/tasks/repository.js";
+import type { DB } from "../src/db/kysely";
+import { createTestDb, createTestKysely } from "./helpers/test-db";
+import { TaskService } from "../src/main";
+import { replayOps } from "../src/oplog/replay";
+import { getTask } from "../src/tasks/repository";
 
 describe("TaskService", () => {
   let db: Database.Database;

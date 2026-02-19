@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseDate } from "../../src/dates/parse.js";
+import { parseDate } from "../../src/dates/parse";
 
 // Fixed reference date: Sunday, 2026-02-15 at noon
 const REF = new Date(2026, 1, 15, 12, 0, 0);

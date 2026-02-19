@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
 import type { Kysely } from "kysely";
-import type { DB } from "../../src/db/kysely.js";
-import { createTestDb, createTestKysely } from "../helpers/test-db.js";
+import type { DB } from "../../src/db/kysely";
+import { createTestDb, createTestKysely } from "../helpers/test-db";
 import {
   createTask,
   listTasks,
@@ -11,7 +11,7 @@ import {
   appendNote,
   deleteTask,
   AmbiguousPrefixError,
-} from "../../src/tasks/repository.js";
+} from "../../src/tasks/repository";
 
 describe("task repository", () => {
   let db: Database.Database;

@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { FsRemote } from "../../src/sync/fs-remote.js";
-import type { OplogEntry } from "../../src/oplog/types.js";
+import { FsRemote } from "../../src/sync/fs-remote";
+import type { OplogEntry } from "../../src/oplog/types";
 
 describe("FsRemote", () => {
   let tmpDir: string;

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import type { Config } from "../config/config.js";
+import type { Config } from "../config/config";
 
 declare const __VERSION__: string;
 

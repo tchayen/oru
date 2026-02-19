@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { createTestDb, createTestKysely } from "../helpers/test-db.js";
-import { FsRemote } from "../../src/sync/fs-remote.js";
-import { SyncEngine } from "../../src/sync/engine.js";
-import { writeOp } from "../../src/oplog/writer.js";
-import { createTask, getTask } from "../../src/tasks/repository.js";
+import { createTestDb, createTestKysely } from "../helpers/test-db";
+import { FsRemote } from "../../src/sync/fs-remote";
+import { SyncEngine } from "../../src/sync/engine";
+import { writeOp } from "../../src/oplog/writer";
+import { createTask, getTask } from "../../src/tasks/repository";
 
 describe("e2e sync scenarios", () => {
   let tmpDir: string;

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type Database from "better-sqlite3";
-import { createTestDb } from "../helpers/test-db.js";
-import { createProgram } from "../../src/cli.js";
+import { createTestDb } from "../helpers/test-db";
+import { createProgram } from "../../src/cli";
 
 describe("_complete command", () => {
   let db: Database.Database;

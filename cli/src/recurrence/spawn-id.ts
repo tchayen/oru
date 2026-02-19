@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { base62Encode } from "../id.js";
+import { base62Encode } from "../id";
 
 const NAMESPACE = "oru-recurrence";
 

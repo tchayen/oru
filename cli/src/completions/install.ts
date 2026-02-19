@@ -2,9 +2,9 @@ import fs from "fs";
 import path from "path";
 import os from "node:os";
 import readline from "readline";
-import { generateBashCompletions } from "./bash.js";
-import { generateZshCompletions } from "./zsh.js";
-import { generateFishCompletions } from "./fish.js";
+import { generateBashCompletions } from "./bash";
+import { generateZshCompletions } from "./zsh";
+import { generateFishCompletions } from "./fish";
 
 export type Shell = "bash" | "zsh" | "fish";
 

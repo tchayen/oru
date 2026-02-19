@@ -2,8 +2,8 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { parse } from "smol-toml";
-import type { Status, Priority } from "../tasks/types.js";
-import type { SortField } from "../tasks/repository.js";
+import type { Status, Priority } from "../tasks/types";
+import type { SortField } from "../tasks/repository";
 
 export interface FilterDefinition {
   status?: Status | Status[];

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { compareVersions } from "../../src/update/check.js";
+import { compareVersions } from "../../src/update/check";
 
 describe("compareVersions", () => {
   it("returns 0 for equal versions", () => {

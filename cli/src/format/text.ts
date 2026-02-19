@@ -1,8 +1,8 @@
-import type { Task } from "../tasks/types.js";
-import type { OplogEntry } from "../oplog/types.js";
-import type { Weekday } from "../config/config.js";
-import { bold, dim, italic, white } from "./colors.js";
-import { formatRecurrence } from "../recurrence/format.js";
+import type { Task } from "../tasks/types";
+import type { OplogEntry } from "../oplog/types";
+import type { Weekday } from "../config/config";
+import { bold, dim, italic, white } from "./colors";
+import { formatRecurrence } from "../recurrence/format";
 
 export function isOverdue(dueAt: string, now?: Date): boolean {
   const ref = now ?? new Date();

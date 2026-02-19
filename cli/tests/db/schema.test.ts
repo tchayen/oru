@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
-import { initSchema } from "../../src/db/schema.js";
+import { initSchema } from "../../src/db/schema";
 
 function freshDb(): Database.Database {
   return new Database(":memory:");

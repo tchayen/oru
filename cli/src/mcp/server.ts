@@ -1,9 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { TaskService } from "../main.js";
-import { STATUSES, PRIORITIES } from "../tasks/types.js";
-import type { CreateTaskInput, UpdateTaskInput } from "../tasks/types.js";
-import type { ListFilters } from "../tasks/repository.js";
+import type { TaskService } from "../main";
+import { STATUSES, PRIORITIES } from "../tasks/types";
+import type { CreateTaskInput, UpdateTaskInput } from "../tasks/types";
+import type { ListFilters } from "../tasks/repository";
 
 declare const __VERSION__: string;
 

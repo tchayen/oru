@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateId, isValidId } from "../src/id.js";
+import { generateId, isValidId } from "../src/id";
 
 describe("generateId", () => {
   it("produces an 11-character string", () => {

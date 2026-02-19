@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { formatTasksText, formatTaskText, filterByDue } from "../../src/format/text.js";
-import { formatTasksJson, formatTaskJson } from "../../src/format/json.js";
-import type { Task } from "../../src/tasks/types.js";
+import { formatTasksText, formatTaskText, filterByDue } from "../../src/format/text";
+import { formatTasksJson, formatTaskJson } from "../../src/format/json";
+import type { Task } from "../../src/tasks/types";
 
 const sampleTask: Task = {
   id: "abc12345",

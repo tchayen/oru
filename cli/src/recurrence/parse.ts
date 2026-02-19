@@ -1,4 +1,4 @@
-import { isValidRecurrence } from "./validate.js";
+import { isValidRecurrence } from "./validate";
 
 const DAY_MAP: Record<string, string> = {
   monday: "MO",

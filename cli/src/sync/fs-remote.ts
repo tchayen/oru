@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import fs from "fs";
-import type { OplogEntry } from "../oplog/types.js";
-import type { RemoteBackend, PullResult } from "./remote.js";
+import type { OplogEntry } from "../oplog/types";
+import type { RemoteBackend, PullResult } from "./remote";
 
 export class FsRemote implements RemoteBackend {
   private db: Database.Database;

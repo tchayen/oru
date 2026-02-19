@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isValidRecurrence } from "../../src/recurrence/validate.js";
+import { isValidRecurrence } from "../../src/recurrence/validate";
 
 describe("isValidRecurrence", () => {
   describe("valid inputs", () => {
