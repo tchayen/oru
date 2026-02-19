@@ -1294,9 +1294,10 @@ export function createProgram(
         }
 
         const filters = loadFilters();
+        const isUpdate = name in filters;
         filters[name] = def;
         saveFilters(filters);
-        write(`Saved filter '${name}'.`);
+        write(isUpdate ? `Updated filter '${name}'.` : `Saved filter '${name}'.`);
       },
     );
 

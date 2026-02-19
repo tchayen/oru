@@ -2427,6 +2427,17 @@ describe("CLI parse", () => {
       expect(content).toContain("alice");
     });
 
+    it("filter add prints 'Updated' when overwriting an existing filter", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+      expect(output).toContain("Saved filter 'mine'");
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "bob"]);
+      expect(output).toContain("Updated filter 'mine'");
+      expect(output).not.toContain("Saved filter 'mine'");
+    });
+
     it("filter add with no flags shows error", async () => {
       const p = createProgram(db, capture());
       await p.parseAsync(["node", "oru", "filter", "add", "empty"]);
