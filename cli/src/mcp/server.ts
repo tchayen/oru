@@ -144,6 +144,10 @@ export function createMcpServer(service: TaskService): McpServer {
     async (input) => {
       try {
         const { id, note, ...fields } = input;
+        if (fields.metadata !== undefined) {
+          const existing = await service.get(id);
+          fields.metadata = { ...(existing?.metadata ?? {}), ...fields.metadata };
+        }
         const task = note
           ? await service.updateWithNote(id, fields as UpdateTaskInput, note)
           : await service.update(id, fields as UpdateTaskInput);

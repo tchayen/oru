@@ -918,3 +918,58 @@ describe("sanitizeError", () => {
     );
   });
 });
+
+describe("update_task metadata merge", () => {
+  let db: ReturnType<typeof createTestDb>;
+  let client: Client;
+
+  beforeEach(async () => {
+    db = createTestDb();
+    const kysely = createKysely(db);
+    const service = new TaskService(kysely, "test-device");
+    const server = createMcpServer(service);
+
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverTransport);
+
+    client = new Client({ name: "test-client", version: "1.0.0" });
+    await client.connect(clientTransport);
+  });
+
+  afterEach(() => {
+    db.close();
+  });
+
+  it("merges new metadata keys into existing metadata instead of replacing", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task", metadata: { pr: 42 } },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const updateResult = await client.callTool({
+      name: "update_task",
+      arguments: { id: created.id, metadata: { sprint: "5" } },
+    });
+    const updated = JSON.parse((updateResult.content as Array<{ text: string }>)[0].text);
+
+    // Both original and new keys should be present
+    expect(updated.metadata).toEqual({ pr: 42, sprint: "5" });
+  });
+
+  it("overwrites a specific key without removing other keys", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Task", metadata: { pr: 42, sprint: "4" } },
+    });
+    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+
+    const updateResult = await client.callTool({
+      name: "update_task",
+      arguments: { id: created.id, metadata: { sprint: "5" } },
+    });
+    const updated = JSON.parse((updateResult.content as Array<{ text: string }>)[0].text);
+
+    expect(updated.metadata).toEqual({ pr: 42, sprint: "5" });
+  });
+});
