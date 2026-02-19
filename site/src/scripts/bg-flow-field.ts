@@ -70,7 +70,9 @@ function tick() {
     p.age++;
 
     p.trail.push({ x: p.x, y: p.y });
-    if (p.trail.length > TRAIL_LENGTH) p.trail.shift();
+    if (p.trail.length > TRAIL_LENGTH) {
+      p.trail.shift();
+    }
 
     const offscreen =
       p.x < -RESPAWN_MARGIN ||
@@ -83,7 +85,9 @@ function tick() {
       continue;
     }
 
-    if (p.trail.length < 2) continue;
+    if (p.trail.length < 2) {
+      continue;
+    }
 
     const lifeRatio = 1 - p.age / p.maxAge;
 
