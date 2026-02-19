@@ -2336,6 +2336,26 @@ describe("CLI parse", () => {
     expect(parsed.title).toBe("Updated with 'apostrophe'");
   });
 
+  it("update with no flags prints 'No changes.' in plaintext", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Unchanged task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id]);
+    expect(output.trim()).toBe("No changes.");
+  });
+
+  it("update with no flags returns task JSON in --json mode", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Unchanged task", "--json"]);
+    const id = JSON.parse(output.trim()).id;
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.title).toBe("Unchanged task");
+    expect(parsed.id).toBeTruthy();
+  });
+
   describe("filter command", () => {
     let tmpDir: string;
     let savedConfigDir: string | undefined;

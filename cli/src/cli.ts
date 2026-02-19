@@ -799,6 +799,10 @@ export function createProgram(
               },
             );
           } else {
+            if (!json) {
+              write("No changes.");
+              return;
+            }
             task = await service.get(id);
           }
 
