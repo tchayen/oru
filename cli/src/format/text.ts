@@ -4,6 +4,10 @@ import type { Weekday } from "../config/config";
 import { bold, dim, italic, white } from "./colors";
 import { formatRecurrence } from "../recurrence/format";
 
+// Parses dueAt using manual field extraction rather than new Date(str) to
+// ensure consistent local-time interpretation regardless of JS engine behavior
+// with timezone-naive strings. Matches the naive local-time storage format
+// written by formatLocal() in dates/parse.ts.
 export function isOverdue(dueAt: string, now?: Date): boolean {
   const ref = now ?? new Date();
   const dueDate = new Date(

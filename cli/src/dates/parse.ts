@@ -368,6 +368,11 @@ function applyAmPm(hours: number, ampm: string): number {
   return hours;
 }
 
+/**
+ * Formats a Date as a naive local-time ISO string (no Z suffix, no offset).
+ * Due dates are intentionally stored in the user's local timezone so that
+ * "tomorrow at 9am" always means 9am on this device.
+ */
 function formatLocal(d: Date): string {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
