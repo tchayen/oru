@@ -129,12 +129,26 @@ import MiniCode from "../../components/ui/MiniCode.astro";
 
   <h2>Editing in $EDITOR</h2>
   <p>
-    For complex edits, open a task in your editor. The file uses a frontmatter
-    format with all task fields:
+    For complex edits, open a task in your editor. The file is a TOML block
+    delimited by <code>+++</code>, followed by a notes section:
   </p>
   <MiniCode>
     <span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">hJ7kMp3nQrs</span><br />
     <span class="prompt">$ </span><span class="cmd">EDITOR</span>=<span class="val">nano</span> <span class="cmd">oru</span> <span class="sub">edit</span> <span class="val">hJ7kMp3nQrs</span>
+  </MiniCode>
+  <MiniCode class="mt-3">
+    <span class="flag">+++</span><br />
+    <span class="key">title</span> = <span class="str">"Fix login bug"</span><br />
+    <span class="key">status</span> = <span class="str">"todo"</span><br />
+    <span class="key">priority</span> = <span class="str">"high"</span><br />
+    <span class="key">blocked_by</span> = []<br />
+    <span class="key">labels</span> = []<br />
+    <span class="flag">+++</span><br />
+    <br />
+    <span class="flag"># Notes</span><br />
+    <span class="flag"># Add new notes below. Delete lines to remove notes.</span><br />
+    <br />
+    - Reproduced on staging
   </MiniCode>
 
   <h2>Status shortcuts</h2>
