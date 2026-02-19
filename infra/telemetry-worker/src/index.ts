@@ -12,6 +12,7 @@ interface TelemetryEvent {
   is_ci: boolean;
   duration_ms: number;
   exit_code: number;
+  error?: string;
 }
 
 const MAX_STRING_LENGTH = 256;
@@ -62,8 +63,14 @@ function validateEvent(body: unknown): TelemetryEvent | null {
   if (typeof e.exit_code !== "number" || !Number.isInteger(e.exit_code)) {
     return null;
   }
+  if (
+    e.error !== undefined &&
+    (typeof e.error !== "string" || e.error.length > MAX_STRING_LENGTH)
+  ) {
+    return null;
+  }
 
-  return {
+  const event: TelemetryEvent = {
     cli_version: e.cli_version,
     command: e.command,
     flags: e.flags as string[],
@@ -74,6 +81,10 @@ function validateEvent(body: unknown): TelemetryEvent | null {
     duration_ms: Math.round(e.duration_ms),
     exit_code: e.exit_code,
   };
+  if (e.error !== undefined) {
+    event.error = e.error as string;
+  }
+  return event;
 }
 
 export default {
@@ -103,8 +114,8 @@ export default {
 
       try {
         await env.DB.prepare(
-          `INSERT INTO events (cli_version, command, flags, os, arch, node_version, is_ci, duration_ms, exit_code)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO events (cli_version, command, flags, os, arch, node_version, is_ci, duration_ms, exit_code, error)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
           .bind(
             event.cli_version,
@@ -116,6 +127,7 @@ export default {
             event.is_ci ? 1 : 0,
             event.duration_ms,
             event.exit_code,
+            event.error ?? null,
           )
           .run();
       } catch {
