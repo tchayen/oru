@@ -3,7 +3,7 @@ import path from "path";
 import os from "os";
 import type { Config } from "../config/config.js";
 
-declare const __VERSION__: string;
+import { VERSION } from "../version.js";
 
 interface UpdateState {
   lastChecked: number;
@@ -80,7 +80,7 @@ export async function checkForUpdate(config: Config): Promise<string | null> {
 
   if (state && now - state.lastChecked < CHECK_INTERVAL_MS) {
     // Use cached result
-    if (compareVersions(state.latestVersion, __VERSION__) > 0) {
+    if (compareVersions(state.latestVersion, VERSION) > 0) {
       return state.latestVersion;
     }
     return null;
@@ -93,7 +93,7 @@ export async function checkForUpdate(config: Config): Promise<string | null> {
 
   writeState({ lastChecked: now, latestVersion: latest });
 
-  if (compareVersions(latest, __VERSION__) > 0) {
+  if (compareVersions(latest, VERSION) > 0) {
     return latest;
   }
   return null;
@@ -101,6 +101,6 @@ export async function checkForUpdate(config: Config): Promise<string | null> {
 
 export function printUpdateNotice(latestVersion: string): void {
   process.stderr.write(
-    `\nUpdate available: ${__VERSION__} → ${latestVersion}\nRun \`oru self-update\` to upgrade.\n`,
+    `\nUpdate available: ${VERSION} → ${latestVersion}\nRun \`oru self-update\` to upgrade.\n`,
   );
 }
