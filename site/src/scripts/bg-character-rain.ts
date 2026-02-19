@@ -18,13 +18,16 @@ let cols: RainColumn[] = [];
 let numCols = 0;
 let numRows = 0;
 let lastStep = 0;
+let dpr = 1;
 const usedCols = new Set<number>();
 
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  numCols = Math.floor(canvas.width / CELL);
-  numRows = Math.floor(canvas.height / CELL) + 1;
+  dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  numCols = Math.floor(window.innerWidth / CELL);
+  numRows = Math.floor(window.innerHeight / CELL) + 1;
 }
 
 function randomChar() {
@@ -73,7 +76,7 @@ function drawFrame(now: number) {
     lastStep += STEP_INTERVAL;
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   ctx.font = `${FONT_SIZE}px "Geist Mono", monospace`;
   ctx.textAlign = "center";
 
