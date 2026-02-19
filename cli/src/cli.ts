@@ -750,27 +750,18 @@ export function createProgram(
           let task;
 
           if (opts.clearNotes) {
-            task = await service.clearNotes(id);
-            if (!task) {
-              notFoundError(json, id);
-              return;
-            }
-            if (opts.note) {
-              task = await service.addNote(id, opts.note);
-            }
-            if (hasFields) {
-              task = await service.update(
-                id,
-                updateFields as {
-                  title?: string;
-                  status?: Status;
-                  priority?: Priority;
-                  blocked_by?: string[];
-                  labels?: string[];
-                  metadata?: Record<string, unknown>;
-                },
-              );
-            }
+            task = await service.clearNotesAndUpdate(
+              id,
+              updateFields as {
+                title?: string;
+                status?: Status;
+                priority?: Priority;
+                blocked_by?: string[];
+                labels?: string[];
+                metadata?: Record<string, unknown>;
+              },
+              opts.note,
+            );
           } else if (opts.note && hasFields) {
             task = await service.updateWithNote(
               id,
