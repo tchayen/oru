@@ -11,7 +11,7 @@ const { title, class: className = "", ...rest } = Astro.props;
 
 <div
   class:list={[
-    "feature-card relative bg-bg-elevated border border-border-subtle rounded-xl p-6 transition-[border-color,transform,box-shadow] duration-300 ease-out-expo overflow-hidden cursor-default hover:border-border-default hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]",
+    "feature-card spotlight-card relative bg-bg-elevated border border-border-subtle rounded-xl p-6 transition-[border-color,transform,box-shadow] duration-300 ease-out-expo overflow-hidden cursor-default hover:border-border-default hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]",
     className,
   ]}
   {...rest}
@@ -26,39 +26,3 @@ const { title, class: className = "", ...rest } = Astro.props;
     <slot />
   </p>
 </div>
-
-<style>
-  .feature-card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      320px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
-      rgba(255, 255, 255, 0.03) 0%,
-      transparent 100%
-    );
-    opacity: 0;
-    transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .feature-card:global(.has-spotlight)::before {
-    opacity: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .feature-card {
-      transition: none;
-    }
-
-    .feature-card::before {
-      display: none;
-    }
-
-    .feature-card:hover {
-      transform: none;
-      box-shadow: none;
-    }
-  }
-</style>

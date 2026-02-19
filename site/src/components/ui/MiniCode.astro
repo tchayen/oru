@@ -65,48 +65,8 @@ const { class: className = "", copy = false } = Astro.props;
     color: var(--color-text-primary);
   }
 
-  .mini-code-content {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-  }
-
-  .mini-code-content::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .mini-code-content::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .mini-code-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
-  }
-
-  .mini-code-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
-  }
-
   .mini-code-content :global(.prompt) {
     color: var(--color-text-muted);
     user-select: none;
-  }
-  .mini-code-content :global(.cmd) {
-    color: var(--color-text-primary);
-  }
-  .mini-code-content :global(.sub) {
-    color: var(--color-syn-command);
-  }
-  .mini-code-content :global(.flag) {
-    color: var(--color-syn-flag);
-  }
-  .mini-code-content :global(.str) {
-    color: var(--color-syn-string);
-  }
-  .mini-code-content :global(.val) {
-    color: var(--color-syn-value);
-  }
-  .mini-code-content :global(.key) {
-    color: var(--color-syn-key);
   }
 </style>

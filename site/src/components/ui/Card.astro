@@ -10,51 +10,10 @@ const { class: className = "", ...rest } = Astro.props;
 
 <div
   class:list={[
-    "card relative bg-bg-surface border border-border-default rounded-xl p-8 overflow-hidden transition-[border-color,transform,box-shadow] duration-300 ease-out-expo hover:border-border-hover hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)]",
+    "card spotlight-card relative bg-bg-surface border border-border-default rounded-xl p-8 overflow-hidden transition-[border-color,transform,box-shadow] duration-300 ease-out-expo hover:border-border-hover hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.2)]",
     className,
   ]}
   {...rest}
 >
   <slot />
 </div>
-
-<style>
-  .card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      320px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
-      rgba(255, 255, 255, 0.03) 0%,
-      transparent 100%
-    );
-    opacity: 0;
-    transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .card:global(.has-spotlight)::before {
-    opacity: 1;
-  }
-
-  .card > :global(*) {
-    position: relative;
-    z-index: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .card {
-      transition: none;
-    }
-
-    .card::before {
-      display: none;
-    }
-
-    .card:hover {
-      transform: none;
-      box-shadow: none;
-    }
-  }
-</style>

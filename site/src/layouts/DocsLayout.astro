@@ -100,7 +100,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, "");
     gap: 48px;
     padding-top: 16px;
     padding-bottom: 96px;
-    min-height: calc(100vh - 64px);
+    min-height: calc(100vh - var(--nav-height));
   }
 
   .docs-menu-toggle {

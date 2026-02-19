@@ -20,10 +20,7 @@ import Terminal from "./ui/Terminal.astro";
           Pair with a QR code. No accounts required.
         </h3>
         <p class="body text-text-secondary mb-3">
-          Run <code
-            class="font-mono text-[13px] bg-bg-surface px-1.5 py-0.5 rounded text-accent"
-            >oru server start</code
-          >. A QR code appears in your terminal. Scan it with the iOS app. You
+          Run <code class="inline-code">oru server start</code>. A QR code appears in your terminal. Scan it with the iOS app. You
           are connected over your local network. That is the entire pairing flow.
         </p>
         <p class="body-sm text-text-tertiary mb-6">
@@ -61,10 +58,10 @@ import Terminal from "./ui/Terminal.astro";
           with the CLI over your local network.
         </p>
         <div
-          class="mt-6 bg-black border-2 border-border-default rounded-[40px] p-3 max-w-[320px] mx-auto shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_40px_rgba(0,0,0,0.5)]"
+          class="mt-6 bg-bg-base border-2 border-border-default rounded-[40px] p-3 max-w-[320px] mx-auto shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_40px_rgba(0,0,0,0.5)]"
         >
           <div
-            class="w-[120px] h-7 bg-black rounded-b-2xl mx-auto mb-2 relative z-1"
+            class="w-[120px] h-7 bg-bg-base rounded-b-2xl mx-auto mb-2 relative z-1"
           ></div>
           <div
             class="bg-bg-base rounded-[28px] overflow-hidden min-h-[480px] flex flex-col"
@@ -92,7 +89,7 @@ import Terminal from "./ui/Terminal.astro";
                   <span
                     class="text-xs text-text-tertiary flex items-center gap-1"
                     ><span
-                      class="w-1.5 h-1.5 rounded-full bg-[#ef4444] inline-block"
+                      class="w-1.5 h-1.5 rounded-full bg-priority-high inline-block"
                     ></span> high &middot; Fri Feb 20</span
                   >
                 </div>
@@ -101,7 +98,7 @@ import Terminal from "./ui/Terminal.astro";
                 class="flex items-start gap-3 py-3.5 px-2 border-b border-border-subtle"
               >
                 <div
-                  class="w-[22px] h-[22px] rounded-full border-2 border-syn-command bg-[rgba(96,165,250,0.15)] shrink-0 mt-px"
+                  class="w-[22px] h-[22px] rounded-full border-2 border-oplog-mobile bg-[var(--color-oplog-mobile-subtle)] shrink-0 mt-px"
                 ></div>
                 <div class="flex flex-col gap-[3px] min-w-0">
                   <span class="text-[15px] text-text-primary font-medium"
@@ -128,7 +125,7 @@ import Terminal from "./ui/Terminal.astro";
                   <span
                     class="text-xs text-text-tertiary flex items-center gap-1"
                     ><span
-                      class="w-1.5 h-1.5 rounded-full bg-syn-command inline-block"
+                      class="w-1.5 h-1.5 rounded-full bg-accent-hover inline-block"
                     ></span> low</span
                   >
                 </div>
@@ -179,8 +176,8 @@ import Terminal from "./ui/Terminal.astro";
 
 <style>
   .qr-art {
-    font-size: 10px !important;
-    line-height: 1 !important;
-    letter-spacing: 0 !important;
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0;
   }
 </style>
