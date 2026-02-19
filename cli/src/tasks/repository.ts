@@ -216,6 +216,10 @@ export async function getTask(db: Kysely<DB>, id: string): Promise<Task | null> 
   }
 
   // Prefix matching: if exact match failed, try prefix lookup
+  // Guard: empty string would match all tasks via LIKE '%'
+  if (!id) {
+    return null;
+  }
   const escaped = id.replace(/[\\%_]/g, "\\$&");
   const rows = await db
     .selectFrom("tasks")

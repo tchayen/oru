@@ -490,11 +490,13 @@ describe("task repository", () => {
   });
 
   describe("prefix matching edge cases", () => {
-    it("getTask with empty prefix matches all tasks", async () => {
+    it("getTask with empty string returns null without matching all tasks", async () => {
       await createTask(ky, { title: "Task A" });
       await createTask(ky, { title: "Task B" });
-      // Empty prefix with LIKE '%' matches both tasks
-      await expect(getTask(ky, "")).rejects.toThrow(AmbiguousPrefixError);
+      // Empty string used to fall through to LIKE '%' matching all tasks;
+      // now returns null early
+      const result = await getTask(ky, "");
+      expect(result).toBeNull();
     });
 
     it("getTask with prefix longer than any ID returns null", async () => {
