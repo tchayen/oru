@@ -370,4 +370,16 @@ describe("json formatter", () => {
     const output = formatTasksJson([]);
     expect(JSON.parse(output)).toEqual([]);
   });
+
+  it("excludes deleted_at from single task JSON", () => {
+    const output = formatTaskJson(sampleTask);
+    const parsed = JSON.parse(output);
+    expect(parsed).not.toHaveProperty("deleted_at");
+  });
+
+  it("excludes deleted_at from task list JSON", () => {
+    const output = formatTasksJson([sampleTask]);
+    const parsed = JSON.parse(output);
+    expect(parsed[0]).not.toHaveProperty("deleted_at");
+  });
 });

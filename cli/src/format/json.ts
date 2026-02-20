@@ -2,6 +2,11 @@ import type { Task } from "../tasks/types";
 import type { OplogEntry } from "../oplog/types";
 import type { ContextSections } from "./text";
 
+export function stripInternal(task: Task): Omit<Task, "deleted_at"> {
+  const { deleted_at: _, ...rest } = task;
+  return rest;
+}
+
 export function formatContextJson(sections: ContextSections): string {
   const summary: Record<string, number> = {};
   for (const [key, value] of Object.entries(sections)) {
@@ -17,7 +22,7 @@ export function formatContextJson(sections: ContextSections): string {
       continue;
     }
     if (Array.isArray(value) && value.length > 0) {
-      result[key] = value;
+      result[key] = (value as Task[]).map(stripInternal);
     }
   }
   if (sections.blockerTitles && sections.blocked.length > 0) {
@@ -37,11 +42,12 @@ export function formatContextJson(sections: ContextSections): string {
 }
 
 export function formatTaskJson(task: Task): string {
-  return JSON.stringify(task, null, 2);
+  const { deleted_at: _, ...rest } = task;
+  return JSON.stringify(rest, null, 2);
 }
 
 export function formatTasksJson(tasks: Task[]): string {
-  return JSON.stringify(tasks, null, 2);
+  return JSON.stringify(tasks.map(stripInternal), null, 2);
 }
 
 export function formatLabelsJson(labels: string[]): string {

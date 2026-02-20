@@ -60,6 +60,45 @@ describe("MCP server", () => {
     expect(task.id).toBeTruthy();
   });
 
+  it("excludes deleted_at from all task responses", async () => {
+    const addResult = await client.callTool({
+      name: "add_task",
+      arguments: { title: "Check deleted_at" },
+    });
+    const addedTask = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    expect(addedTask).not.toHaveProperty("deleted_at");
+
+    const getResult = await client.callTool({
+      name: "get_task",
+      arguments: { id: addedTask.id },
+    });
+    const gotTask = JSON.parse((getResult.content as Array<{ text: string }>)[0].text);
+    expect(gotTask).not.toHaveProperty("deleted_at");
+
+    const updateResult = await client.callTool({
+      name: "update_task",
+      arguments: { id: addedTask.id, priority: "high" },
+    });
+    const updatedTask = JSON.parse((updateResult.content as Array<{ text: string }>)[0].text);
+    expect(updatedTask).not.toHaveProperty("deleted_at");
+
+    const listResult = await client.callTool({
+      name: "list_tasks",
+      arguments: {},
+    });
+    const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
+    for (const t of tasks) {
+      expect(t).not.toHaveProperty("deleted_at");
+    }
+
+    const noteResult = await client.callTool({
+      name: "add_note",
+      arguments: { id: addedTask.id, note: "A note" },
+    });
+    const notedTask = JSON.parse((noteResult.content as Array<{ text: string }>)[0].text);
+    expect(notedTask).not.toHaveProperty("deleted_at");
+  });
+
   it("adds a task with all fields", async () => {
     const result = await client.callTool({
       name: "add_task",

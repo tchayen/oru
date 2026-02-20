@@ -2,8 +2,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { TaskService } from "../main";
 import { STATUSES, PRIORITIES } from "../tasks/types";
-import type { CreateTaskInput, UpdateTaskInput } from "../tasks/types";
+import type { Task, CreateTaskInput, UpdateTaskInput } from "../tasks/types";
 import type { ListFilters } from "../tasks/repository";
+import { stripInternal } from "../format/json";
 
 import { VERSION } from "../version";
 
@@ -93,13 +94,15 @@ export function createMcpServer(service: TaskService): McpServer {
     async (input) => {
       try {
         const task = await service.add(input as CreateTaskInput);
-        return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(stripInternal(task), null, 2) }] };
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         if (input.id && msg.includes("UNIQUE constraint")) {
           const existing = await service.get(input.id);
           if (existing) {
-            return { content: [{ type: "text", text: JSON.stringify(existing, null, 2) }] };
+            return {
+              content: [{ type: "text", text: JSON.stringify(stripInternal(existing), null, 2) }],
+            };
           }
         }
         return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
@@ -170,7 +173,7 @@ export function createMcpServer(service: TaskService): McpServer {
         if (!task) {
           return { content: [{ type: "text", text: `Task not found: ${id}.` }], isError: true };
         }
-        return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(stripInternal(task), null, 2) }] };
       } catch (err: unknown) {
         return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
@@ -245,7 +248,9 @@ export function createMcpServer(service: TaskService): McpServer {
         if (!all && !filters.status) {
           tasks = tasks.filter((t) => t.status !== "done");
         }
-        return { content: [{ type: "text", text: JSON.stringify(tasks, null, 2) }] };
+        return {
+          content: [{ type: "text", text: JSON.stringify(tasks.map(stripInternal), null, 2) }],
+        };
       } catch (err: unknown) {
         return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
@@ -268,7 +273,7 @@ export function createMcpServer(service: TaskService): McpServer {
         if (!task) {
           return { content: [{ type: "text", text: `Task not found: ${id}.` }], isError: true };
         }
-        return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(stripInternal(task), null, 2) }] };
       } catch (err: unknown) {
         return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
@@ -293,8 +298,15 @@ export function createMcpServer(service: TaskService): McpServer {
           label: opts.label,
         });
 
-        const result = { summary, ...sections };
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        const stripped: Record<string, unknown> = { summary };
+        for (const [key, value] of Object.entries(sections)) {
+          if (key === "blockerTitles") {
+            stripped[key] = value;
+          } else {
+            stripped[key] = (value as Task[]).map(stripInternal);
+          }
+        }
+        return { content: [{ type: "text", text: JSON.stringify(stripped, null, 2) }] };
       } catch (err: unknown) {
         return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
@@ -318,7 +330,7 @@ export function createMcpServer(service: TaskService): McpServer {
         if (!task) {
           return { content: [{ type: "text", text: `Task not found: ${id}.` }], isError: true };
         }
-        return { content: [{ type: "text", text: JSON.stringify(task, null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(stripInternal(task), null, 2) }] };
       } catch (err: unknown) {
         return { content: [{ type: "text", text: sanitizeError(err) }], isError: true };
       }
