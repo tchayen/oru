@@ -158,6 +158,22 @@ describe("extractCommandAndFlags", () => {
     expect(result.flags).toEqual([]);
   });
 
+  it("extracts filter subcommands", () => {
+    for (const sub of ["add", "list", "show", "remove"]) {
+      const result = extractCommandAndFlags(["node", "oru", "filter", sub]);
+      expect(result.command).toBe(`filter ${sub}`);
+      expect(result.flags).toEqual([]);
+    }
+  });
+
+  it("extracts completions subcommands", () => {
+    for (const sub of ["bash", "zsh", "fish"]) {
+      const result = extractCommandAndFlags(["node", "oru", "completions", sub]);
+      expect(result.command).toBe(`completions ${sub}`);
+      expect(result.flags).toEqual([]);
+    }
+  });
+
   it("returns (unknown) for empty args", () => {
     const result = extractCommandAndFlags(["node", "oru"]);
     expect(result.command).toBe("(unknown)");

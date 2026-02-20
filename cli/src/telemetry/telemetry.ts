@@ -93,6 +93,7 @@ export function extractCommandAndFlags(argv: string[]): { command: string; flags
 function isSubcommand(parent: string, arg: string): boolean {
   const subcommands: Record<string, string[]> = {
     config: ["init", "path"],
+    filter: ["add", "list", "show", "remove"],
     completions: ["bash", "zsh", "fish"],
     telemetry: ["status", "enable", "disable"],
     ...(SHOW_SERVER ? { server: ["start"] } : {}),
