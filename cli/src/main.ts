@@ -29,6 +29,21 @@ function serializeOpValue(value: unknown): string | null {
   return JSON.stringify(value);
 }
 
+function createPayload(task: Task): Record<string, unknown> {
+  return {
+    title: task.title,
+    status: task.status,
+    priority: task.priority,
+    owner: task.owner,
+    due_at: task.due_at,
+    recurrence: task.recurrence,
+    blocked_by: task.blocked_by,
+    labels: task.labels,
+    notes: task.notes,
+    metadata: task.metadata,
+  };
+}
+
 export class TaskService {
   constructor(
     private db: Kysely<DB>,
@@ -47,18 +62,7 @@ export class TaskService {
           device_id: this.deviceId,
           op_type: "create",
           field: null,
-          value: JSON.stringify({
-            title: task.title,
-            status: task.status,
-            priority: task.priority,
-            owner: task.owner,
-            due_at: task.due_at,
-            recurrence: task.recurrence,
-            blocked_by: task.blocked_by,
-            labels: task.labels,
-            notes: task.notes,
-            metadata: task.metadata,
-          }),
+          value: JSON.stringify(createPayload(task)),
         },
         now,
       );
@@ -117,18 +121,7 @@ export class TaskService {
         device_id: this.deviceId,
         op_type: "create",
         field: null,
-        value: JSON.stringify({
-          title: child.title,
-          status: child.status,
-          priority: child.priority,
-          owner: child.owner,
-          due_at: child.due_at,
-          recurrence: child.recurrence,
-          blocked_by: child.blocked_by,
-          labels: child.labels,
-          notes: child.notes,
-          metadata: child.metadata,
-        }),
+        value: JSON.stringify(createPayload(child)),
       },
       now,
     );
