@@ -3,6 +3,7 @@ import type { OplogEntry } from "../oplog/types";
 import type { Weekday } from "../config/config";
 import { bold, dim, italic, white } from "./colors";
 import { formatRecurrence } from "../recurrence/format";
+import { WEEKDAY_NUMBERS } from "../dates/weekdays";
 
 // Parses dueAt using manual field extraction rather than new Date(str) to
 // ensure consistent local-time interpretation regardless of JS engine behavior
@@ -299,16 +300,6 @@ export function formatContextText(sections: ContextSections, now?: Date): string
 
 export type DueFilter = "today" | "this-week" | "overdue";
 
-const WEEKDAY_INDEX: Record<Weekday, number> = {
-  sunday: 0,
-  monday: 1,
-  tuesday: 2,
-  wednesday: 3,
-  thursday: 4,
-  friday: 5,
-  saturday: 6,
-};
-
 export function filterByDue(
   tasks: Task[],
   filter: DueFilter,
@@ -323,7 +314,7 @@ export function filterByDue(
       return tasks.filter((t) => t.due_at?.slice(0, 10) === todayStr);
     case "this-week": {
       const day = ref.getDay(); // 0=Sun, 1=Mon, ...
-      const startIndex = WEEKDAY_INDEX[firstDayOfWeek];
+      const startIndex = WEEKDAY_NUMBERS[firstDayOfWeek];
       const diff = (day - startIndex + 7) % 7;
       const weekStart = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - diff);
       const weekEnd = new Date(

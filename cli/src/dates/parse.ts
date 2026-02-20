@@ -1,14 +1,5 @@
 import type { DateFormat, NextMonthBehavior, Weekday } from "../config/config";
-
-const WEEKDAY_NUMBERS: Record<Weekday, number> = {
-  sunday: 0,
-  monday: 1,
-  tuesday: 2,
-  wednesday: 3,
-  thursday: 4,
-  friday: 5,
-  saturday: 6,
-};
+import { WEEKDAY_NUMBERS } from "./weekdays";
 
 const DAY_NAMES: Record<string, number> = {
   sunday: 0,
