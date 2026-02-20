@@ -569,6 +569,10 @@
   font-size: inherit;
 }
 
+.prose .mini-code-wrap.has-copy pre code {
+  padding-right: 48px;
+}
+
 .prose .mini-code-wrap pre code .line {
   display: block;
 }
@@ -588,6 +592,8 @@
   right: 6px;
   bottom: 6px;
   aspect-ratio: 1;
+  z-index: 1;
+  background: var(--color-bg-inset);
 }
 
 .prose .mini-code-wrap .mini-code-copy.copied {

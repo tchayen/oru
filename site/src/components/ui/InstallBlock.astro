@@ -26,9 +26,9 @@ const { class: className = "" } = Astro.props;
     </div>
   </div>
   <div
-    class="install-block relative flex items-center h-[58px] bg-bg-inset border border-border-default rounded-xl font-mono text-[16px] leading-none overflow-hidden"
+    class="install-block flex items-center gap-1.5 pr-[7px] bg-bg-inset border border-border-default rounded-xl font-mono text-[16px] leading-none overflow-hidden"
   >
-    <div class="install-commands grid min-w-0 overflow-x-auto py-5 pl-5 pr-4 mr-16">
+    <div class="install-commands grid min-w-0 overflow-x-auto py-5 pl-5">
       <code class="install-cmd flex items-center gap-2.5 whitespace-nowrap col-start-1 row-start-1" data-cmd="curl">
         <span class="text-text-muted select-none">$</span>
         <span class="text-text-primary">curl -fsSL https://oru.sh/install.sh | bash</span>
@@ -39,7 +39,7 @@ const { class: className = "" } = Astro.props;
       </code>
     </div>
     <button
-      class="install-copy-btn copy-btn flex items-center justify-center rounded-md text-text-muted transition-all duration-150 ease-out-expo cursor-pointer hover:text-text-secondary hover:bg-white/5"
+      class="copy-btn flex items-center justify-center w-11 h-11 shrink-0 rounded-md text-text-muted transition-all duration-150 ease-out-expo cursor-pointer hover:text-text-secondary hover:bg-white/5"
       data-copy="curl -fsSL https://oru.sh/install.sh | bash"
       aria-label="Copy install command"
       type="button"
@@ -105,14 +105,6 @@ const { class: className = "" } = Astro.props;
   .install-tab.active {
     color: var(--color-text-primary);
     background: var(--color-bg-surface);
-  }
-
-  .install-copy-btn {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    bottom: 6px;
-    aspect-ratio: 1;
   }
 
   .copy-btn:global(.copied) {
