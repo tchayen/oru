@@ -323,40 +323,41 @@
 
 /* Shared scrollbar for code blocks */
 .terminal-body,
-.mini-code-content,
-.install-commands,
-.prose .mini-code-wrap pre {
+.mini-code-content {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
 .terminal-body::-webkit-scrollbar,
-.mini-code-content::-webkit-scrollbar,
-.install-commands::-webkit-scrollbar,
-.prose .mini-code-wrap pre::-webkit-scrollbar {
+.mini-code-content::-webkit-scrollbar {
   height: 6px;
 }
 
 .terminal-body::-webkit-scrollbar-track,
-.mini-code-content::-webkit-scrollbar-track,
-.install-commands::-webkit-scrollbar-track,
-.prose .mini-code-wrap pre::-webkit-scrollbar-track {
+.mini-code-content::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .terminal-body::-webkit-scrollbar-thumb,
-.mini-code-content::-webkit-scrollbar-thumb,
-.install-commands::-webkit-scrollbar-thumb,
-.prose .mini-code-wrap pre::-webkit-scrollbar-thumb {
+.mini-code-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 .terminal-body::-webkit-scrollbar-thumb:hover,
-.mini-code-content::-webkit-scrollbar-thumb:hover,
-.install-commands::-webkit-scrollbar-thumb:hover,
-.prose .mini-code-wrap pre::-webkit-scrollbar-thumb:hover {
+.mini-code-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
+}
+
+/* Hide scrollbar on small code blocks – still scrollable via touch/trackpad */
+.install-commands,
+.prose .mini-code-wrap pre {
+  scrollbar-width: none;
+}
+
+.install-commands::-webkit-scrollbar,
+.prose .mini-code-wrap pre::-webkit-scrollbar {
+  display: none;
 }
 
 /* Shared syntax token colors */
