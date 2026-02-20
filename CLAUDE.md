@@ -101,4 +101,3 @@ These duplications are inherent to the architecture. They must be kept in sync m
 
 1. **Priority sort order** — `PRIORITY_ORDER` in `app/utils/api.ts` mirrors the SQL `CASE` expression in `cli/src/tasks/repository.ts`
 2. **Shell completions** — command lists in `cli/src/completions/{bash,zsh,fish}.ts` mirror CLI commands in `cli/src/cli.ts`
-3. **Oplog replay fields** — switch cases in `cli/src/oplog/replay.ts` must cover all task fields from `cli/src/tasks/types.ts`
