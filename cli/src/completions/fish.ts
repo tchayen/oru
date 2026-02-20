@@ -164,6 +164,7 @@ complete -c oru -n '__oru_using_command update' -s n -l note -d 'Append a note' 
 complete -c oru -n '__oru_using_command update' -l assign -d 'Assign to owner' -r
 complete -c oru -n '__oru_using_command update' -l clear-notes -d 'Remove all notes'
 complete -c oru -n '__oru_using_command update' -s b -l blocked-by -d 'Blocked by task ID' -r
+complete -c oru -n '__oru_using_command update' -l unblock -d 'Remove blocker task ID' -r
 complete -c oru -n '__oru_using_command update' -l meta -d 'Metadata key=value' -r
 complete -c oru -n '__oru_using_command update' -s r -l repeat -d 'Recurrence rule' -r
 complete -c oru -n '__oru_using_command edit' -l json -d 'Output as JSON'

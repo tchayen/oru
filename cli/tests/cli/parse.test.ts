@@ -1234,6 +1234,79 @@ describe("CLI parse", () => {
     expect(parsed.blocked_by).toEqual([depB]);
   });
 
+  it("update --unblock removes specific blockers", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Dep A", "--json"]);
+    const depA = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Dep B", "--json"]);
+    const depB = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "Blocked task",
+      "--blocked-by",
+      depA,
+      depB,
+      "--json",
+    ]);
+    const taskId = JSON.parse(output.trim()).id;
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync(["node", "oru", "update", taskId, "--unblock", depA, "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocked_by).toEqual([depB]);
+  });
+
+  it("update --unblock with non-existent blocker is a no-op", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Dep A", "--json"]);
+    const depA = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Blocked task", "--blocked-by", depA, "--json"]);
+    const taskId = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "update", taskId, "--unblock", "nonexistent", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocked_by).toEqual([depA]);
+  });
+
+  it("update --blocked-by and --unblock together", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "Dep A", "--json"]);
+    const depA = JSON.parse(output.trim()).id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "add", "Dep B", "--json"]);
+    const depB = JSON.parse(output.trim()).id;
+
+    const p3 = createProgram(db, capture());
+    await p3.parseAsync(["node", "oru", "add", "Task", "--json"]);
+    const taskId = JSON.parse(output.trim()).id;
+
+    const p4 = createProgram(db, capture());
+    await p4.parseAsync([
+      "node",
+      "oru",
+      "update",
+      taskId,
+      "--blocked-by",
+      depA,
+      depB,
+      "--unblock",
+      depA,
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.blocked_by).toEqual([depB]);
+  });
+
   it("list --actionable shows only unblocked tasks", async () => {
     const p1 = createProgram(db, capture());
     await p1.parseAsync(["node", "oru", "add", "Free task", "--json"]);

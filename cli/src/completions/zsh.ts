@@ -116,6 +116,7 @@ _oru() {
             '*'{-l,--label}'[Add labels]:label:->labels' \\
             '*--unlabel[Remove labels]:label:->labels' \\
             '(-b --blocked-by)'{-b,--blocked-by}'[Blocked by task ID]:task:' \\
+            '*--unblock[Remove blocker task IDs]:task:' \\
             '(-n --note)'{-n,--note}'[Append a note]:note:' \\
             '--clear-notes[Remove all notes]' \\
             '(-r --repeat)'{-r,--repeat}'[Recurrence rule]:rule:' \\
