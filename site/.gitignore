@@ -2,3 +2,8 @@ node_modules/
 dist/
 .astro/
 briefs/
+
+# Generated at build time
+public/llms.txt
+public/llms-full.txt
+public/docs/*.md

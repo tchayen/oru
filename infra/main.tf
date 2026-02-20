@@ -119,6 +119,29 @@ resource "cloudflare_d1_database" "telemetry" {
   name       = "oru-telemetry"
 }
 
+# ── Content negotiation for markdown ─────────────────────────────────────────
+
+resource "cloudflare_ruleset" "markdown_negotiation" {
+  zone_id = data.cloudflare_zone.site.id
+  name    = "Markdown content negotiation"
+  kind    = "zone"
+  phase   = "http_request_transform"
+
+  rules {
+    action = "rewrite"
+    action_parameters {
+      uri {
+        path {
+          expression = "concat(http.request.uri.path, \".md\")"
+        }
+      }
+    }
+    expression  = "starts_with(http.request.uri.path, \"/docs/\") and not ends_with(http.request.uri.path, \".md\") and any(http.request.headers[\"accept\"][*] contains \"text/markdown\")"
+    description = "Serve .md files when Accept: text/markdown header is present for /docs/ paths"
+    enabled     = true
+  }
+}
+
 # ── Outputs ──────────────────────────────────────────────────────────────────
 
 output "pages_url" {
