@@ -36,6 +36,21 @@ export interface ListOptions {
   offset?: number;
 }
 
+export const FILTER_KEYS = [
+  "status",
+  "priority",
+  "owner",
+  "label",
+  "search",
+  "sort",
+  "actionable",
+  "due",
+  "overdue",
+  "all",
+  "limit",
+  "offset",
+] as const;
+
 export function getFiltersPath(): string {
   if (process.env.ORU_CONFIG_DIR) {
     return path.join(process.env.ORU_CONFIG_DIR, "filters.toml");
@@ -100,41 +115,10 @@ export function saveFilters(filters: Record<string, FilterDefinition>, filtersPa
 
 export function applyFilter(base: ListOptions, filter: FilterDefinition): ListOptions {
   const result: ListOptions = { ...base };
-  if (base.status === undefined && filter.status !== undefined) {
-    result.status = filter.status;
-  }
-  if (base.priority === undefined && filter.priority !== undefined) {
-    result.priority = filter.priority;
-  }
-  if (base.owner === undefined && filter.owner !== undefined) {
-    result.owner = filter.owner;
-  }
-  if (base.label === undefined && filter.label !== undefined) {
-    result.label = filter.label;
-  }
-  if (base.search === undefined && filter.search !== undefined) {
-    result.search = filter.search;
-  }
-  if (base.sort === undefined && filter.sort !== undefined) {
-    result.sort = filter.sort;
-  }
-  if (base.actionable === undefined && filter.actionable !== undefined) {
-    result.actionable = filter.actionable;
-  }
-  if (base.due === undefined && filter.due !== undefined) {
-    result.due = filter.due;
-  }
-  if (base.overdue === undefined && filter.overdue !== undefined) {
-    result.overdue = filter.overdue;
-  }
-  if (base.all === undefined && filter.all !== undefined) {
-    result.all = filter.all;
-  }
-  if (base.limit === undefined && filter.limit !== undefined) {
-    result.limit = filter.limit;
-  }
-  if (base.offset === undefined && filter.offset !== undefined) {
-    result.offset = filter.offset;
+  for (const key of FILTER_KEYS) {
+    if (base[key] === undefined && filter[key] !== undefined) {
+      (result as Record<string, unknown>)[key] = filter[key];
+    }
   }
   return result;
 }
