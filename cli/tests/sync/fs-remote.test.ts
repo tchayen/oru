@@ -74,4 +74,14 @@ describe("FsRemote", () => {
     const { entries } = await remote.pull(null);
     expect(entries).toHaveLength(1);
   });
+
+  it("creates parent directories if they do not exist", () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-fsremote-test-"));
+    const deepPath = path.join(tmpDir, "a", "b", "c", "remote.db");
+    expect(fs.existsSync(path.dirname(deepPath))).toBe(false);
+    const remote = new FsRemote(deepPath);
+    remote.close();
+    expect(fs.existsSync(deepPath)).toBe(true);
+    fs.rmSync(tmpDir, { recursive: true });
+  });
 });

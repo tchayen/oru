@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import fs from "fs";
+import path from "path";
 import type { OplogEntry } from "../oplog/types";
 import type { RemoteBackend, PullResult } from "./remote";
 
@@ -7,6 +8,7 @@ export class FsRemote implements RemoteBackend {
   private db: Database.Database;
 
   constructor(dbPath: string) {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     this.db = new Database(dbPath);
     this.db.pragma("journal_mode = WAL");
     this.db.pragma("busy_timeout = 5000");
