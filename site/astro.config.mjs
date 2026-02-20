@@ -17,6 +17,14 @@ export default defineConfig({
       transformers: [
         transformerMetaHighlight(),
         {
+          // Remove newline text nodes between lines to prevent double spacing
+          code(node) {
+            node.children = node.children.filter(
+              (child) => !(child.type === "text" && child.value.trim() === ""),
+            );
+          },
+        },
+        {
           // Add wrapper div with copy button support
           pre(node) {
             const meta = this.options.meta?.__raw || "";
