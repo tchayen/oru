@@ -3,10 +3,6 @@ title: MCP server
 description: Use oru as a Model Context Protocol server so AI agents can manage your tasks directly.
 ---
 
-# MCP Server
-
-Use oru as a Model Context Protocol server so AI agents can manage your tasks directly.
-
 oru includes a built-in [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. Connect it to any MCP-compatible AI client and your agent can create, update, and query tasks without leaving the conversation.
 
 ## Starting the server

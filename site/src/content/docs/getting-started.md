@@ -3,10 +3,6 @@ title: Getting started
 description: Install oru and manage your first tasks in under a minute.
 ---
 
-# Getting Started
-
-Install oru and manage your first tasks in under a minute.
-
 ## System requirements
 
 - **Node.js 22** or later

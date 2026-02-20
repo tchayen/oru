@@ -3,10 +3,6 @@ title: API reference
 description: HTTP API for programmatic access to oru tasks.
 ---
 
-# API Reference
-
-HTTP API for programmatic access to oru tasks.
-
 ## Server setup
 
 Start the HTTP server on the default port (2358):

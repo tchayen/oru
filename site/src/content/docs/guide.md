@@ -3,10 +3,6 @@ title: Usage guide
 description: Comprehensive guide to all oru commands and features.
 ---
 
-# Usage Guide
-
-Comprehensive guide to all oru commands and features.
-
 ## Task lifecycle
 
 Every task moves through four statuses:
