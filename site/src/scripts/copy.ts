@@ -27,7 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll<HTMLElement>("[data-copy-code]").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      const block = btn.closest(".mini-code-wrap")?.querySelector(".mini-code-content");
+      const wrap = btn.closest(".mini-code-wrap");
+      // Support both MiniCode component (.mini-code-content) and Shiki output (pre)
+      const block = wrap?.querySelector(".mini-code-content") ?? wrap?.querySelector("pre");
       if (!block) {
         return;
       }

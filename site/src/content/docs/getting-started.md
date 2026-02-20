@@ -18,13 +18,13 @@ Install oru and manage your first tasks in under a minute.
 
 The install script auto-detects your platform, downloads the right binary, and adds oru to your `PATH`:
 
-```bash
+```bash copy
 curl -fsSL https://oru.sh/install.sh | bash
 ```
 
 ### npm
 
-```bash
+```bash copy
 npm install -g @tchayen/oru
 ```
 

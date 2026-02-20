@@ -55,7 +55,7 @@ Restart Claude Desktop after saving.
 
 Add the server with the `claude mcp add` command:
 
-```bash
+```bash copy
 claude mcp add oru -- oru mcp
 ```
 

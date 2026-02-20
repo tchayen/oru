@@ -558,24 +558,24 @@
   font-size: inherit;
 }
 
-.prose .mini-code-wrap.has-copy::after {
-  content: "";
+.prose .mini-code-wrap .mini-code-copy {
   position: absolute;
   top: 6px;
   right: 6px;
-  width: 28px;
-  height: 28px;
-  background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='9' y='9' width='13' height='13' rx='2' ry='2'/%3E%3Cpath d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: 6px;
   opacity: 0;
   transition: opacity 150ms ease;
-  pointer-events: none;
 }
 
-.prose .mini-code-wrap.has-copy:hover::after {
+.prose .mini-code-wrap:hover .mini-code-copy {
   opacity: 1;
+}
+
+.prose .mini-code-wrap .mini-code-copy:focus-visible {
+  opacity: 1;
+}
+
+.prose .mini-code-wrap .mini-code-copy.copied {
+  color: var(--color-text-primary);
 }
 
 .prose > *:first-child {

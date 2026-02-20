@@ -21,6 +21,55 @@ export default defineConfig({
             const meta = this.options.meta?.__raw || "";
             const showCopy = meta.includes("copy");
 
+            const children = [node];
+
+            if (showCopy) {
+              // Add copy button
+              children.push({
+                type: "element",
+                tagName: "button",
+                properties: {
+                  class:
+                    "mini-code-copy copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-muted transition-all duration-150 cursor-pointer hover:text-text-secondary hover:bg-white/5",
+                  "data-copy-code": true,
+                  "aria-label": "Copy",
+                  type: "button",
+                },
+                children: [
+                  {
+                    type: "element",
+                    tagName: "svg",
+                    properties: {
+                      width: "14",
+                      height: "14",
+                      viewBox: "0 0 24 24",
+                      fill: "none",
+                      stroke: "currentColor",
+                      "stroke-width": "2",
+                      "stroke-linecap": "round",
+                      "stroke-linejoin": "round",
+                    },
+                    children: [
+                      {
+                        type: "element",
+                        tagName: "rect",
+                        properties: { x: "9", y: "9", width: "13", height: "13", rx: "2", ry: "2" },
+                        children: [],
+                      },
+                      {
+                        type: "element",
+                        tagName: "path",
+                        properties: {
+                          d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",
+                        },
+                        children: [],
+                      },
+                    ],
+                  },
+                ],
+              });
+            }
+
             // Wrap in mini-code-wrap div
             return {
               type: "element",
@@ -28,7 +77,7 @@ export default defineConfig({
               properties: {
                 class: showCopy ? "mini-code-wrap has-copy" : "mini-code-wrap",
               },
-              children: [node],
+              children,
             };
           },
         },
