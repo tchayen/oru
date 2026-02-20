@@ -7,7 +7,7 @@ import InstallBlock from "./ui/InstallBlock.astro";
   <svg
     class="perspective-grid"
     xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 1440 500"
+    viewBox="-2280 0 6000 500"
     preserveAspectRatio="xMidYMax slice"
     aria-hidden="true"
   >
@@ -17,11 +17,28 @@ import InstallBlock from "./ui/InstallBlock.astro";
         <stop offset="75%" stop-color="white" stop-opacity="1"></stop>
       </linearGradient>
       <mask id="grid-mask">
-        <rect x="-500" y="0" width="2440" height="500" fill="url(#grid-fade)"></rect>
+        <rect x="-2800" y="0" width="7040" height="500" fill="url(#grid-fade)"></rect>
       </mask>
     </defs>
     <g mask="url(#grid-mask)" stroke="rgba(160,160,160,0.2)" stroke-width="1" fill="none">
-      <!-- Radial lines from vanishing point at (720, 0) -->
+      <!-- Radial lines from vanishing point at (720, 0), spaced 120 at y=500 -->
+      <line x1="720" y1="0" x2="-2280" y2="500"></line>
+      <line x1="720" y1="0" x2="-2160" y2="500"></line>
+      <line x1="720" y1="0" x2="-2040" y2="500"></line>
+      <line x1="720" y1="0" x2="-1920" y2="500"></line>
+      <line x1="720" y1="0" x2="-1800" y2="500"></line>
+      <line x1="720" y1="0" x2="-1680" y2="500"></line>
+      <line x1="720" y1="0" x2="-1560" y2="500"></line>
+      <line x1="720" y1="0" x2="-1440" y2="500"></line>
+      <line x1="720" y1="0" x2="-1320" y2="500"></line>
+      <line x1="720" y1="0" x2="-1200" y2="500"></line>
+      <line x1="720" y1="0" x2="-1080" y2="500"></line>
+      <line x1="720" y1="0" x2="-960" y2="500"></line>
+      <line x1="720" y1="0" x2="-840" y2="500"></line>
+      <line x1="720" y1="0" x2="-720" y2="500"></line>
+      <line x1="720" y1="0" x2="-600" y2="500"></line>
+      <line x1="720" y1="0" x2="-480" y2="500"></line>
+      <line x1="720" y1="0" x2="-360" y2="500"></line>
       <line x1="720" y1="0" x2="-240" y2="500"></line>
       <line x1="720" y1="0" x2="-120" y2="500"></line>
       <line x1="720" y1="0" x2="0" y2="500"></line>
@@ -39,47 +56,64 @@ import InstallBlock from "./ui/InstallBlock.astro";
       <line x1="720" y1="0" x2="1440" y2="500"></line>
       <line x1="720" y1="0" x2="1560" y2="500"></line>
       <line x1="720" y1="0" x2="1680" y2="500"></line>
-      <!-- Horizontal lines: log-spaced from y=1 to y=500 (40 lines, ratio ≈ 1.173) -->
-      <line x1="-500" y1="1" x2="1940" y2="1"></line>
-      <line x1="-500" y1="1.2" x2="1940" y2="1.2"></line>
-      <line x1="-500" y1="1.4" x2="1940" y2="1.4"></line>
-      <line x1="-500" y1="1.6" x2="1940" y2="1.6"></line>
-      <line x1="-500" y1="1.9" x2="1940" y2="1.9"></line>
-      <line x1="-500" y1="2.2" x2="1940" y2="2.2"></line>
-      <line x1="-500" y1="2.6" x2="1940" y2="2.6"></line>
-      <line x1="-500" y1="3.1" x2="1940" y2="3.1"></line>
-      <line x1="-500" y1="3.6" x2="1940" y2="3.6"></line>
-      <line x1="-500" y1="4.2" x2="1940" y2="4.2"></line>
-      <line x1="-500" y1="4.9" x2="1940" y2="4.9"></line>
-      <line x1="-500" y1="5.8" x2="1940" y2="5.8"></line>
-      <line x1="-500" y1="6.8" x2="1940" y2="6.8"></line>
-      <line x1="-500" y1="7.9" x2="1940" y2="7.9"></line>
-      <line x1="-500" y1="9.3" x2="1940" y2="9.3"></line>
-      <line x1="-500" y1="10.9" x2="1940" y2="10.9"></line>
-      <line x1="-500" y1="12.8" x2="1940" y2="12.8"></line>
-      <line x1="-500" y1="15" x2="1940" y2="15"></line>
-      <line x1="-500" y1="17.6" x2="1940" y2="17.6"></line>
-      <line x1="-500" y1="20.6" x2="1940" y2="20.6"></line>
-      <line x1="-500" y1="24.2" x2="1940" y2="24.2"></line>
-      <line x1="-500" y1="28.4" x2="1940" y2="28.4"></line>
-      <line x1="-500" y1="33.3" x2="1940" y2="33.3"></line>
-      <line x1="-500" y1="39" x2="1940" y2="39"></line>
-      <line x1="-500" y1="45.8" x2="1940" y2="45.8"></line>
-      <line x1="-500" y1="53.7" x2="1940" y2="53.7"></line>
-      <line x1="-500" y1="63" x2="1940" y2="63"></line>
-      <line x1="-500" y1="73.9" x2="1940" y2="73.9"></line>
-      <line x1="-500" y1="86.6" x2="1940" y2="86.6"></line>
-      <line x1="-500" y1="102" x2="1940" y2="102"></line>
-      <line x1="-500" y1="119" x2="1940" y2="119"></line>
-      <line x1="-500" y1="140" x2="1940" y2="140"></line>
-      <line x1="-500" y1="164" x2="1940" y2="164"></line>
-      <line x1="-500" y1="192" x2="1940" y2="192"></line>
-      <line x1="-500" y1="225" x2="1940" y2="225"></line>
-      <line x1="-500" y1="264" x2="1940" y2="264"></line>
-      <line x1="-500" y1="310" x2="1940" y2="310"></line>
-      <line x1="-500" y1="363" x2="1940" y2="363"></line>
-      <line x1="-500" y1="426" x2="1940" y2="426"></line>
-      <line x1="-500" y1="500" x2="1940" y2="500"></line>
+      <line x1="720" y1="0" x2="1800" y2="500"></line>
+      <line x1="720" y1="0" x2="1920" y2="500"></line>
+      <line x1="720" y1="0" x2="2040" y2="500"></line>
+      <line x1="720" y1="0" x2="2160" y2="500"></line>
+      <line x1="720" y1="0" x2="2280" y2="500"></line>
+      <line x1="720" y1="0" x2="2400" y2="500"></line>
+      <line x1="720" y1="0" x2="2520" y2="500"></line>
+      <line x1="720" y1="0" x2="2640" y2="500"></line>
+      <line x1="720" y1="0" x2="2760" y2="500"></line>
+      <line x1="720" y1="0" x2="2880" y2="500"></line>
+      <line x1="720" y1="0" x2="3000" y2="500"></line>
+      <line x1="720" y1="0" x2="3120" y2="500"></line>
+      <line x1="720" y1="0" x2="3240" y2="500"></line>
+      <line x1="720" y1="0" x2="3360" y2="500"></line>
+      <line x1="720" y1="0" x2="3480" y2="500"></line>
+      <line x1="720" y1="0" x2="3600" y2="500"></line>
+      <line x1="720" y1="0" x2="3720" y2="500"></line>
+      <!-- Horizontal lines: log-spaced from y=1 to y=500 -->
+      <line x1="-2800" y1="1" x2="4240" y2="1"></line>
+      <line x1="-2800" y1="1.2" x2="4240" y2="1.2"></line>
+      <line x1="-2800" y1="1.4" x2="4240" y2="1.4"></line>
+      <line x1="-2800" y1="1.6" x2="4240" y2="1.6"></line>
+      <line x1="-2800" y1="1.9" x2="4240" y2="1.9"></line>
+      <line x1="-2800" y1="2.2" x2="4240" y2="2.2"></line>
+      <line x1="-2800" y1="2.6" x2="4240" y2="2.6"></line>
+      <line x1="-2800" y1="3.1" x2="4240" y2="3.1"></line>
+      <line x1="-2800" y1="3.6" x2="4240" y2="3.6"></line>
+      <line x1="-2800" y1="4.2" x2="4240" y2="4.2"></line>
+      <line x1="-2800" y1="4.9" x2="4240" y2="4.9"></line>
+      <line x1="-2800" y1="5.8" x2="4240" y2="5.8"></line>
+      <line x1="-2800" y1="6.8" x2="4240" y2="6.8"></line>
+      <line x1="-2800" y1="7.9" x2="4240" y2="7.9"></line>
+      <line x1="-2800" y1="9.3" x2="4240" y2="9.3"></line>
+      <line x1="-2800" y1="10.9" x2="4240" y2="10.9"></line>
+      <line x1="-2800" y1="12.8" x2="4240" y2="12.8"></line>
+      <line x1="-2800" y1="15" x2="4240" y2="15"></line>
+      <line x1="-2800" y1="17.6" x2="4240" y2="17.6"></line>
+      <line x1="-2800" y1="20.6" x2="4240" y2="20.6"></line>
+      <line x1="-2800" y1="24.2" x2="4240" y2="24.2"></line>
+      <line x1="-2800" y1="28.4" x2="4240" y2="28.4"></line>
+      <line x1="-2800" y1="33.3" x2="4240" y2="33.3"></line>
+      <line x1="-2800" y1="39" x2="4240" y2="39"></line>
+      <line x1="-2800" y1="45.8" x2="4240" y2="45.8"></line>
+      <line x1="-2800" y1="53.7" x2="4240" y2="53.7"></line>
+      <line x1="-2800" y1="63" x2="4240" y2="63"></line>
+      <line x1="-2800" y1="73.9" x2="4240" y2="73.9"></line>
+      <line x1="-2800" y1="86.6" x2="4240" y2="86.6"></line>
+      <line x1="-2800" y1="102" x2="4240" y2="102"></line>
+      <line x1="-2800" y1="119" x2="4240" y2="119"></line>
+      <line x1="-2800" y1="140" x2="4240" y2="140"></line>
+      <line x1="-2800" y1="164" x2="4240" y2="164"></line>
+      <line x1="-2800" y1="192" x2="4240" y2="192"></line>
+      <line x1="-2800" y1="225" x2="4240" y2="225"></line>
+      <line x1="-2800" y1="264" x2="4240" y2="264"></line>
+      <line x1="-2800" y1="310" x2="4240" y2="310"></line>
+      <line x1="-2800" y1="363" x2="4240" y2="363"></line>
+      <line x1="-2800" y1="426" x2="4240" y2="426"></line>
+      <line x1="-2800" y1="500" x2="4240" y2="500"></line>
     </g>
   </svg>
   <div class="container flex flex-col items-center text-center relative z-1">
