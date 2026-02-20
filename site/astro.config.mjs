@@ -17,11 +17,26 @@ export default defineConfig({
       transformers: [
         transformerMetaHighlight(),
         {
-          // Remove newline text nodes between lines to prevent double spacing
+          // Remove newline text nodes between lines
           code(node) {
             node.children = node.children.filter(
               (child) => !(child.type === "text" && child.value.trim() === ""),
             );
+          },
+        },
+        {
+          name: "add-prompt",
+          // Add $ prompt to bash lines
+          line(node) {
+            const lang = this.options.lang;
+            if (lang === "bash" || lang === "sh" || lang === "shell") {
+              node.children.unshift({
+                type: "element",
+                tagName: "span",
+                properties: { class: "prompt" },
+                children: [{ type: "text", value: "$ " }],
+              });
+            }
           },
         },
         {

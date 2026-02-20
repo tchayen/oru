@@ -567,6 +567,11 @@
   display: none;
 }
 
+.prose .mini-code-wrap pre code .prompt {
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
 .prose .mini-code-wrap .mini-code-copy {
   position: absolute;
   top: 6px;
