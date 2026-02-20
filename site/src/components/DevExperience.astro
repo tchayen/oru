@@ -41,14 +41,16 @@ import Terminal from "./ui/Terminal.astro";
         <Terminal title="oru context">
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span></span>
           <span class="blank"></span>
-          <span class="line"><span class="val">Overdue (1):</span></span>
-          <span class="line"><span class="output">  hJ7kMp3nQrs  </span><span class="cmd">Refactor auth middleware</span><span class="output">  high  Feb 16</span></span>
+          <span class="line"><span class="output">1 overdue, 1 due soon, 1 in progress</span></span>
           <span class="blank"></span>
-          <span class="line"><span class="val">Due soon (1):</span></span>
-          <span class="line"><span class="output">  aK4nR8tP1mE  </span><span class="cmd">Ship v2</span><span class="output">  medium  tomorrow</span></span>
+          <span class="line"><span class="val">Overdue (1)</span></span>
+          <span class="line"><span class="output">[ ]  hJ7kMp3nQrs  </span><span class="cmd">Refactor auth middleware</span><span class="output">  high  2026-02-16</span></span>
           <span class="blank"></span>
-          <span class="line"><span class="val">In progress (1):</span></span>
-          <span class="line"><span class="output">  fP9sW3yU6rJ  </span><span class="cmd">Write migration tests</span><span class="output">  medium</span></span>
+          <span class="line"><span class="val">Due Soon (1)</span></span>
+          <span class="line"><span class="output">[ ]  aK4nR8tP1mE  </span><span class="cmd">Ship v2</span><span class="output">  medium  2026-02-21</span></span>
+          <span class="blank"></span>
+          <span class="line"><span class="val">In Progress (1)</span></span>
+          <span class="line"><span class="output">[~]  fP9sW3yU6rJ  </span><span class="cmd">Write migration tests</span><span class="output">  medium</span></span>
         </Terminal>
       </div>
 
@@ -94,13 +96,13 @@ import Terminal from "./ui/Terminal.astro";
         </p>
         <Terminal title="recurring tasks">
           <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">add</span> <span class="str">"Water plants"</span> <span class="flag">-r</span> <span class="str">"every 3 days"</span> <span class="flag">-d</span> <span class="val">today</span></span>
-          <span class="line"><span class="output">019414a9  </span><span class="cmd">Water plants</span></span>
+          <span class="line"><span class="output">rT4wK9mB2nQ  </span><span class="cmd">Water plants</span></span>
           <span class="line"><span class="output">  Status: todo  Priority: medium</span></span>
           <span class="line"><span class="output">  Due: 2026-02-18  Recurrence: every 3 days</span></span>
           <span class="blank"></span>
-          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">done</span> <span class="val">019414a9</span></span>
+          <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">done</span> <span class="val">rT4wK9mB2nQ</span></span>
           <span class="line"><span class="output">Next occurrence: every 3 days</span></span>
-          <span class="line"><span class="output">019414aa  </span><span class="cmd">Water plants</span></span>
+          <span class="line"><span class="output">sU5xL0nC3oR  </span><span class="cmd">Water plants</span></span>
           <span class="line"><span class="output">  Status: todo  Due: 2026-02-21</span></span>
         </Terminal>
       </div>

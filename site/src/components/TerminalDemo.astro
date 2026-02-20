@@ -17,19 +17,21 @@ import Terminal from "./ui/Terminal.astro";
       <Terminal title="~/.oru">
         <span class="line"><span class="prompt">$ </span><span class="cmd">oru</span> <span class="sub">context</span></span>
         <span class="blank"></span>
+        <span class="line"><span class="output">2 overdue, 1 due soon, 1 in progress, 2 actionable</span></span>
+        <span class="blank"></span>
         <span class="line"><span class="val">Overdue (2)</span></span>
-        <span class="line"><span class="output">[ ]  fP9sW3yU6rJ  </span><span class="val">high  </span><span class="output">  due Feb 14  </span><span class="cmd">Write migration tests</span></span>
-        <span class="line"><span class="output">[ ]  gQ0tX4zV7sK  medium  due Feb 15  </span><span class="cmd">Review PR feedback</span></span>
+        <span class="line"><span class="output">[ ]  fP9sW3yU6rJ  </span><span class="cmd">Write migration tests</span><span class="output">  </span><span class="val">high  </span><span class="output">  2026-02-14</span></span>
+        <span class="line"><span class="output">[ ]  gQ0tX4zV7sK  </span><span class="cmd">Review PR feedback</span><span class="output">    medium  2026-02-15</span></span>
         <span class="blank"></span>
-        <span class="line"><span class="val">Due today (1)</span></span>
-        <span class="line"><span class="output">[ ]  zJ9rEsJt5xK  </span><span class="val">high  </span><span class="output">  due Feb 16  </span><span class="cmd">Refactor auth middleware</span></span>
+        <span class="line"><span class="val">Due Soon (1)</span></span>
+        <span class="line"><span class="output">[ ]  zJ9rEsJt5xK  </span><span class="cmd">Refactor auth middleware</span><span class="output">  </span><span class="val">high  </span><span class="output">  2026-02-21</span></span>
         <span class="blank"></span>
-        <span class="line"><span class="val">Upcoming (3)</span></span>
-        <span class="line"><span class="output">[ ]  nP4qS7vB2hR  medium  due Feb 18  </span><span class="cmd">Update API docs</span></span>
-        <span class="line"><span class="output">[ ]  mL8tX3wC9gN  low     due Feb 20  </span><span class="cmd">Set up error tracking</span></span>
-        <span class="line"><span class="output">[ ]  kH6mW1pD4jQ  low     due Feb 22  </span><span class="cmd">Draft blog post</span></span>
+        <span class="line"><span class="val">In Progress (1)</span></span>
+        <span class="line"><span class="output">[~]  nP4qS7vB2hR  </span><span class="cmd">Update API docs</span><span class="output">  medium</span></span>
         <span class="blank"></span>
-        <span class="line"><span class="output">Summary: 2 overdue, 1 due today, 3 upcoming, 8 total</span></span>
+        <span class="line"><span class="val">Actionable (2)</span></span>
+        <span class="line"><span class="output">[ ]  mL8tX3wC9gN  </span><span class="cmd">Set up error tracking</span><span class="output">  low  2026-02-25</span></span>
+        <span class="line"><span class="output">[ ]  kH6mW1pD4jQ  </span><span class="cmd">Draft blog post</span><span class="output">  low  2026-02-28</span></span>
       </Terminal>
     </div>
   </div>
