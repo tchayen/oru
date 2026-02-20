@@ -349,6 +349,17 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* Hide scrollbar on small code blocks – still scrollable via touch/trackpad */
+.install-commands,
+.prose .mini-code-wrap pre {
+  scrollbar-width: none;
+}
+
+.install-commands::-webkit-scrollbar,
+.prose .mini-code-wrap pre::-webkit-scrollbar {
+  display: none;
+}
+
 /* Shared syntax token colors */
 .cmd {
   color: var(--color-text-primary);
@@ -559,6 +570,20 @@
   font-size: inherit;
 }
 
+.prose .mini-code-wrap.has-copy {
+  background: var(--color-bg-inset);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+}
+
+.prose .mini-code-wrap.has-copy pre {
+  border: none;
+  background: none !important;
+  margin: 0;
+  margin-right: 44px;
+  border-radius: 0;
+}
+
 .prose .mini-code-wrap pre code .line {
   display: block;
 }
@@ -576,16 +601,10 @@
   position: absolute;
   top: 6px;
   right: 6px;
-  opacity: 0;
-  transition: opacity 150ms ease;
-}
-
-.prose .mini-code-wrap:hover .mini-code-copy {
-  opacity: 1;
-}
-
-.prose .mini-code-wrap .mini-code-copy:focus-visible {
-  opacity: 1;
+  bottom: 6px;
+  aspect-ratio: 1;
+  z-index: 1;
+  background: var(--color-bg-inset);
 }
 
 .prose .mini-code-wrap .mini-code-copy.copied {

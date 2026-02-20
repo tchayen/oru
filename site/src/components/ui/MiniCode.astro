@@ -18,7 +18,7 @@ const { class: className = "", copy = false } = Astro.props;
   </div>
   {copy && (
     <button
-      class="mini-code-copy copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-muted transition-all duration-150 cursor-pointer hover:text-text-secondary hover:bg-white/5"
+      class="mini-code-copy copy-btn flex items-center justify-center rounded-md text-text-muted transition-all duration-150 cursor-pointer hover:text-text-secondary hover:bg-white/5"
       data-copy-code
       aria-label="Copy"
       type="button"
@@ -49,16 +49,10 @@ const { class: className = "", copy = false } = Astro.props;
     position: absolute;
     top: 6px;
     right: 6px;
-    opacity: 0;
-    transition: opacity 150ms ease;
-  }
-
-  .mini-code-wrap:hover .mini-code-copy {
-    opacity: 1;
-  }
-
-  .mini-code-copy:focus-visible {
-    opacity: 1;
+    bottom: 6px;
+    aspect-ratio: 1;
+    z-index: 1;
+    background: var(--color-bg-inset);
   }
 
   .mini-code-copy:global(.copied) {
