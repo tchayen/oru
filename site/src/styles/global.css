@@ -323,29 +323,34 @@
 
 /* Shared scrollbar for code blocks */
 .terminal-body,
-.mini-code-content {
+.mini-code-content,
+.install-commands {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 
 .terminal-body::-webkit-scrollbar,
-.mini-code-content::-webkit-scrollbar {
+.mini-code-content::-webkit-scrollbar,
+.install-commands::-webkit-scrollbar {
   height: 6px;
 }
 
 .terminal-body::-webkit-scrollbar-track,
-.mini-code-content::-webkit-scrollbar-track {
+.mini-code-content::-webkit-scrollbar-track,
+.install-commands::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .terminal-body::-webkit-scrollbar-thumb,
-.mini-code-content::-webkit-scrollbar-thumb {
+.mini-code-content::-webkit-scrollbar-thumb,
+.install-commands::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 .terminal-body::-webkit-scrollbar-thumb:hover,
-.mini-code-content::-webkit-scrollbar-thumb:hover {
+.mini-code-content::-webkit-scrollbar-thumb:hover,
+.install-commands::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 
