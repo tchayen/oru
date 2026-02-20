@@ -5,6 +5,7 @@ import { STATUSES, PRIORITIES, VALID_STATUSES, VALID_PRIORITIES } from "../tasks
 import type { Status, Priority } from "../tasks/types";
 import { AmbiguousPrefixError } from "../tasks/repository";
 import {
+  DUE_DATE_REGEX,
   MAX_TITLE_LENGTH,
   MAX_NOTE_LENGTH,
   MAX_LABEL_LENGTH,
@@ -25,7 +26,7 @@ const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
 const dueAtSchema = z
   .string()
   .regex(
-    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/,
+    DUE_DATE_REGEX,
     "Invalid date format. Expected YYYY-MM-DD, YYYY-MM-DDTHH:MM, or YYYY-MM-DDTHH:MM:SS.",
   )
   .nullable()

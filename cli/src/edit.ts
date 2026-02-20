@@ -6,6 +6,7 @@ import { stringify, parse } from "smol-toml";
 import { VALID_STATUSES, VALID_PRIORITIES } from "./tasks/types";
 import type { Task, UpdateTaskInput, Status, Priority } from "./tasks/types";
 import { isValidRecurrence } from "./recurrence/validate";
+import { DUE_DATE_REGEX } from "./validation";
 
 export function serializeTask(task: Task): string {
   const frontmatter: Record<string, unknown> = {
@@ -109,7 +110,7 @@ export function parseDocument(
     }
   } else if (typeof parsedDue === "string" && parsedDue !== existing.due_at) {
     // Validate due date looks like an ISO date (YYYY-MM-DDTHH:MM:SS)
-    if (!/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/.test(parsedDue)) {
+    if (!DUE_DATE_REGEX.test(parsedDue)) {
       throw new Error(
         `Invalid due date: ${parsedDue}. Expected format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS.`,
       );

@@ -1,8 +1,9 @@
 import { sql } from "kysely";
 import type { Kysely, SqlBool } from "kysely";
 import { generateId } from "../id";
-import type { DB } from "../db/kysely";
+import type { DB, TaskTable } from "../db/kysely";
 import type { Task, CreateTaskInput, UpdateTaskInput, Status, Priority } from "./types";
+import { DEFAULT_STATUS, DEFAULT_PRIORITY } from "./types";
 
 export const SORT_FIELDS = ["priority", "due", "title", "created"] as const;
 export type SortField = (typeof SORT_FIELDS)[number];
@@ -27,24 +28,7 @@ function safeParseJson<T>(raw: string, fallback: T): T {
   }
 }
 
-interface TaskRow {
-  id: string;
-  title: string;
-  status: string;
-  priority: string;
-  due_at: string | null;
-  owner: string | null;
-  recurrence: string | null;
-  blocked_by: string;
-  labels: string;
-  notes: string;
-  metadata: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-}
-
-function rowToTask(row: TaskRow): Task {
+function rowToTask(row: TaskTable): Task {
   return {
     id: row.id,
     title: row.title,
@@ -73,8 +57,8 @@ export async function createTask(
   const task: Task = {
     id,
     title: input.title,
-    status: input.status ?? "todo",
-    priority: input.priority ?? "medium",
+    status: input.status ?? DEFAULT_STATUS,
+    priority: input.priority ?? DEFAULT_PRIORITY,
     owner: input.owner ?? null,
     due_at: input.due_at ?? null,
     recurrence: input.recurrence ?? null,
