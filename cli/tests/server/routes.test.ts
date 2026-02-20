@@ -822,3 +822,42 @@ describe("PATCH /tasks/:id clearing array fields", () => {
     expect(patched.labels).toEqual([]);
   });
 });
+
+describe("PATCH /tasks/:id — blocked_by validation", () => {
+  it("rejects a self-blocking update", async () => {
+    const task = await req("POST", "/tasks", { title: "Task A" }).then((r) => r.json());
+    const res = await req("PATCH", `/tasks/${task.id}`, { blocked_by: [task.id] });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+    expect(body.message).toContain("cannot block itself");
+  });
+
+  it("rejects a circular dependency", async () => {
+    const a = await req("POST", "/tasks", { title: "A" }).then((r) => r.json());
+    const b = await req("POST", "/tasks", { title: "B", blocked_by: [a.id] }).then((r) => r.json());
+    // Trying to make A blocked by B would create A→B→A
+    const res = await req("PATCH", `/tasks/${a.id}`, { blocked_by: [b.id] });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+    expect(body.message).toContain("circular");
+  });
+
+  it("rejects a non-existent blocker ID", async () => {
+    const task = await req("POST", "/tasks", { title: "Task" }).then((r) => r.json());
+    const res = await req("PATCH", `/tasks/${task.id}`, { blocked_by: ["nonexistent00"] });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+  });
+
+  it("accepts a valid non-circular blocked_by", async () => {
+    const a = await req("POST", "/tasks", { title: "A" }).then((r) => r.json());
+    const b = await req("POST", "/tasks", { title: "B" }).then((r) => r.json());
+    const res = await req("PATCH", `/tasks/${b.id}`, { blocked_by: [a.id] });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.blocked_by).toEqual([a.id]);
+  });
+});
