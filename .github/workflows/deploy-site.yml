@@ -99,7 +99,7 @@ jobs:
           echo "url=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.pages\.dev' | tail -1)" >> "$GITHUB_OUTPUT"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: 3f58569663fe4a2164c60b23c6eb6a2d
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Post preview comment
         if: github.event_name == 'pull_request'
