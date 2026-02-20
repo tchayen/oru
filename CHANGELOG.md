@@ -4,11 +4,22 @@
 
 Initial release.
 
-- Tasks with priorities, due dates, labels, owners, blocking dependencies, notes, and metadata
-- Recurring tasks via RRULE (`-r "every monday"`)
-- Named filters (`oru filter add`)
-- Oplog-based sync over shared filesystems (`oru sync ~/Dropbox/oru-sync`)
-- MCP server (`oru-mcp`)
-- Shell completions for bash, zsh, and fish
-- `--json` on all commands
-- Idempotent creates with `--id`
+### CLI
+
+- Task fields: title, status (`todo`/`in_progress`/`in_review`/`done`), priority (`low`/`medium`/`high`/`urgent`), owner, due date, labels, blocking dependencies, notes, metadata
+- Natural language due dates (`tomorrow`, `friday`, `in 3 days`, `end of week`)
+- Recurring tasks with RRULE support (`-r "every monday"`, `-r "every 3 days"`)
+- List filtering by status, priority, label, owner, due date, overdue, actionable
+- Saved named filters (`oru filter add`)
+- `--json` flag on all commands
+- Idempotent task creation with `--id`
+- Task editing in `$EDITOR` (`oru edit`)
+- Change history per task (`oru log`)
+- Shell completions for bash, zsh, fish
+- Config file (`~/.oru/config.toml`) for date format, output format, backup settings
+- Database backup snapshots (`oru backup`)
+- Self-update (`oru self-update`)
+
+### MCP server
+
+Started via `oru mcp` subcommand (stdio transport). Exposes 8 tools: `add_task`, `update_task`, `delete_task`, `list_tasks`, `get_task`, `get_context`, `add_note`, `list_labels`.
