@@ -187,6 +187,17 @@ export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<
   return rows.map(rowToTask);
 }
 
+/**
+ * Exclude done tasks unless an explicit status filter or `all` flag is set.
+ * Used by the CLI, HTTP, and MCP list endpoints to provide consistent default behavior.
+ */
+export function excludeDone(tasks: Task[], opts: { all?: boolean; status?: unknown }): Task[] {
+  if (opts.all || opts.status !== undefined) {
+    return tasks;
+  }
+  return tasks.filter((t) => t.status !== "done");
+}
+
 export async function getTask(db: Kysely<DB>, id: string): Promise<Task | null> {
   const row = await db
     .selectFrom("tasks")

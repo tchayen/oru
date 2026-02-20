@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { TaskService } from "../main";
 import { STATUSES, PRIORITIES } from "../tasks/types";
 import type { Task, CreateTaskInput, UpdateTaskInput } from "../tasks/types";
+import { excludeDone } from "../tasks/repository";
 import type { ListFilters } from "../tasks/repository";
 import { stripInternal } from "../format/json";
 
@@ -244,10 +245,7 @@ export function createMcpServer(service: TaskService): McpServer {
       try {
         const { all, ...filters } = input;
         let tasks = await service.list(filters as ListFilters);
-        // Hide done tasks unless all is true or an explicit status filter is provided
-        if (!all && !filters.status) {
-          tasks = tasks.filter((t) => t.status !== "done");
-        }
+        tasks = excludeDone(tasks, { all, status: filters.status });
         return {
           content: [{ type: "text", text: JSON.stringify(tasks.map(stripInternal), null, 2) }],
         };

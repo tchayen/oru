@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { TaskService } from "../main";
 import { STATUSES, PRIORITIES, VALID_STATUSES, VALID_PRIORITIES } from "../tasks/types";
 import type { Status, Priority } from "../tasks/types";
-import { AmbiguousPrefixError } from "../tasks/repository";
+import { AmbiguousPrefixError, excludeDone } from "../tasks/repository";
 import {
   DUE_DATE_REGEX,
   MAX_TITLE_LENGTH,
@@ -209,9 +209,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       limit,
       offset,
     });
-    if (!all && !status) {
-      tasks = tasks.filter((t) => t.status !== "done");
-    }
+    tasks = excludeDone(tasks, { all: !!all, status });
     return c.json(tasks);
   });
 

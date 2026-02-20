@@ -35,7 +35,7 @@ import { STATUSES, PRIORITIES } from "./tasks/types";
 import type { Status, Priority } from "./tasks/types";
 import { parseRecurrence, formatRecurrence } from "./recurrence/index";
 import { SHOW_SERVER } from "./flags";
-import { AmbiguousPrefixError, SORT_FIELDS } from "./tasks/repository";
+import { AmbiguousPrefixError, SORT_FIELDS, excludeDone } from "./tasks/repository";
 import type { SortField } from "./tasks/repository";
 import {
   resolveDynamic,
@@ -530,10 +530,7 @@ export function createProgram(
           offset: opts.offset,
           sql: sqlFilter,
         });
-        // Hide done tasks unless --all or --status is specified
-        if (!opts.all && !opts.status) {
-          tasks = tasks.filter((t) => t.status !== "done");
-        }
+        tasks = excludeDone(tasks, opts);
         if (opts.due) {
           tasks = filterByDue(
             tasks,
