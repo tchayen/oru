@@ -4,7 +4,7 @@ import { SHOW_SERVER } from "../flags";
 
 import { VERSION } from "../version";
 
-export interface TelemetryEvent {
+export type TelemetryEvent = {
   cli_version: string;
   command: string;
   flags: string[];
@@ -15,7 +15,7 @@ export interface TelemetryEvent {
   duration_ms: number;
   exit_code: number;
   error?: string;
-}
+};
 
 const TELEMETRY_URL = "https://telemetry.oru.sh/v1/events";
 const REQUEST_TIMEOUT_MS = 3000;

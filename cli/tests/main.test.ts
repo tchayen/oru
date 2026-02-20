@@ -236,7 +236,7 @@ describe("TaskService", () => {
       // Oplog should have create + delete
       const rows = db
         .prepare("SELECT * FROM oplog WHERE task_id = ? ORDER BY rowid")
-        .all(task.id) as Array<{ op_type: string }>;
+        .all(task.id) as { op_type: string }[];
       expect(rows).toHaveLength(2);
       expect(rows[0].op_type).toBe("create");
       expect(rows[1].op_type).toBe("delete");

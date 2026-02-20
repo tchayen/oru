@@ -7,12 +7,12 @@ import { fetchLatestVersion } from "./registry";
 
 import { VERSION } from "../version";
 
-interface InstallMeta {
+type InstallMeta = {
   install_method: string;
   version: string;
   platform: string;
   installed_at: string;
-}
+};
 
 function getInstallMetaPath(): string {
   const oruDir = process.env.ORU_INSTALL_DIR ?? path.join(os.homedir(), ".oru");

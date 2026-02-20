@@ -8,14 +8,14 @@ import {
   clearConnection,
 } from "@/utils/connection";
 
-export interface ConnectionState {
+export type ConnectionState = {
   serverUrl: string | null;
   authToken: string | null;
   isConnected: boolean;
   isLoading: boolean;
   connect: (url: string, token: string | null) => Promise<void>;
   disconnect: () => Promise<void>;
-}
+};
 
 export const ConnectionContext = createContext<ConnectionState>({
   serverUrl: null,

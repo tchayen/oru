@@ -53,7 +53,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Buy milk" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Buy milk");
     expect(task.status).toBe("todo");
     expect(task.priority).toBe("medium");
@@ -65,28 +65,28 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Check deleted_at" },
     });
-    const addedTask = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const addedTask = JSON.parse((addResult.content as { text: string }[])[0].text);
     expect(addedTask).not.toHaveProperty("deleted_at");
 
     const getResult = await client.callTool({
       name: "get_task",
       arguments: { id: addedTask.id },
     });
-    const gotTask = JSON.parse((getResult.content as Array<{ text: string }>)[0].text);
+    const gotTask = JSON.parse((getResult.content as { text: string }[])[0].text);
     expect(gotTask).not.toHaveProperty("deleted_at");
 
     const updateResult = await client.callTool({
       name: "update_task",
       arguments: { id: addedTask.id, priority: "high" },
     });
-    const updatedTask = JSON.parse((updateResult.content as Array<{ text: string }>)[0].text);
+    const updatedTask = JSON.parse((updateResult.content as { text: string }[])[0].text);
     expect(updatedTask).not.toHaveProperty("deleted_at");
 
     const listResult = await client.callTool({
       name: "list_tasks",
       arguments: {},
     });
-    const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((listResult.content as { text: string }[])[0].text);
     for (const t of tasks) {
       expect(t).not.toHaveProperty("deleted_at");
     }
@@ -95,7 +95,7 @@ describe("MCP server", () => {
       name: "add_note",
       arguments: { id: addedTask.id, note: "A note" },
     });
-    const notedTask = JSON.parse((noteResult.content as Array<{ text: string }>)[0].text);
+    const notedTask = JSON.parse((noteResult.content as { text: string }[])[0].text);
     expect(notedTask).not.toHaveProperty("deleted_at");
   });
 
@@ -112,7 +112,7 @@ describe("MCP server", () => {
         metadata: { pr: 42 },
       },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Deploy v2");
     expect(task.priority).toBe("urgent");
     expect(task.status).toBe("in_progress");
@@ -130,7 +130,7 @@ describe("MCP server", () => {
       name: "list_tasks",
       arguments: {},
     });
-    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((result.content as { text: string }[])[0].text);
     expect(tasks).toHaveLength(2);
   });
 
@@ -148,7 +148,7 @@ describe("MCP server", () => {
       name: "list_tasks",
       arguments: { priority: "high" },
     });
-    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((result.content as { text: string }[])[0].text);
     expect(tasks).toHaveLength(1);
     expect(tasks[0].title).toBe("High pri");
   });
@@ -158,13 +158,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Find me" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "get_task",
       arguments: { id: created.id },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Find me");
   });
 
@@ -174,7 +174,7 @@ describe("MCP server", () => {
       arguments: { id: "nonexistent" },
     });
     expect(result.isError).toBe(true);
-    expect((result.content as Array<{ text: string }>)[0].text).toContain("not found");
+    expect((result.content as { text: string }[])[0].text).toContain("not found");
   });
 
   it("updates a task", async () => {
@@ -182,13 +182,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Original" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "update_task",
       arguments: { id: created.id, title: "Updated", priority: "high" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Updated");
     expect(task.priority).toBe("high");
   });
@@ -198,13 +198,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "With note" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "update_task",
       arguments: { id: created.id, status: "in_progress", note: "Started working on this" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.status).toBe("in_progress");
     expect(task.notes).toContain("Started working on this");
   });
@@ -214,7 +214,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Delete me" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const deleteResult = await client.callTool({
       name: "delete_task",
@@ -234,13 +234,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Note target" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "add_note",
       arguments: { id: created.id, note: "This is important" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.notes).toContain("This is important");
   });
 
@@ -254,7 +254,7 @@ describe("MCP server", () => {
       name: "list_labels",
       arguments: {},
     });
-    const labels = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const labels = JSON.parse((result.content as { text: string }[])[0].text);
     expect(labels).toEqual(["backend", "urgent"]);
   });
 
@@ -272,7 +272,7 @@ describe("MCP server", () => {
       name: "get_context",
       arguments: {},
     });
-    const context = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const context = JSON.parse((result.content as { text: string }[])[0].text);
     expect(context.summary).toBeDefined();
     expect(context.summary.actionable).toBe(1);
     expect(context.summary.in_progress).toBe(1);
@@ -300,7 +300,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -310,7 +310,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Will update" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     db.close();
 
@@ -320,7 +320,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -330,7 +330,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Will delete" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     db.close();
 
@@ -340,7 +340,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -354,7 +354,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -368,7 +368,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -382,7 +382,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -396,7 +396,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -410,7 +410,7 @@ describe("MCP server", () => {
     });
 
     expect(result.isError).toBe(true);
-    const text = (result.content as Array<{ text: string }>)[0].text;
+    const text = (result.content as { text: string }[])[0].text;
     expect(text).toBe("An internal error occurred. Please try again.");
     expect(text).not.toContain("database");
   });
@@ -427,7 +427,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "First", id: customId },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.id).toBe(customId);
 
     // Should still be just one task
@@ -435,7 +435,7 @@ describe("MCP server", () => {
       name: "list_tasks",
       arguments: {},
     });
-    const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((listResult.content as { text: string }[])[0].text);
     expect(tasks).toHaveLength(1);
   });
 
@@ -450,7 +450,7 @@ describe("MCP server", () => {
       name: "list_tasks",
       arguments: {},
     });
-    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((result.content as { text: string }[])[0].text);
     expect(tasks).toHaveLength(1);
     expect(tasks[0].title).toBe("Active task");
   });
@@ -466,7 +466,7 @@ describe("MCP server", () => {
       name: "list_tasks",
       arguments: { all: true },
     });
-    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((result.content as { text: string }[])[0].text);
     expect(tasks).toHaveLength(2);
     const titles = tasks.map((t: { title: string }) => t.title);
     expect(titles).toContain("Active task");
@@ -485,7 +485,7 @@ describe("MCP server", () => {
       name: "list_tasks",
       arguments: { status: "done", all: false },
     });
-    const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((result.content as { text: string }[])[0].text);
     expect(tasks).toHaveLength(1);
     expect(tasks[0].title).toBe("Completed task");
   });
@@ -497,7 +497,7 @@ describe("MCP server", () => {
         arguments: { title: "" },
       });
       expect(result.isError).toBeFalsy();
-      const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((result.content as { text: string }[])[0].text);
       expect(task.title).toBe("");
     });
 
@@ -508,7 +508,7 @@ describe("MCP server", () => {
         arguments: { title: longTitle },
       });
       expect(result.isError).toBeFalsy();
-      const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((result.content as { text: string }[])[0].text);
       expect(task.title).toBe(longTitle);
     });
 
@@ -518,7 +518,7 @@ describe("MCP server", () => {
         arguments: { title: "Task with empty notes", notes: [] },
       });
       expect(result.isError).toBeFalsy();
-      const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((result.content as { text: string }[])[0].text);
       expect(task.notes).toEqual([]);
     });
 
@@ -561,7 +561,7 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Task to update" },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const result = await client.callTool({
         name: "update_task",
@@ -575,7 +575,7 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Task to update" },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const result = await client.callTool({
         name: "update_task",
@@ -589,14 +589,14 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Task", owner: "alice" },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const result = await client.callTool({
         name: "update_task",
         arguments: { id: task.id, owner: "" },
       });
       expect(result.isError).toBeFalsy();
-      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const updated = JSON.parse((result.content as { text: string }[])[0].text);
       expect(updated.owner).toBe("");
     });
 
@@ -605,14 +605,14 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Task", owner: "alice" },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const result = await client.callTool({
         name: "update_task",
         arguments: { id: task.id, owner: null },
       });
       expect(result.isError).toBeFalsy();
-      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const updated = JSON.parse((result.content as { text: string }[])[0].text);
       expect(updated.owner).toBeNull();
     });
 
@@ -621,14 +621,14 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Original", priority: "high" },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const result = await client.callTool({
         name: "update_task",
         arguments: { id: task.id },
       });
       expect(result.isError).toBeFalsy();
-      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const updated = JSON.parse((result.content as { text: string }[])[0].text);
       expect(updated.title).toBe("Original");
       expect(updated.priority).toBe("high");
     });
@@ -668,7 +668,7 @@ describe("MCP server", () => {
         arguments: { limit: -1 },
       });
       expect(result.isError).toBeFalsy();
-      const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const tasks = JSON.parse((result.content as { text: string }[])[0].text);
       // Negative limit behavior depends on repository implementation
       // If no validation, may return empty or all tasks
       expect(Array.isArray(tasks)).toBe(true);
@@ -683,7 +683,7 @@ describe("MCP server", () => {
         arguments: { offset: -1 },
       });
       expect(result.isError).toBeFalsy();
-      const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const tasks = JSON.parse((result.content as { text: string }[])[0].text);
       // Negative offset behavior depends on repository implementation
       expect(Array.isArray(tasks)).toBe(true);
     });
@@ -695,14 +695,14 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Task", notes: ["Existing note"] },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const result = await client.callTool({
         name: "add_note",
         arguments: { id: task.id, note: "" },
       });
       expect(result.isError).toBeFalsy();
-      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const updated = JSON.parse((result.content as { text: string }[])[0].text);
       expect(updated.notes).toEqual(["Existing note"]);
     });
 
@@ -711,14 +711,14 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Task", notes: ["Existing note"] },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const result = await client.callTool({
         name: "add_note",
         arguments: { id: task.id, note: "   \t\n  " },
       });
       expect(result.isError).toBeFalsy();
-      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const updated = JSON.parse((result.content as { text: string }[])[0].text);
       expect(updated.notes).toEqual(["Existing note"]);
     });
 
@@ -727,7 +727,7 @@ describe("MCP server", () => {
         name: "add_task",
         arguments: { title: "Task" },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
 
       const longNote = "a".repeat(5000);
       const result = await client.callTool({
@@ -735,7 +735,7 @@ describe("MCP server", () => {
         arguments: { id: task.id, note: longNote },
       });
       expect(result.isError).toBeFalsy();
-      const updated = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const updated = JSON.parse((result.content as { text: string }[])[0].text);
       expect(updated.notes).toContain(longNote);
     });
   });
@@ -746,7 +746,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: 'Task with "quotes"' },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe('Task with "quotes"');
   });
 
@@ -755,7 +755,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Task with 'quotes'" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Task with 'quotes'");
   });
 
@@ -764,7 +764,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Path\\to\\file" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Path\\to\\file");
   });
 
@@ -773,7 +773,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "'; DROP TABLE tasks; --" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("'; DROP TABLE tasks; --");
 
     // Verify tasks table still works
@@ -781,7 +781,7 @@ describe("MCP server", () => {
       name: "list_tasks",
       arguments: {},
     });
-    const tasks = JSON.parse((listResult.content as Array<{ text: string }>)[0].text);
+    const tasks = JSON.parse((listResult.content as { text: string }[])[0].text);
     expect(Array.isArray(tasks)).toBe(true);
     expect(tasks[0].title).toBe("'; DROP TABLE tasks; --");
   });
@@ -794,7 +794,7 @@ describe("MCP server", () => {
         notes: ['Note with "quotes"', "Note with 'apostrophes'", "Note with <html>"],
       },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.notes).toEqual([
       'Note with "quotes"',
       "Note with 'apostrophes'",
@@ -807,7 +807,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Task with emoji 🚀 and 中文" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Task with emoji 🚀 and 中文");
   });
 
@@ -816,7 +816,7 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Task", labels: ["key=value", "key,value", "key[0]"] },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.labels).toEqual(["key=value", "key,value", "key[0]"]);
   });
 
@@ -831,7 +831,7 @@ describe("MCP server", () => {
         },
       },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.metadata.url).toBe("http://example.com?a=1&b=2");
     expect(task.metadata.path).toBe("C:\\Users\\file.txt");
   });
@@ -841,13 +841,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Task" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "update_task",
       arguments: { id: created.id, note: "Note with \"quotes\" & 'apostrophes'" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.notes).toContain("Note with \"quotes\" & 'apostrophes'");
   });
 
@@ -856,13 +856,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Task" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "update_task",
       arguments: { id: created.id, note: "Unicode: 🎉 日本語 العربية" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.notes).toContain("Unicode: 🎉 日本語 العربية");
   });
 
@@ -871,13 +871,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Task" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "add_note",
       arguments: { id: created.id, note: 'Special: <html> & "quotes"' },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.notes).toContain('Special: <html> & "quotes"');
   });
 
@@ -886,13 +886,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Task" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "add_note",
       arguments: { id: created.id, note: "Line 1\nLine 2\nLine 3" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.notes).toContain("Line 1\nLine 2\nLine 3");
   });
 
@@ -901,13 +901,13 @@ describe("MCP server", () => {
       name: "add_task",
       arguments: { title: "Original" },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "update_task",
       arguments: { id: created.id, title: "Updated with \"quotes\" & 'apostrophes'" },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe("Updated with \"quotes\" & 'apostrophes'");
   });
 
@@ -919,13 +919,13 @@ describe("MCP server", () => {
         notes: ["Note with special chars: <>&"],
       },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const result = await client.callTool({
       name: "get_task",
       arguments: { id: created.id },
     });
-    const task = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+    const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe('Task with "quotes"');
     expect(task.notes).toEqual(["Note with special chars: <>&"]);
   });
@@ -995,13 +995,13 @@ describe("update_task metadata merge", () => {
       name: "add_task",
       arguments: { title: "Task", metadata: { pr: 42 } },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const updateResult = await client.callTool({
       name: "update_task",
       arguments: { id: created.id, metadata: { sprint: "5" } },
     });
-    const updated = JSON.parse((updateResult.content as Array<{ text: string }>)[0].text);
+    const updated = JSON.parse((updateResult.content as { text: string }[])[0].text);
 
     // Both original and new keys should be present
     expect(updated.metadata).toEqual({ pr: 42, sprint: "5" });
@@ -1012,13 +1012,13 @@ describe("update_task metadata merge", () => {
       name: "add_task",
       arguments: { title: "Task", metadata: { pr: 42, sprint: "4" } },
     });
-    const created = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+    const created = JSON.parse((addResult.content as { text: string }[])[0].text);
 
     const updateResult = await client.callTool({
       name: "update_task",
       arguments: { id: created.id, metadata: { sprint: "5" } },
     });
-    const updated = JSON.parse((updateResult.content as Array<{ text: string }>)[0].text);
+    const updated = JSON.parse((updateResult.content as { text: string }[])[0].text);
 
     expect(updated.metadata).toEqual({ pr: 42, sprint: "5" });
   });

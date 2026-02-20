@@ -94,7 +94,7 @@ export async function createTask(
   return task;
 }
 
-export interface ListFilters {
+export type ListFilters = {
   status?: Status | Status[];
   priority?: Priority | Priority[];
   owner?: string;
@@ -105,7 +105,7 @@ export interface ListFilters {
   limit?: number;
   offset?: number;
   sql?: string;
-}
+};
 
 export async function listTasks(db: Kysely<DB>, filters?: ListFilters): Promise<Task[]> {
   let query = db.selectFrom("tasks").selectAll().where("deleted_at", "is", null);

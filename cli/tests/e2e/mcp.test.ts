@@ -62,7 +62,7 @@ describe.skipIf(!cliBuilt)("oru mcp e2e", () => {
         name: "add_task",
         arguments: { title: "E2E task", priority: "high" },
       });
-      const task = JSON.parse((addResult.content as Array<{ text: string }>)[0].text);
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
       expect(task.title).toBe("E2E task");
       expect(task.priority).toBe("high");
       expect(task.id).toBeTruthy();
@@ -71,7 +71,7 @@ describe.skipIf(!cliBuilt)("oru mcp e2e", () => {
         name: "get_task",
         arguments: { id: task.id },
       });
-      const fetched = JSON.parse((getResult.content as Array<{ text: string }>)[0].text);
+      const fetched = JSON.parse((getResult.content as { text: string }[])[0].text);
       expect(fetched.title).toBe("E2E task");
       expect(fetched.id).toBe(task.id);
     } finally {
@@ -88,7 +88,7 @@ describe.skipIf(!cliBuilt)("oru mcp e2e", () => {
         name: "add_task",
         arguments: { title: "Persisted task" },
       });
-      taskId = JSON.parse((result.content as Array<{ text: string }>)[0].text).id;
+      taskId = JSON.parse((result.content as { text: string }[])[0].text).id;
     } finally {
       await client1.close();
     }
@@ -100,7 +100,7 @@ describe.skipIf(!cliBuilt)("oru mcp e2e", () => {
         name: "list_tasks",
         arguments: {},
       });
-      const tasks = JSON.parse((result.content as Array<{ text: string }>)[0].text);
+      const tasks = JSON.parse((result.content as { text: string }[])[0].text);
       expect(tasks).toHaveLength(1);
       expect(tasks[0].id).toBe(taskId);
       expect(tasks[0].title).toBe("Persisted task");

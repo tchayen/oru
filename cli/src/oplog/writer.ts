@@ -3,13 +3,13 @@ import { generateId } from "../id";
 import type { DB } from "../db/kysely";
 import type { OplogEntry, OpType } from "./types";
 
-export interface WriteOpInput {
+export type WriteOpInput = {
   task_id: string;
   device_id: string;
   op_type: OpType;
   field: string | null;
   value: string | null;
-}
+};
 
 export async function writeOp(
   db: Kysely<DB>,

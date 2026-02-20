@@ -1,8 +1,13 @@
 import type Database from "better-sqlite3";
 import type { OplogEntry } from "./types";
-import { VALID_STATUSES, VALID_PRIORITIES } from "../tasks/types";
+import { VALID_STATUSES, VALID_PRIORITIES, VALID_TASK_FIELDS } from "../tasks/types";
+import type { TaskField } from "../tasks/types";
 const VALID_OP_TYPES = new Set(["create", "update", "delete"]);
 const MAX_NOTES_PER_TASK = 1000;
+
+function isTaskField(field: string): field is TaskField {
+  return VALID_TASK_FIELDS.has(field);
+}
 
 function isValidJson(s: string): boolean {
   try {
@@ -170,6 +175,11 @@ function rebuildTask(db: Database.Database, taskId: string): void {
         if (deletedAt && op.timestamp >= deletedAt) {
           deletedAt = null;
         }
+        continue;
+      }
+
+      // Skip unknown fields
+      if (!isTaskField(field)) {
         continue;
       }
 

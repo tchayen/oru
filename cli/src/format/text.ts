@@ -238,7 +238,7 @@ export function formatLogText(entries: OplogEntry[]): string {
   return lines.join("\n");
 }
 
-export interface ContextSections {
+export type ContextSections = {
   overdue: Task[];
   due_soon: Task[];
   in_progress: Task[];
@@ -246,7 +246,7 @@ export interface ContextSections {
   blocked: Task[];
   recently_completed: Task[];
   blockerTitles?: Map<string, string>;
-}
+};
 
 export function formatContextText(sections: ContextSections, now?: Date): string {
   const entries: [string, Task[]][] = [

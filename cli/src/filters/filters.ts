@@ -5,7 +5,7 @@ import { parse } from "smol-toml";
 import type { Status, Priority } from "../tasks/types";
 import type { SortField } from "../tasks/repository";
 
-export interface FilterDefinition {
+export type FilterDefinition = {
   status?: Status | Status[];
   priority?: Priority | Priority[];
   owner?: string;
@@ -19,9 +19,9 @@ export interface FilterDefinition {
   limit?: number;
   offset?: number;
   sql?: string;
-}
+};
 
-export interface ListOptions {
+export type ListOptions = {
   status?: Status | Status[];
   priority?: Priority | Priority[];
   owner?: string;
@@ -34,7 +34,7 @@ export interface ListOptions {
   all?: boolean;
   limit?: number;
   offset?: number;
-}
+};
 
 export const FILTER_KEYS = [
   "status",
