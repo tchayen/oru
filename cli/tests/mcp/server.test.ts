@@ -491,25 +491,21 @@ describe("MCP server", () => {
   });
 
   describe("add_task validation edge cases", () => {
-    it("accepts empty title", async () => {
+    it("rejects empty title", async () => {
       const result = await client.callTool({
         name: "add_task",
         arguments: { title: "" },
       });
-      expect(result.isError).toBeFalsy();
-      const task = JSON.parse((result.content as { text: string }[])[0].text);
-      expect(task.title).toBe("");
+      expect(result.isError).toBe(true);
     });
 
-    it("accepts very long title (over 1000 chars)", async () => {
+    it("rejects title over 1000 chars", async () => {
       const longTitle = "a".repeat(1500);
       const result = await client.callTool({
         name: "add_task",
         arguments: { title: longTitle },
       });
-      expect(result.isError).toBeFalsy();
-      const task = JSON.parse((result.content as { text: string }[])[0].text);
-      expect(task.title).toBe(longTitle);
+      expect(result.isError).toBe(true);
     });
 
     it("accepts empty notes array", async () => {
@@ -928,6 +924,101 @@ describe("MCP server", () => {
     const task = JSON.parse((result.content as { text: string }[])[0].text);
     expect(task.title).toBe('Task with "quotes"');
     expect(task.notes).toEqual(["Note with special chars: <>&"]);
+  });
+
+  describe("input validation", () => {
+    it("rejects title exceeding max length on add", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "a".repeat(1001) },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects too many labels on add", async () => {
+      const labels = Array.from({ length: 101 }, (_, i) => `label-${i}`);
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", labels },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects label exceeding max length on add", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", labels: ["a".repeat(201)] },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects too many notes on add", async () => {
+      const notes = Array.from({ length: 101 }, (_, i) => `note-${i}`);
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", notes },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects note exceeding max length on add", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", notes: ["a".repeat(10001)] },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects too many blocked_by on add", async () => {
+      const blocked_by = Array.from({ length: 101 }, (_, i) => `id-${i}`);
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", blocked_by },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects metadata with too many keys", async () => {
+      const metadata: Record<string, string> = {};
+      for (let i = 0; i < 51; i++) {
+        metadata[`key${i}`] = "value";
+      }
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", metadata },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects metadata key exceeding max length", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", metadata: { ["a".repeat(101)]: "value" } },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects metadata value exceeding max length", async () => {
+      const result = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Test", metadata: { key: "a".repeat(5001) } },
+      });
+      expect(result.isError).toBe(true);
+    });
+
+    it("rejects note exceeding max length on add_note", async () => {
+      const addResult = await client.callTool({
+        name: "add_task",
+        arguments: { title: "Task" },
+      });
+      const task = JSON.parse((addResult.content as { text: string }[])[0].text);
+
+      const result = await client.callTool({
+        name: "add_note",
+        arguments: { id: task.id, note: "a".repeat(10001) },
+      });
+      expect(result.isError).toBe(true);
+    });
   });
 });
 

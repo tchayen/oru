@@ -1,61 +1,28 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import type { TaskService } from "../main";
-import { STATUSES, PRIORITIES, VALID_STATUSES, VALID_PRIORITIES } from "../tasks/types";
+import { VALID_STATUSES, VALID_PRIORITIES } from "../tasks/types";
 import type { Status, Priority } from "../tasks/types";
 import { AmbiguousPrefixError, excludeDone } from "../tasks/repository";
 import {
-  DUE_DATE_REGEX,
-  MAX_TITLE_LENGTH,
-  MAX_NOTE_LENGTH,
-  MAX_LABEL_LENGTH,
-  MAX_LABELS,
-  MAX_BLOCKED_BY,
-  MAX_NOTES,
-  MAX_METADATA_KEYS,
-  MAX_METADATA_KEY_LENGTH,
-  MAX_METADATA_VALUE_LENGTH,
   sanitizeTitle,
+  StatusEnum,
+  PriorityEnum,
+  titleCreateSchema,
+  titleUpdateSchema,
+  labelsSchema,
+  notesSchema,
+  noteSchema,
+  blockedBySchema,
+  metadataSchema,
+  dueAtSchema,
 } from "../validation";
 import { isValidRecurrence } from "../recurrence/validate";
 import { isValidId } from "../id";
 
-const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
-const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
-
-const dueAtSchema = z
-  .string()
-  .regex(
-    DUE_DATE_REGEX,
-    "Invalid date format. Expected YYYY-MM-DD, YYYY-MM-DDTHH:MM, or YYYY-MM-DDTHH:MM:SS.",
-  )
-  .nullable()
-  .optional();
-
-const metadataSchema = z
-  .record(z.string(), z.unknown())
-  .refine(
-    (val) => Object.keys(val).length <= MAX_METADATA_KEYS,
-    `Metadata exceeds maximum of ${MAX_METADATA_KEYS} keys.`,
-  )
-  .refine(
-    (val) => Object.keys(val).every((k) => k.length <= MAX_METADATA_KEY_LENGTH),
-    `Metadata key exceeds maximum length of ${MAX_METADATA_KEY_LENGTH} characters.`,
-  )
-  .refine(
-    (val) =>
-      Object.values(val).every(
-        (v) => typeof v !== "string" || v.length <= MAX_METADATA_VALUE_LENGTH,
-      ),
-    `Metadata value exceeds maximum length of ${MAX_METADATA_VALUE_LENGTH} characters.`,
-  );
-
 const createTaskSchema = z.object({
   id: z.string().optional(),
-  title: z
-    .string()
-    .min(1, "Title is required.")
-    .max(MAX_TITLE_LENGTH, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`),
+  title: titleCreateSchema,
   status: StatusEnum.optional(),
   priority: PriorityEnum.optional(),
   owner: z
@@ -64,35 +31,15 @@ const createTaskSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   due_at: dueAtSchema,
-  blocked_by: z
-    .array(z.string())
-    .max(MAX_BLOCKED_BY, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items.`)
-    .optional(),
-  labels: z
-    .array(
-      z
-        .string()
-        .max(MAX_LABEL_LENGTH, `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`),
-    )
-    .max(MAX_LABELS, `labels exceeds maximum of ${MAX_LABELS} items.`)
-    .optional(),
-  notes: z
-    .array(
-      z
-        .string()
-        .max(MAX_NOTE_LENGTH, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`),
-    )
-    .max(MAX_NOTES, `notes exceeds maximum of ${MAX_NOTES} items.`)
-    .optional(),
+  blocked_by: blockedBySchema.optional(),
+  labels: labelsSchema.optional(),
+  notes: notesSchema.optional(),
   recurrence: z.string().max(500).nullable().optional(),
   metadata: metadataSchema.optional(),
 });
 
 const updateTaskSchema = z.object({
-  title: z
-    .string()
-    .max(MAX_TITLE_LENGTH, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`)
-    .optional(),
+  title: titleUpdateSchema.optional(),
   status: StatusEnum.optional(),
   priority: PriorityEnum.optional(),
   owner: z
@@ -101,22 +48,9 @@ const updateTaskSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   due_at: dueAtSchema,
-  blocked_by: z
-    .array(z.string())
-    .max(MAX_BLOCKED_BY, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items.`)
-    .optional(),
-  labels: z
-    .array(
-      z
-        .string()
-        .max(MAX_LABEL_LENGTH, `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`),
-    )
-    .max(MAX_LABELS, `labels exceeds maximum of ${MAX_LABELS} items.`)
-    .optional(),
-  note: z
-    .string()
-    .max(MAX_NOTE_LENGTH, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`)
-    .optional(),
+  blocked_by: blockedBySchema.optional(),
+  labels: labelsSchema.optional(),
+  note: noteSchema.optional(),
   clear_notes: z.boolean().optional(),
   recurrence: z.string().max(500).nullable().optional(),
   metadata: metadataSchema.optional(),

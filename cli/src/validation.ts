@@ -1,5 +1,8 @@
-// These constants and functions are shared between the CLI (cli.ts) and the
-// HTTP server (server/routes.ts). Keep them in sync when making changes.
+// These constants, functions, and Zod schemas are shared between the CLI
+// (cli.ts), HTTP server (server/routes.ts), and MCP server (mcp/server.ts).
+
+import { z } from "zod";
+import { STATUSES, PRIORITIES } from "./tasks/types";
 
 export const DUE_DATE_REGEX = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$/;
 
@@ -56,3 +59,68 @@ export function validateLabels(labels: string[]): ValidationResult {
   }
   return { valid: true };
 }
+
+// --- Shared Zod schemas (used by HTTP routes and MCP server) ---
+
+export const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
+export const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
+
+export const titleCreateSchema = z
+  .string()
+  .min(1, "Title is required.")
+  .max(MAX_TITLE_LENGTH, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
+
+export const titleUpdateSchema = z
+  .string()
+  .max(MAX_TITLE_LENGTH, `Title exceeds maximum length of ${MAX_TITLE_LENGTH} characters.`);
+
+export const labelsSchema = z
+  .array(
+    z
+      .string()
+      .max(MAX_LABEL_LENGTH, `Label exceeds maximum length of ${MAX_LABEL_LENGTH} characters.`),
+  )
+  .max(MAX_LABELS, `labels exceeds maximum of ${MAX_LABELS} items.`);
+
+export const notesSchema = z
+  .array(
+    z
+      .string()
+      .max(MAX_NOTE_LENGTH, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`),
+  )
+  .max(MAX_NOTES, `notes exceeds maximum of ${MAX_NOTES} items.`);
+
+export const noteSchema = z
+  .string()
+  .max(MAX_NOTE_LENGTH, `Note exceeds maximum length of ${MAX_NOTE_LENGTH} characters.`);
+
+export const blockedBySchema = z
+  .array(z.string())
+  .max(MAX_BLOCKED_BY, `blocked_by exceeds maximum of ${MAX_BLOCKED_BY} items.`);
+
+export const metadataSchema = z
+  .record(z.string(), z.unknown())
+  .refine(
+    (val) => Object.keys(val).length <= MAX_METADATA_KEYS,
+    `Metadata exceeds maximum of ${MAX_METADATA_KEYS} keys.`,
+  )
+  .refine(
+    (val) => Object.keys(val).every((k) => k.length <= MAX_METADATA_KEY_LENGTH),
+    `Metadata key exceeds maximum length of ${MAX_METADATA_KEY_LENGTH} characters.`,
+  )
+  .refine(
+    (val) =>
+      Object.values(val).every(
+        (v) => typeof v !== "string" || v.length <= MAX_METADATA_VALUE_LENGTH,
+      ),
+    `Metadata value exceeds maximum length of ${MAX_METADATA_VALUE_LENGTH} characters.`,
+  );
+
+export const dueAtSchema = z
+  .string()
+  .regex(
+    DUE_DATE_REGEX,
+    "Invalid date format. Expected YYYY-MM-DD, YYYY-MM-DDTHH:MM, or YYYY-MM-DDTHH:MM:SS.",
+  )
+  .nullable()
+  .optional();

@@ -1,16 +1,23 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { TaskService } from "../main";
-import { STATUSES, PRIORITIES } from "../tasks/types";
 import type { Task, CreateTaskInput, UpdateTaskInput } from "../tasks/types";
 import { excludeDone } from "../tasks/repository";
 import type { ListFilters } from "../tasks/repository";
 import { stripInternal } from "../format/json";
+import {
+  StatusEnum,
+  PriorityEnum,
+  titleCreateSchema,
+  titleUpdateSchema,
+  labelsSchema,
+  notesSchema,
+  noteSchema,
+  blockedBySchema,
+  metadataSchema,
+} from "../validation";
 
 import { VERSION } from "../version";
-
-const StatusEnum = z.enum(STATUSES as unknown as [string, ...string[]]);
-const PriorityEnum = z.enum(PRIORITIES as unknown as [string, ...string[]]);
 
 function isSqliteError(err: unknown): err is Error & { code: string } {
   return (
@@ -47,7 +54,7 @@ export function createMcpServer(service: TaskService): McpServer {
       description:
         "Create a new task. Returns the created task. Defaults to status 'todo' and priority 'medium' if not specified. Pass an 'id' field to enable idempotent creates - if a task with that ID already exists, the existing task is returned instead of creating a duplicate.",
       inputSchema: z.object({
-        title: z.string().describe("Task title, e.g. 'Fix login bug'"),
+        title: titleCreateSchema.describe("Task title, e.g. 'Fix login bug'"),
         id: z
           .string()
           .optional()
@@ -65,18 +72,15 @@ export function createMcpServer(service: TaskService): McpServer {
           .string()
           .optional()
           .describe("Due date as ISO 8601 datetime string, e.g. '2026-03-01T00:00:00.000Z'"),
-        blocked_by: z
-          .array(z.string())
+        blocked_by: blockedBySchema
           .optional()
           .describe(
             "Array of task IDs that must be completed before this task, e.g. ['0196b8e0-...']",
           ),
-        labels: z
-          .array(z.string())
+        labels: labelsSchema
           .optional()
           .describe("Array of string labels to attach, e.g. ['bug', 'frontend']"),
-        notes: z
-          .array(z.string())
+        notes: notesSchema
           .optional()
           .describe("Initial notes to add to the task, e.g. ['Started migration']"),
         recurrence: z
@@ -86,8 +90,7 @@ export function createMcpServer(service: TaskService): McpServer {
           .describe(
             "Recurrence rule in RRULE format, e.g. 'FREQ=DAILY', 'FREQ=WEEKLY;BYDAY=MO,WE,FR'. Prefix with 'after:' for completion-based recurrence (next due computed from completion time instead of current due date), e.g. 'after:FREQ=WEEKLY'. Set to null to remove recurrence.",
           ),
-        metadata: z
-          .record(z.string(), z.unknown())
+        metadata: metadataSchema
           .optional()
           .describe("Arbitrary JSON object for storing custom key-value data, e.g. {pr: 42}"),
       }),
@@ -119,7 +122,7 @@ export function createMcpServer(service: TaskService): McpServer {
         "Update fields on an existing task. Only send the fields you want to change - omitted fields are left unchanged. Notes are append-only: use the 'note' field to add a new note without affecting existing ones. Returns the updated task.",
       inputSchema: z.object({
         id: z.string().describe("Task ID or unique ID prefix, e.g. '0196b8e0' or full UUID"),
-        title: z.string().optional().describe("New title"),
+        title: titleUpdateSchema.optional().describe("New title"),
         status: StatusEnum.optional().describe(
           "New status. Valid values: todo, in_progress, in_review, done.",
         ),
@@ -134,12 +137,10 @@ export function createMcpServer(service: TaskService): McpServer {
           .describe(
             "New due date as ISO 8601 datetime string, e.g. '2026-03-01T00:00:00.000Z'. Set to null to clear.",
           ),
-        blocked_by: z
-          .array(z.string())
+        blocked_by: blockedBySchema
           .optional()
           .describe("Array of task IDs that block this task. Replaces the existing list."),
-        labels: z
-          .array(z.string())
+        labels: labelsSchema
           .optional()
           .describe(
             "Array of string labels. Replaces the existing list, e.g. ['bug', 'frontend'].",
@@ -151,12 +152,10 @@ export function createMcpServer(service: TaskService): McpServer {
           .describe(
             "Recurrence rule in RRULE format, e.g. 'FREQ=DAILY', 'FREQ=WEEKLY;BYDAY=MO,WE,FR'. Prefix with 'after:' for completion-based (next due from completion time). Set to null to remove recurrence.",
           ),
-        metadata: z
-          .record(z.string(), z.unknown())
+        metadata: metadataSchema
           .optional()
           .describe("Arbitrary JSON object. Merged with existing metadata."),
-        note: z
-          .string()
+        note: noteSchema
           .optional()
           .describe("A note to append to the task. Append-only - existing notes are not affected."),
       }),
@@ -319,7 +318,7 @@ export function createMcpServer(service: TaskService): McpServer {
         "Append a note to an existing task. Notes are append-only and deduplicated - adding the same note text twice has no effect. Returns the updated task.",
       inputSchema: z.object({
         id: z.string().describe("Task ID or unique ID prefix, e.g. '0196b8e0' or full UUID"),
-        note: z.string().describe("Note text to append, e.g. 'Blocked on API review'"),
+        note: noteSchema.describe("Note text to append, e.g. 'Blocked on API review'"),
       }),
     },
     async ({ id, note }) => {
