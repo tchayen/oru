@@ -94,3 +94,12 @@ Defaults to `~/.oru/oru.db`. Override with `ORU_DB_PATH` env var.
 - Do not add `Co-Authored-By` lines to commits
 - Do not add "Generated with Claude Code" to PR descriptions
 - Run `pnpm check` before pushing
+
+## Known sync points
+
+These duplications are inherent to the architecture. They must be kept in sync manually when changed:
+
+1. **Priority sort order** — `PRIORITY_ORDER` in `app/utils/api.ts` mirrors the SQL `CASE` expression in `cli/src/tasks/repository.ts`
+2. **Shell completions** — command lists in `cli/src/completions/{bash,zsh,fish}.ts` mirror CLI commands in `cli/src/cli.ts`
+3. **Oplog replay fields** — switch cases in `cli/src/oplog/replay.ts` must cover all task fields from `cli/src/tasks/types.ts`
+4. **"Hide done" default** — the default behavior of excluding done tasks is implemented independently at the CLI (`cli.ts`), HTTP (`server/routes.ts`), MCP (`mcp/server.ts`), and repository layers
