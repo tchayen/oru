@@ -576,16 +576,8 @@
   position: absolute;
   top: 6px;
   right: 6px;
-  opacity: 0;
-  transition: opacity 150ms ease;
-}
-
-.prose .mini-code-wrap:hover .mini-code-copy {
-  opacity: 1;
-}
-
-.prose .mini-code-wrap .mini-code-copy:focus-visible {
-  opacity: 1;
+  bottom: 6px;
+  aspect-ratio: 1;
 }
 
 .prose .mini-code-wrap .mini-code-copy.copied {

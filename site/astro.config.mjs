@@ -54,7 +54,7 @@ export default defineConfig({
                 tagName: "button",
                 properties: {
                   class:
-                    "mini-code-copy copy-btn flex items-center justify-center w-8 h-8 rounded-md text-text-muted transition-all duration-150 cursor-pointer hover:text-text-secondary hover:bg-white/5",
+                    "mini-code-copy copy-btn flex items-center justify-center rounded-md text-text-muted transition-all duration-150 cursor-pointer hover:text-text-secondary hover:bg-white/5",
                   "data-copy-code": true,
                   "aria-label": "Copy",
                   type: "button",
