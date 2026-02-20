@@ -570,8 +570,18 @@
   font-size: inherit;
 }
 
-.prose .mini-code-wrap.has-copy pre code {
-  padding-right: 48px;
+.prose .mini-code-wrap.has-copy {
+  background: var(--color-bg-inset);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+}
+
+.prose .mini-code-wrap.has-copy pre {
+  border: none;
+  background: none !important;
+  margin: 0;
+  margin-right: 44px;
+  border-radius: 0;
 }
 
 .prose .mini-code-wrap pre code .line {
