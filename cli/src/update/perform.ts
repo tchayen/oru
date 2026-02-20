@@ -3,10 +3,9 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { compareVersions } from "./check";
+import { fetchLatestVersion } from "./registry";
 
 import { VERSION } from "../version";
-
-const REQUEST_TIMEOUT_MS = 10000;
 
 interface InstallMeta {
   install_method: string;
@@ -42,20 +41,6 @@ function detectInstallMethod(): "script" | "npm" {
     return "script";
   }
   return "npm";
-}
-
-async function fetchLatestVersion(): Promise<string> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  const res = await fetch("https://registry.npmjs.org/@tchayen/oru/latest", {
-    signal: controller.signal,
-  });
-  clearTimeout(timer);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch latest version: ${res.status}`);
-  }
-  const data = (await res.json()) as { version: string };
-  return data.version;
 }
 
 function getPlatform(): string {
@@ -110,6 +95,9 @@ async function updateViaScript(version: string): Promise<void> {
 
 export async function performUpdate(checkOnly: boolean): Promise<void> {
   const latest = await fetchLatestVersion();
+  if (!latest) {
+    throw new Error("Failed to fetch latest version from npm registry.");
+  }
   const current = VERSION;
 
   if (compareVersions(latest, current) <= 0) {

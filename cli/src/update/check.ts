@@ -4,6 +4,7 @@ import os from "os";
 import type { Config } from "../config/config";
 
 import { VERSION } from "../version";
+import { fetchLatestVersion } from "./registry";
 
 interface UpdateState {
   lastChecked: number;
@@ -11,7 +12,6 @@ interface UpdateState {
 }
 
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
-const REQUEST_TIMEOUT_MS = 3000;
 
 function getStatePath(): string {
   const oruDir = process.env.ORU_INSTALL_DIR ?? path.join(os.homedir(), ".oru");
@@ -44,24 +44,6 @@ export function compareVersions(a: string, b: string): number {
     }
   }
   return 0;
-}
-
-async function fetchLatestVersion(): Promise<string | null> {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    const res = await fetch("https://registry.npmjs.org/@tchayen/oru/latest", {
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (!res.ok) {
-      return null;
-    }
-    const data = (await res.json()) as { version?: string };
-    return data.version ?? null;
-  } catch {
-    return null;
-  }
 }
 
 export async function checkForUpdate(config: Config): Promise<string | null> {
