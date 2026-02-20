@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import { transformerMetaHighlight } from "@shikijs/transformers";
 import rehypeWrap from "rehype-wrap-all";
+import { oruTheme } from "./src/shiki-theme.mjs";
 
 export default defineConfig({
   // Preserve whitespace in terminal demo <pre>-like spans.
@@ -12,7 +13,7 @@ export default defineConfig({
   markdown: {
     rehypePlugins: [[rehypeWrap, { selector: "table", wrapper: "div.table-wrap" }]],
     shikiConfig: {
-      theme: "github-dark-default",
+      theme: oruTheme,
       transformers: [
         transformerMetaHighlight(),
         {

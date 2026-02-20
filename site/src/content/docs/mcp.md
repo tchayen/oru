@@ -13,7 +13,7 @@ oru includes a built-in [Model Context Protocol](https://modelcontextprotocol.io
 
 Run `oru mcp` to start the server over stdio. MCP clients launch it as a subprocess automatically – you don't run it manually.
 
-```bash
+```bash copy
 oru mcp
 ```
 
@@ -129,7 +129,7 @@ Open **Zed → Settings** (`cmd+,`) and add to `~/.config/zed/settings.json`:
 
 If `oru` is not on the `PATH` inside your AI client's process (common on macOS when apps don't inherit shell config), use the full binary path instead:
 
-```bash
+```bash copy
 which oru
 ```
 

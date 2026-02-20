@@ -95,7 +95,7 @@ oru update hJ7kMp3nQrs -t "New title" -p high
 
 Labels are additive by default. Use `--unlabel` to remove a label:
 
-```bash
+```bash copy
 oru update hJ7kMp3nQrs --unlabel wontfix
 ```
 
@@ -158,7 +158,7 @@ The `labels` command lists all labels currently in use across your tasks.
 
 Notes are append-only comments on a task. Add a note with `-n` on `add` or `update`:
 
-```bash
+```bash copy
 oru update hJ7kMp3nQrs -n "Discussed in standup, moving to next sprint"
 ```
 
@@ -209,6 +209,14 @@ Supported patterns:
 
 When you mark a recurring task as `done`, oru automatically creates the next occurrence with the same title, priority, labels, and recurrence rule.
 
+### Removing recurrence
+
+Use `--repeat none` on `update` to stop a task from recurring. The current task remains; it just won't spawn a new occurrence when completed.
+
+```bash copy
+oru update 019414a3 -r none
+```
+
 ## Blocked-by dependencies
 
 Tasks can be blocked by other tasks:
@@ -246,8 +254,11 @@ Returns:
 
 View the change history of a task:
 
-```bash
+```bash copy
 oru log hJ7kMp3nQrs
+```
+
+```bash
 oru log hJ7kMp3nQrs --json
 ```
 
@@ -276,7 +287,10 @@ Create manual backups:
 
 ```bash
 oru backup              # to default location
-oru backup ~/backups/   # to specific directory
+```
+
+```bash copy
+oru backup ~/backups/
 ```
 
 Or configure automatic backups in `~/.oru/config.toml`:

@@ -41,7 +41,7 @@ Download pre-built binaries from the [GitHub Releases](https://github.com/tchaye
 
 ### Verify installation
 
-```bash
+```bash copy
 oru --version
 ```
 
@@ -63,7 +63,7 @@ Replace `<id>` with the task ID shown in the list output. You only need to type 
 
 Tab completion makes oru much faster to use. Install for your shell:
 
-```bash
+```bash copy
 oru completions
 ```
 
@@ -104,13 +104,13 @@ Task IDs and label names are completed dynamically at runtime – the completion
 
 Create a config file with documented defaults:
 
-```bash
+```bash copy
 oru config init
 ```
 
 This creates `~/.oru/config.toml`. Print the resolved path at any time:
 
-```bash
+```bash copy
 oru config path
 ```
 
