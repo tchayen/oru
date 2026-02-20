@@ -558,6 +558,7 @@
 
 .prose .mini-code-wrap pre code .line {
   display: block;
+  min-height: 1.6em;
 }
 
 .prose .mini-code-wrap pre code {
