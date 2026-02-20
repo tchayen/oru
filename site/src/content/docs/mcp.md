@@ -154,3 +154,8 @@ Pass `ORU_DB_PATH` in the `env` block if you want the MCP server to use a differ
 Drop an `AGENTS.md` (or `CLAUDE.md`) file in your project root to tell AI agents how to use oru for task tracking in that project. This works alongside the MCP server – the file gives agents high-level guidance while the MCP tools give them direct access to your task list.
 
 See the [repository](https://github.com/tchayen/oru) for an example.
+
+## See also
+
+- [Getting started](/docs/getting-started) – install, configure, and run your first commands
+- [Usage guide](/docs/guide) – every command and feature in detail

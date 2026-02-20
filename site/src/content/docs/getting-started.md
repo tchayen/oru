@@ -137,4 +137,7 @@ You can also set `output_format` per-command with `--json` or `--plaintext`, or 
 
 ---
 
-Ready to dive deeper? The [usage guide](/docs/guide) covers every command and feature in detail.
+## Next steps
+
+- [Usage guide](/docs/guide) – every command and feature in detail
+- [MCP server](/docs/mcp) – connect oru to AI agents via Model Context Protocol

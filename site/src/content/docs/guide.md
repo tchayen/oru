@@ -304,3 +304,8 @@ Update oru to the latest version:
 ```bash
 oru self-update
 ```
+
+## See also
+
+- [Getting started](/docs/getting-started) – install, configure, and run your first commands
+- [MCP server](/docs/mcp) – connect oru to AI agents via Model Context Protocol

@@ -15,6 +15,21 @@ const DOCS_OUTPUT_DIR = path.join(PUBLIC_DIR, "docs");
 // Order matters for llms.txt
 const DOC_ORDER = ["getting-started", "guide", "api", "mcp"];
 
+const DOC_TOC = `## Documentation
+
+- [Getting started](/docs/getting-started.md) – install, configure, and run your first commands
+- [Usage guide](/docs/guide.md) – every command and feature in detail
+- [MCP server](/docs/mcp.md) – connect oru to AI agents via Model Context Protocol
+`;
+
+function injectToc(content) {
+  // Insert ToC after the frontmatter closing ---
+  const end = content.indexOf("---", content.indexOf("---") + 3);
+  if (end === -1) return content;
+  const insertAt = end + 3;
+  return content.slice(0, insertAt) + "\n\n" + DOC_TOC + content.slice(insertAt);
+}
+
 function main() {
   // Ensure output directories exist
   fs.mkdirSync(DOCS_OUTPUT_DIR, { recursive: true });
@@ -31,9 +46,9 @@ function main() {
     const content = fs.readFileSync(mdPath, "utf-8");
     docs.push({ slug, content });
 
-    // Copy to public/docs/{slug}.md
+    // Copy to public/docs/{slug}.md with ToC injected
     const outputPath = path.join(DOCS_OUTPUT_DIR, `${slug}.md`);
-    fs.writeFileSync(outputPath, content);
+    fs.writeFileSync(outputPath, injectToc(content));
     console.log(`Generated ${outputPath}`);
   }
 
