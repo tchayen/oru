@@ -16,7 +16,7 @@ Every task moves through four statuses:
 3. `in_review` – waiting for review or feedback
 4. `done` – completed
 
-Use `oru start`, `oru review`, and `oru done` as shortcuts, or set the status explicitly with `oru update <id> -s <status>`.
+Use `oru start`, `oru review`, and `oru done` as shortcuts, or set the status explicitly with `oru update $ID -s $STATUS`.
 
 ## Adding tasks
 

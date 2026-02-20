@@ -53,11 +53,11 @@ oru stores everything in a local SQLite database. No accounts, no cloud – just
 oru add "Read the oru docs"
 oru add "Build something great" -p high -d friday
 oru list
-oru start <id>
-oru done <id>
+oru start $ID
+oru done $ID
 ```
 
-Replace `<id>` with the task ID shown in the list output. You only need to type enough characters for a unique prefix – `oru done 019` works if no other ID starts with `019`.
+Replace `$ID` with the task ID shown in the list output. You only need to type enough characters for a unique prefix – `oru done 019` works if no other ID starts with `019`.
 
 ## Shell completions
 
