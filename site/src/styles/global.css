@@ -554,18 +554,15 @@
   min-width: 100%;
   padding-right: 16px;
   color: inherit;
+  background: none;
+  border: none;
+  font-size: inherit;
 }
 
 .prose .mini-code-wrap pre code .line {
   display: block;
+  white-space: pre;
   min-height: 1.6em;
-}
-
-.prose .mini-code-wrap pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: inherit;
 }
 
 .prose .mini-code-wrap .mini-code-copy {
