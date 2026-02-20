@@ -126,24 +126,19 @@ curl -X PATCH \
 
 Request body:
 
-| Field               | Type     | Description                         |
-| ------------------- | -------- | ----------------------------------- |
-| `title`             | string   | New title                           |
-| `status`            | string   | New status                          |
-| `priority`          | string   | New priority                        |
-| `owner`             | string?  | New owner (null to clear)           |
-| `due_at`            | string?  | New due date (null to clear)        |
-| `blocked_by`        | string[] | Replace blocked_by list             |
-| `add_blocked_by`    | string[] | Add to blocked_by list              |
-| `remove_blocked_by` | string[] | Remove from blocked_by list         |
-| `labels`            | string[] | Replace labels                      |
-| `add_labels`        | string[] | Add labels                          |
-| `remove_labels`     | string[] | Remove labels                       |
-| `note`              | string   | Append a note                       |
-| `clear_notes`       | boolean  | Clear all notes before adding       |
-| `recurrence`        | string?  | New recurrence rule (null to clear) |
-| `metadata`          | object   | Merge into existing metadata        |
-| `remove_metadata`   | string[] | Keys to remove from metadata        |
+| Field         | Type     | Description                         |
+| ------------- | -------- | ----------------------------------- |
+| `title`       | string   | New title                           |
+| `status`      | string   | New status                          |
+| `priority`    | string   | New priority                        |
+| `owner`       | string?  | New owner (null to clear)           |
+| `due_at`      | string?  | New due date (null to clear)        |
+| `blocked_by`  | string[] | Replace blocked_by list             |
+| `labels`      | string[] | Replace labels                      |
+| `note`        | string   | Append a note                       |
+| `clear_notes` | boolean  | Clear all notes before adding       |
+| `recurrence`  | string?  | New recurrence rule (null to clear) |
+| `metadata`    | object   | Merge into existing metadata        |
 
 ### DELETE /tasks/:id
 
@@ -155,39 +150,7 @@ curl -X DELETE \
   http://localhost:2358/tasks/hJ7kMp3nQrs
 ```
 
-Returns `204` on success.
-
-### GET /context
-
-Get a summary of tasks needing attention.
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:2358/context
-```
-
-Returns:
-
-```json
-{
-  "overdue": [...],
-  "due_today": [...],
-  "due_this_week": [...],
-  "in_progress": [...],
-  "actionable": [...]
-}
-```
-
-### GET /labels
-
-List all labels in use.
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:2358/labels
-```
-
-Returns an array of label strings.
+Returns `200` with `{ "id": "...", "deleted": true }` on success.
 
 ---
 
@@ -195,7 +158,7 @@ Returns an array of label strings.
 
 ```json
 {
-  "id": "0196b8e0-1234-7000-8000-000000000001",
+  "id": "hJ7kMp3nQrs",
   "title": "Fix login bug",
   "status": "in_progress",
   "priority": "high",
@@ -216,7 +179,7 @@ Returns an array of label strings.
 All errors return JSON with an `error` field:
 
 ```json
-{ "error": "Task not found" }
+{ "error": "not_found", "id": "hJ7kMp3nQrs" }
 ```
 
 | Status | Meaning                                 |

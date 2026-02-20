@@ -220,7 +220,7 @@ Tasks can be blocked by other tasks:
 ```bash
 oru add "Deploy" -b abc123 def456
 oru update xyz789 -b abc123
-oru update xyz789 --unblock abc123
+oru update xyz789 -b abc123 def456  # replaces the full blocked-by list
 ```
 
 Use `--actionable` to filter to tasks with no incomplete blockers:
@@ -241,10 +241,11 @@ oru context --json
 Returns:
 
 - Overdue tasks
-- Tasks due today
-- Tasks due this week
-- Tasks currently in progress
-- Actionable tasks (not blocked)
+- Due soon (within 48 hours)
+- In progress tasks
+- Actionable tasks (not blocked, not done)
+- Blocked tasks
+- Recently completed tasks
 
 ## Change history
 
