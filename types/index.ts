@@ -6,7 +6,22 @@ export const PRIORITIES = ["low", "medium", "high", "urgent"] as const;
 export type Priority = (typeof PRIORITIES)[number];
 export const VALID_PRIORITIES: ReadonlySet<string> = new Set<string>(PRIORITIES);
 
-export interface Task {
+/** Mutable task fields that appear in oplog update operations. */
+export const TASK_FIELDS = [
+  "title",
+  "status",
+  "priority",
+  "owner",
+  "due_at",
+  "recurrence",
+  "blocked_by",
+  "labels",
+  "metadata",
+] as const;
+export type TaskField = (typeof TASK_FIELDS)[number];
+export const VALID_TASK_FIELDS: ReadonlySet<string> = new Set<string>(TASK_FIELDS);
+
+export type Task = {
   id: string;
   title: string;
   status: Status;
@@ -21,9 +36,9 @@ export interface Task {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-}
+};
 
-export interface CreateTaskInput {
+export type CreateTaskInput = {
   id?: string;
   title: string;
   status?: Status;
@@ -35,9 +50,9 @@ export interface CreateTaskInput {
   labels?: string[];
   notes?: string[];
   metadata?: Record<string, unknown>;
-}
+};
 
-export interface UpdateTaskInput {
+export type UpdateTaskInput = {
   title?: string;
   status?: Status;
   priority?: Priority;
@@ -48,4 +63,4 @@ export interface UpdateTaskInput {
   labels?: string[];
   note?: string;
   metadata?: Record<string, unknown>;
-}
+};

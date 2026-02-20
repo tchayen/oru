@@ -1,9 +1,9 @@
 import type Database from "better-sqlite3";
 
-export interface Migration {
+export type Migration = {
   version: number;
   up: (db: Database.Database) => void;
-}
+};
 
 function getCurrentVersion(db: Database.Database): number {
   const row = db.prepare("SELECT value FROM meta WHERE key = 'schema_version'").get() as

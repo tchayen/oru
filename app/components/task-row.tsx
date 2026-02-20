@@ -38,10 +38,10 @@ function formatDueDate(dueAt: string): { label: string; overdue: boolean } {
   return { label: formatted, overdue: false };
 }
 
-interface TaskRowProps {
+type TaskRowProps = {
   task: Task;
   onToggleStatus: (task: Task) => void;
-}
+};
 
 export function TaskRow({ task, onToggleStatus }: TaskRowProps) {
   const statusIcon = STATUS_ICONS[task.status];

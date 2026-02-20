@@ -1,6 +1,6 @@
 export type OpType = "create" | "update" | "delete";
 
-export interface OplogEntry {
+export type OplogEntry = {
   id: string;
   task_id: string;
   device_id: string;
@@ -8,4 +8,4 @@ export interface OplogEntry {
   field: string | null;
   value: string | null;
   timestamp: string;
-}
+};

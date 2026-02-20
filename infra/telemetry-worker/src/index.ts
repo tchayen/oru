@@ -1,8 +1,8 @@
-interface Env {
+type Env = {
   DB: D1Database;
-}
+};
 
-interface TelemetryEvent {
+type TelemetryEvent = {
   cli_version: string;
   command: string;
   flags: string[];
@@ -13,7 +13,7 @@ interface TelemetryEvent {
   duration_ms: number;
   exit_code: number;
   error?: string;
-}
+};
 
 const MAX_STRING_LENGTH = 256;
 const MAX_FLAGS = 50;

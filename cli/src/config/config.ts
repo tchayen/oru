@@ -15,7 +15,7 @@ export type Weekday =
 export type OutputFormat = "text" | "json";
 export type NextMonthBehavior = "same_day" | "first";
 
-export interface Config {
+export type Config = {
   date_format: DateFormat;
   first_day_of_week: Weekday;
   output_format: OutputFormat;
@@ -25,7 +25,7 @@ export interface Config {
   telemetry_notice_shown: boolean;
   backup_path: string | null;
   backup_interval: number;
-}
+};
 
 const DEFAULTS: Config = {
   date_format: "mdy",

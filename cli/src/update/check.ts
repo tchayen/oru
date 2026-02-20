@@ -6,10 +6,10 @@ import type { Config } from "../config/config";
 import { VERSION } from "../version";
 import { fetchLatestVersion } from "./registry";
 
-interface UpdateState {
+type UpdateState = {
   lastChecked: number;
   latestVersion: string;
-}
+};
 
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 

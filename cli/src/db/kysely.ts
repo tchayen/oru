@@ -1,7 +1,7 @@
 import { Kysely, SqliteDialect } from "kysely";
 import type BetterSqlite3 from "better-sqlite3";
 
-export interface TaskTable {
+export type TaskTable = {
   id: string;
   title: string;
   status: string;
@@ -16,9 +16,9 @@ export interface TaskTable {
   recurrence: string | null;
   updated_at: string;
   deleted_at: string | null;
-}
+};
 
-export interface OplogTable {
+export type OplogTable = {
   id: string;
   task_id: string;
   device_id: string;
@@ -26,18 +26,18 @@ export interface OplogTable {
   field: string | null;
   value: string | null;
   timestamp: string;
-}
+};
 
-export interface MetaTable {
+export type MetaTable = {
   key: string;
   value: string;
-}
+};
 
-export interface DB {
+export type DB = {
   tasks: TaskTable;
   oplog: OplogTable;
   meta: MetaTable;
-}
+};
 
 export function createKysely(db: BetterSqlite3.Database): Kysely<DB> {
   return new Kysely<DB>({

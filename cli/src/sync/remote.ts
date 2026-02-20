@@ -1,11 +1,11 @@
 import type { OplogEntry } from "../oplog/types";
 
-export interface PullResult {
+export type PullResult = {
   entries: OplogEntry[];
   cursor: string | null;
-}
+};
 
-export interface RemoteBackend {
+export type RemoteBackend = {
   push(entries: OplogEntry[]): Promise<void>;
   pull(cursor: string | null): Promise<PullResult>;
-}
+};

@@ -8,17 +8,17 @@ import { generateFishCompletions } from "./fish";
 
 export type Shell = "bash" | "zsh" | "fish";
 
-export interface InstallPaths {
+export type InstallPaths = {
   scriptPath: string;
   rcPath: string | null;
-}
+};
 
-export interface InstallResult {
+export type InstallResult = {
   shell: Shell;
   scriptPath: string;
   rcPath: string | null;
   sourceLineAdded: boolean;
-}
+};
 
 export function detectShell(): Shell | null {
   const shell = process.env.SHELL;

@@ -8,12 +8,12 @@ const DAY_INDEX: Record<string, number> = {
   SA: 6,
 };
 
-interface RRule {
+type RRule = {
   freq: string;
   interval: number;
   byDay: string[] | null;
   byMonthDay: number | null;
-}
+};
 
 function parseRRule(rrule: string): RRule {
   const parts = rrule.split(";");

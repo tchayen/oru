@@ -44,9 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function animateDiagram(nodes: NodeListOf<HTMLElement>, connectors: NodeListOf<HTMLElement>) {
-    const allItems: Array<
-      { type: "node"; el: HTMLElement } | { type: "connector"; el: HTMLElement }
-    > = [];
+    const allItems: ({ type: "node"; el: HTMLElement } | { type: "connector"; el: HTMLElement })[] =
+      [];
     for (let i = 0; i < nodes.length; i++) {
       allItems.push({ type: "node", el: nodes[i] });
       if (i < connectors.length) {
