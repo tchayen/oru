@@ -98,7 +98,7 @@ oru update <id> --repeat none --json         # remove recurrence
 ```
 
 Set `ORU_FORMAT=json` or `output_format = "json"` in
-`~/.config/oru/config.toml` to default to JSON output.
+`~/.oru/config.toml` to default to JSON output.
 
 ## Tips
 
