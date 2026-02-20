@@ -799,3 +799,26 @@ describe("PATCH /tasks/:id metadata merge", () => {
     expect(body.metadata).toEqual({ pr: 42, sprint: "5" });
   });
 });
+
+describe("PATCH /tasks/:id clearing array fields", () => {
+  it("PATCH clears blocked_by with empty array", async () => {
+    const a = await req("POST", "/tasks", { title: "Task A" }).then((r) => r.json());
+    const b = await req("POST", "/tasks", { title: "Task B", blocked_by: [a.id] }).then((r) =>
+      r.json(),
+    );
+    expect(b.blocked_by).toEqual([a.id]);
+
+    const patched = await req("PATCH", `/tasks/${b.id}`, { blocked_by: [] }).then((r) => r.json());
+    expect(patched.blocked_by).toEqual([]);
+  });
+
+  it("PATCH clears labels with empty array", async () => {
+    const task = await req("POST", "/tasks", { title: "Task", labels: ["bug"] }).then((r) =>
+      r.json(),
+    );
+    expect(task.labels).toEqual(["bug"]);
+
+    const patched = await req("PATCH", `/tasks/${task.id}`, { labels: [] }).then((r) => r.json());
+    expect(patched.labels).toEqual([]);
+  });
+});

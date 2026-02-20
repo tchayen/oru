@@ -345,10 +345,10 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       if (priority) {
         updateFields.priority = priority;
       }
-      if (blocked_by) {
+      if (blocked_by !== undefined) {
         updateFields.blocked_by = blocked_by;
       }
-      if (labels) {
+      if (labels !== undefined) {
         updateFields.labels = labels;
       }
       if (owner !== undefined) {
