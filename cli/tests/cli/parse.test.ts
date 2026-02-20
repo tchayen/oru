@@ -2568,5 +2568,171 @@ describe("CLI parse", () => {
       expect(content).toContain("todo");
       expect(content).toContain("in_progress");
     });
+
+    it("filter list --json outputs valid JSON", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "filter", "list", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.filters).toContain("mine");
+    });
+
+    it("filter list --json with no filters outputs empty array", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "list", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.filters).toEqual([]);
+    });
+
+    it("filter show --json outputs filter definition", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "filter", "show", "mine", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.name).toBe("mine");
+      expect(parsed.owner).toBe("alice");
+    });
+
+    it("filter show --json not found outputs error JSON", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "show", "ghost", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.error).toBe("not_found");
+      expect(parsed.name).toBe("ghost");
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+
+    it("filter remove --json outputs valid JSON", async () => {
+      const p1 = createProgram(db, capture());
+      await p1.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice"]);
+
+      const p2 = createProgram(db, capture());
+      await p2.parseAsync(["node", "oru", "filter", "remove", "mine", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.name).toBe("mine");
+      expect(parsed.message).toContain("Removed");
+    });
+
+    it("filter remove --json not found outputs error JSON", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "remove", "ghost", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.error).toBe("not_found");
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+
+    it("filter add --json outputs saved filter", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "add", "mine", "--owner", "alice", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.name).toBe("mine");
+      expect(parsed.filter.owner).toBe("alice");
+      expect(parsed.message).toContain("Saved");
+    });
+
+    it("filter add --json with no flags outputs error JSON", async () => {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "filter", "add", "empty", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.error).toBe("validation");
+      expect(process.exitCode).toBe(1);
+      process.exitCode = 0;
+    });
+  });
+
+  // JSON output for config commands
+  it("config path --json outputs valid JSON", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "config", "path", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.path).toBeDefined();
+    expect(typeof parsed.path).toBe("string");
+  });
+
+  // JSON output for telemetry commands
+  it("telemetry status --json outputs valid JSON", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "telemetry", "status", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.enabled).toBe(true);
+  });
+
+  it("telemetry status --json shows disabled reason", async () => {
+    process.env.DO_NOT_TRACK = "1";
+    try {
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "telemetry", "status", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.enabled).toBe(false);
+      expect(parsed.reason).toBeDefined();
+    } finally {
+      delete process.env.DO_NOT_TRACK;
+    }
+  });
+
+  it("telemetry enable --json outputs valid JSON", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-telemetry-json-"));
+    process.env.ORU_CONFIG_DIR = tmpDir;
+    try {
+      fs.writeFileSync(path.join(tmpDir, "config.toml"), "telemetry = false\n");
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "telemetry", "enable", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.enabled).toBe(true);
+    } finally {
+      delete process.env.ORU_CONFIG_DIR;
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("telemetry disable --json outputs valid JSON", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-telemetry-json-"));
+    process.env.ORU_CONFIG_DIR = tmpDir;
+    try {
+      fs.writeFileSync(path.join(tmpDir, "config.toml"), "telemetry = true\n");
+      const p = createProgram(db, capture());
+      await p.parseAsync(["node", "oru", "telemetry", "disable", "--json"]);
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.enabled).toBe(false);
+    } finally {
+      delete process.env.ORU_CONFIG_DIR;
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  // JSON output for backup command
+  it("backup --json outputs valid JSON", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oru-backup-json-"));
+    try {
+      const dbPath = path.join(tmpDir, "oru.db");
+      const fileDb = new (await import("better-sqlite3")).default(dbPath);
+      const { initSchema } = await import("../../src/db/schema.js");
+      fileDb.pragma("journal_mode = WAL");
+      fileDb.pragma("foreign_keys = ON");
+      initSchema(fileDb);
+      const p = createProgram(fileDb, capture());
+      await p.parseAsync(["node", "oru", "backup", tmpDir, "--json"]);
+      fileDb.close();
+      const parsed = JSON.parse(output.trim());
+      expect(parsed.path).toBeDefined();
+      expect(parsed.path).toContain("oru-");
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true });
+    }
+  });
+
+  it("backup --json with no path outputs error JSON", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync(["node", "oru", "backup", "--json"]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(process.exitCode).toBe(1);
+    process.exitCode = 0;
   });
 });

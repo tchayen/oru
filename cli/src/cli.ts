@@ -1114,22 +1114,37 @@ export function createProgram(
   configCmd
     .command("init")
     .description("Create a default config file with documented options")
-    .action(() => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       const configPath = getConfigPath();
       if (fs.existsSync(configPath)) {
-        write(`Config file already exists at ${configPath}`);
+        write(
+          json
+            ? JSON.stringify({ message: "Config file already exists.", path: configPath })
+            : `Config file already exists at ${configPath}`,
+        );
         return;
       }
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       fs.writeFileSync(configPath, DEFAULT_CONFIG_TOML);
-      write(`Created ${configPath}`);
+      write(
+        json
+          ? JSON.stringify({ message: "Config file created.", path: configPath })
+          : `Created ${configPath}`,
+      );
     });
 
   configCmd
     .command("path")
     .description("Print the config file path")
-    .action(() => {
-      write(getConfigPath());
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
+      const configPath = getConfigPath();
+      write(json ? JSON.stringify({ path: configPath }) : configPath);
     });
 
   // filter
@@ -1138,9 +1153,16 @@ export function createProgram(
   filterCmd
     .command("list")
     .description("List all saved filters")
-    .action(() => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       const filters = loadFilters();
       const names = Object.keys(filters);
+      if (json) {
+        write(JSON.stringify({ filters: names }));
+        return;
+      }
       if (names.length === 0) {
         write("No saved filters. Use 'oru filter add <name> [flags]' to create one.");
         return;
@@ -1153,12 +1175,23 @@ export function createProgram(
   filterCmd
     .command("show <name>")
     .description("Show a filter's definition")
-    .action((name: string) => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((name: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       const filters = loadFilters();
       const filter = filters[name];
       if (!filter) {
-        write(`Filter '${name}' not found.`);
+        if (json) {
+          write(JSON.stringify({ error: "not_found", name }));
+        } else {
+          write(`Filter '${name}' not found.`);
+        }
         process.exitCode = 1;
+        return;
+      }
+      if (json) {
+        write(JSON.stringify({ name, ...filter }));
         return;
       }
       const lines: string[] = [`[${name}]`];
@@ -1177,16 +1210,27 @@ export function createProgram(
   filterCmd
     .command("remove <name>")
     .description("Delete a saved filter")
-    .action((name: string) => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((name: string, opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       const filters = loadFilters();
       if (!(name in filters)) {
-        write(`Filter '${name}' not found.`);
+        if (json) {
+          write(JSON.stringify({ error: "not_found", name }));
+        } else {
+          write(`Filter '${name}' not found.`);
+        }
         process.exitCode = 1;
         return;
       }
       delete filters[name];
       saveFilters(filters);
-      write(`Removed filter '${name}'.`);
+      write(
+        json
+          ? JSON.stringify({ message: `Removed filter '${name}'.`, name })
+          : `Removed filter '${name}'.`,
+      );
     });
 
   filterCmd
@@ -1225,6 +1269,8 @@ export function createProgram(
     .option("--limit <n>", "Maximum number of tasks to return", Number)
     .option("--offset <n>", "Number of tasks to skip", Number)
     .option("--sql <condition>", "Raw SQL WHERE condition (e.g. \"priority = 'urgent'\")")
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
     .addHelpText(
       "after",
       "\nExamples:\n  $ oru filter add mine --owner tchayen --status todo\n  $ oru filter add upcoming --due this-week --sort due\n  $ oru filter add edge --sql \"priority = 'urgent'\"",
@@ -1246,8 +1292,11 @@ export function createProgram(
           limit?: number;
           offset?: number;
           sql?: string;
+          json?: boolean;
+          plaintext?: boolean;
         },
       ) => {
+        const json = useJson(opts);
         const def: FilterDefinition = {};
         if (opts.status !== undefined) {
           def.status = opts.status;
@@ -1290,7 +1339,11 @@ export function createProgram(
         }
 
         if (Object.keys(def).length === 0) {
-          write("No filter fields specified. Pass at least one flag.");
+          if (json) {
+            write(JSON.stringify({ error: "validation", message: "No filter fields specified." }));
+          } else {
+            write("No filter fields specified. Pass at least one flag.");
+          }
           process.exitCode = 1;
           return;
         }
@@ -1299,7 +1352,8 @@ export function createProgram(
         const isUpdate = name in filters;
         filters[name] = def;
         saveFilters(filters);
-        write(isUpdate ? `Updated filter '${name}'.` : `Saved filter '${name}'.`);
+        const msg = isUpdate ? `Updated filter '${name}'.` : `Saved filter '${name}'.`;
+        write(json ? JSON.stringify({ message: msg, name, filter: def }) : msg);
       },
     );
 
@@ -1405,9 +1459,14 @@ export function createProgram(
   telemetryCmd
     .command("status")
     .description("Show whether telemetry is enabled or disabled")
-    .action(() => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       const reason = getTelemetryDisabledReason(resolvedConfig);
-      if (reason) {
+      if (json) {
+        write(JSON.stringify({ enabled: !reason, ...(reason ? { reason } : {}) }));
+      } else if (reason) {
         write(`Telemetry: ${reason}`);
       } else {
         write("Telemetry: enabled");
@@ -1417,32 +1476,50 @@ export function createProgram(
   telemetryCmd
     .command("enable")
     .description("Enable anonymous usage telemetry")
-    .action(() => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       setConfigValue("telemetry", "true");
-      write("Telemetry enabled.");
+      write(json ? JSON.stringify({ enabled: true }) : "Telemetry enabled.");
     });
 
   telemetryCmd
     .command("disable")
     .description("Disable anonymous usage telemetry")
-    .action(() => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       setConfigValue("telemetry", "false");
-      write("Telemetry disabled.");
+      write(json ? JSON.stringify({ enabled: false }) : "Telemetry disabled.");
     });
 
   // backup
   program
     .command("backup [path]")
     .description("Create a database backup snapshot")
-    .action((targetPath?: string) => {
+    .option("--json", "Output as JSON")
+    .option("--plaintext", "Output as plain text (overrides config)")
+    .action((targetPath: string | undefined, opts: { json?: boolean; plaintext?: boolean }) => {
+      const json = useJson(opts);
       const backupDir = targetPath ?? resolvedConfig.backup_path;
       if (!backupDir) {
-        write("No backup path specified. Pass a path argument or set backup_path in config.");
+        if (json) {
+          write(
+            JSON.stringify({
+              error: "validation",
+              message: "No backup path specified.",
+            }),
+          );
+        } else {
+          write("No backup path specified. Pass a path argument or set backup_path in config.");
+        }
         process.exitCode = 1;
         return;
       }
       const dest = performBackup(db, backupDir);
-      write(`Backed up to ${dest}`);
+      write(json ? JSON.stringify({ path: dest }) : `Backed up to ${dest}`);
     });
 
   program
