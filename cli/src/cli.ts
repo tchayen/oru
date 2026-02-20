@@ -48,7 +48,7 @@ import {
   formatSuccessMessage,
 } from "./completions/index";
 import { bold, dim, white } from "./format/colors";
-import { loadFilters, saveFilters, applyFilter } from "./filters/filters";
+import { loadFilters, saveFilters, applyFilter, FILTER_KEYS } from "./filters/filters";
 import type { FilterDefinition } from "./filters/filters";
 import { isTelemetryEnabled, getTelemetryDisabledReason } from "./telemetry/telemetry";
 import { performBackup } from "./backup";
@@ -1317,41 +1317,10 @@ export function createProgram(
       ) => {
         const json = useJson(opts);
         const def: FilterDefinition = {};
-        if (opts.status !== undefined) {
-          def.status = opts.status;
-        }
-        if (opts.priority !== undefined) {
-          def.priority = opts.priority;
-        }
-        if (opts.owner !== undefined) {
-          def.owner = opts.owner;
-        }
-        if (opts.label !== undefined) {
-          def.label = opts.label;
-        }
-        if (opts.search !== undefined) {
-          def.search = opts.search;
-        }
-        if (opts.sort !== undefined) {
-          def.sort = opts.sort;
-        }
-        if (opts.actionable !== undefined) {
-          def.actionable = opts.actionable;
-        }
-        if (opts.due !== undefined) {
-          def.due = opts.due;
-        }
-        if (opts.overdue !== undefined) {
-          def.overdue = opts.overdue;
-        }
-        if (opts.all !== undefined) {
-          def.all = opts.all;
-        }
-        if (opts.limit !== undefined) {
-          def.limit = opts.limit;
-        }
-        if (opts.offset !== undefined) {
-          def.offset = opts.offset;
+        for (const key of FILTER_KEYS) {
+          if (opts[key] !== undefined) {
+            (def as Record<string, unknown>)[key] = opts[key];
+          }
         }
         if (opts.sql !== undefined) {
           def.sql = opts.sql;
