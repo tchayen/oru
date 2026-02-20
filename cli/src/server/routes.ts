@@ -334,6 +334,13 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       return c.json({ error: "validation", message: "Invalid recurrence rule." }, 400);
     }
 
+    if (blocked_by !== undefined) {
+      const validation = await service.validateBlockedBy(id, blocked_by);
+      if (!validation.valid) {
+        return c.json({ error: "validation", message: validation.error }, 400);
+      }
+    }
+
     try {
       const updateFields: Record<string, unknown> = {};
       if (title) {
