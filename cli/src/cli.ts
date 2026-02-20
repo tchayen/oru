@@ -595,6 +595,7 @@ export function createProgram(
     .option("-l, --label <labels...>", "Add labels")
     .option("--unlabel <labels...>", "Remove labels")
     .option("-b, --blocked-by <ids...>", "Set blocker task IDs (replaces full list)")
+    .option("--unblock <ids...>", "Remove specific blocker task IDs")
     .option("-n, --note <note>", "Append a note")
     .option("--clear-notes", "Remove all notes")
     .option("-r, --repeat <rule>", "Recurrence rule ('none' to clear)")
@@ -617,6 +618,7 @@ export function createProgram(
           label?: string[];
           unlabel?: string[];
           blockedBy?: string[];
+          unblock?: string[];
           note?: string;
           clearNotes?: boolean;
           repeat?: string;
@@ -712,8 +714,25 @@ export function createProgram(
             updateFields.labels = labels;
           }
 
-          if (opts.blockedBy) {
-            updateFields.blocked_by = opts.blockedBy;
+          if (opts.blockedBy || opts.unblock) {
+            let blockedBy: string[];
+            if (opts.blockedBy) {
+              blockedBy = [...opts.blockedBy];
+            } else {
+              const existing = await service.get(id);
+              if (!existing) {
+                notFoundError(json, id);
+                return;
+              }
+              blockedBy = [...existing.blocked_by];
+            }
+            if (opts.unblock) {
+              blockedBy = blockedBy.filter((b) => !opts.unblock!.includes(b));
+            }
+            if (!validateBlockedBy(blockedBy, json)) {
+              return;
+            }
+            updateFields.blocked_by = blockedBy;
           }
 
           if (opts.repeat !== undefined) {

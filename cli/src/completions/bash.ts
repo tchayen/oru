@@ -148,7 +148,7 @@ ${serverBlock}
         tasks=$(oru _complete tasks "$cur" 2>/dev/null | cut -f1)
         COMPREPLY=($(compgen -W "$tasks" -- "$cur"))
       else
-        COMPREPLY=($(compgen -W "-t --title -s --status -p --priority -d --due --assign -l --label --unlabel -b --blocked-by -n --note --clear-notes -r --repeat --meta --json --plaintext" -- "$cur"))
+        COMPREPLY=($(compgen -W "-t --title -s --status -p --priority -d --due --assign -l --label --unlabel -b --blocked-by --unblock -n --note --clear-notes -r --repeat --meta --json --plaintext" -- "$cur"))
       fi
       ;;
     edit)
