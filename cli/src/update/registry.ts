@@ -1,10 +1,17 @@
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../../package.json") as { name: string };
+
+export const PACKAGE_NAME = pkg.name;
+
 const REQUEST_TIMEOUT_MS = 10000;
 
 export async function fetchLatestVersion(): Promise<string | null> {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    const res = await fetch("https://registry.npmjs.org/@tchayen/oru/latest", {
+    const res = await fetch(`https://registry.npmjs.org/${PACKAGE_NAME}/latest`, {
       signal: controller.signal,
     });
     clearTimeout(timer);

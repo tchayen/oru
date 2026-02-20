@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import { compareVersions } from "./check";
-import { fetchLatestVersion } from "./registry";
+import { PACKAGE_NAME, fetchLatestVersion } from "./registry";
 
 import { VERSION } from "../version";
 
@@ -51,7 +51,7 @@ function getPlatform(): string {
 
 async function updateViaNpm(): Promise<void> {
   process.stderr.write("Updating via npm...\n");
-  execSync("npm install -g @tchayen/oru@latest", { stdio: "inherit" });
+  execSync(`npm install -g ${PACKAGE_NAME}@latest`, { stdio: "inherit" });
 }
 
 async function updateViaScript(version: string): Promise<void> {
