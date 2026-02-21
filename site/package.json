@@ -15,6 +15,7 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
-    "puppeteer-core": "^24.37.4"
+    "puppeteer-core": "^24.37.4",
+    "wrangler": "^4.67.0"
   }
 }
