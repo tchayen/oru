@@ -33,9 +33,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Verify tag matches package.json
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
+          VERSION="${TAG#v}"
           PKG_VERSION=$(node -p "require('./cli/package.json').version")
           if [ "$VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Tag ($VERSION) does not match cli/package.json ($PKG_VERSION)"
@@ -52,9 +53,10 @@ jobs:
 
       - name: Package tarball
         working-directory: cli
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
+          VERSION="${TAG#v}"
           TARBALL_DIR="oru-v${VERSION}-${{ matrix.platform }}"
           mkdir -p "$TARBALL_DIR"
 
@@ -96,9 +98,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Verify tag matches package.json
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
+          VERSION="${TAG#v}"
           PKG_VERSION=$(node -p "require('./cli/package.json').version")
           if [ "$VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Tag ($VERSION) does not match cli/package.json ($PKG_VERSION)"
@@ -130,9 +133,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Verify tag matches package.json
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"
+          VERSION="${TAG#v}"
           PKG_VERSION=$(node -p "require('./cli/package.json').version")
           if [ "$VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Tag ($VERSION) does not match cli/package.json ($PKG_VERSION)"
@@ -172,8 +176,7 @@ jobs:
       - name: Update release with changelog and assets
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          gh release edit "${{ github.event.release.tag_name }}" \
-            --notes-file CHANGELOG.md
-          gh release upload "${{ github.event.release.tag_name }}" \
-            artifacts/*.tar.gz --clobber
+          gh release edit "$TAG" --notes-file CHANGELOG.md
+          gh release upload "$TAG" artifacts/*.tar.gz --clobber

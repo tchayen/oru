@@ -8,8 +8,6 @@ on:
 jobs:
   check-version:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -24,11 +22,13 @@ jobs:
             echo "Version unchanged ($NEW), skipping"
             exit 0
           fi
-          echo "Version bumped: $OLD → $NEW"
+          echo "Version bumped: $OLD -> $NEW"
           echo "VERSION=$NEW" >> "$GITHUB_ENV"
 
       - name: Create release
         if: env.VERSION
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "v$VERSION" --title "v$VERSION" --generate-notes
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          gh release view "v$VERSION" >/dev/null 2>&1 || \
+            gh release create "v$VERSION" --title "v$VERSION" --generate-notes
