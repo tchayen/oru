@@ -205,6 +205,52 @@ describe("parseDate", () => {
     });
   });
 
+  describe("ordinal day-of-month", () => {
+    // REF is Sunday Feb 15, 2026
+
+    it("11th → March 11 (past this month)", () => {
+      expect(dateOnly(p("11th")!)).toBe("2026-03-11");
+    });
+
+    it("20th → Feb 20 (still ahead this month)", () => {
+      expect(dateOnly(p("20th")!)).toBe("2026-02-20");
+    });
+
+    it("15th → Feb 15 (today)", () => {
+      expect(dateOnly(p("15th")!)).toBe("2026-02-15");
+    });
+
+    it("2nd → March 2 (past this month)", () => {
+      expect(dateOnly(p("2nd")!)).toBe("2026-03-02");
+    });
+
+    it("1st → March 1 (past this month)", () => {
+      expect(dateOnly(p("1st")!)).toBe("2026-03-01");
+    });
+
+    it("31st → March 31 (Feb doesn't have 31 days)", () => {
+      expect(dateOnly(p("31st")!)).toBe("2026-03-31");
+    });
+
+    it("28th → Feb 28 (still ahead this month)", () => {
+      expect(dateOnly(p("28th")!)).toBe("2026-02-28");
+    });
+
+    it("3rd with time", () => {
+      const result = p("3rd 9am")!;
+      expect(dateOnly(result)).toBe("2026-03-03");
+      expect(timeOnly(result)).toBe("09:00");
+    });
+
+    it("0th → null (invalid)", () => {
+      expect(p("0th")).toBeNull();
+    });
+
+    it("32nd → null (invalid)", () => {
+      expect(p("32nd")).toBeNull();
+    });
+  });
+
   describe("relative durations", () => {
     it("in 3 days", () => {
       expect(dateOnly(p("in 3 days")!)).toBe("2026-02-18");
