@@ -45,22 +45,28 @@ function parseRRule(rrule: string): RRule {
 
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
-  result.setDate(result.getDate() + days);
+  result.setUTCDate(result.getUTCDate() + days);
   return result;
 }
 
 function addMonths(date: Date, months: number): Date {
   const result = new Date(date);
-  const targetMonth = result.getMonth() + months;
-  result.setMonth(targetMonth);
+  const targetMonth = result.getUTCMonth() + months;
+  result.setUTCMonth(targetMonth);
   // Clamp to end of month if the day overflows (e.g., Jan 31 + 1 month = Feb 28)
-  if (result.getMonth() !== ((targetMonth % 12) + 12) % 12) {
-    result.setDate(0); // back to last day of previous month
+  if (result.getUTCMonth() !== ((targetMonth % 12) + 12) % 12) {
+    result.setUTCDate(0); // back to last day of previous month
   }
   return result;
 }
 
-/** Compute the next occurrence date from an anchor date and RRULE (without `after:` prefix). */
+/** Compute the next occurrence date from an anchor date and RRULE (without `after:` prefix).
+ *
+ * The anchor Date must have wall-clock components encoded in its UTC fields
+ * (via `wallClockToUtcDate` or `new Date(Date.UTC(...))`). The returned Date
+ * also stores wall-clock components in UTC fields. This makes the arithmetic
+ * timezone-independent — no local-tz methods are used.
+ */
 export function nextOccurrence(rrule: string, anchor: Date): Date {
   const rule = parseRRule(rrule);
 
@@ -72,7 +78,7 @@ export function nextOccurrence(rrule: string, anchor: Date): Date {
       if (rule.byDay && rule.byDay.length > 0) {
         // Find the next matching weekday
         const targetDays = rule.byDay.map((d) => DAY_INDEX[d]).sort((a, b) => a - b);
-        const currentDay = anchor.getDay();
+        const currentDay = anchor.getUTCDay();
 
         // Look for the next matching day in the current week first
         for (const target of targetDays) {
@@ -96,29 +102,29 @@ export function nextOccurrence(rrule: string, anchor: Date): Date {
 
         // If anchor day is before the target day in the same month, use this month
         // Otherwise, advance to next month
-        if (anchor.getDate() < targetDay) {
-          result.setDate(targetDay);
+        if (anchor.getUTCDate() < targetDay) {
+          result.setUTCDate(targetDay);
           // Clamp if month doesn't have that many days
-          if (result.getMonth() !== anchor.getMonth()) {
-            result = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+          if (result.getUTCMonth() !== anchor.getUTCMonth()) {
+            result = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
           }
           // If the clamped result is still not after anchor (e.g. BYMONTHDAY=31 on Feb 28
           // clamps back to Feb 28 = anchor), fall through to the next-interval branch.
           if (result.getTime() <= anchor.getTime()) {
             result = addMonths(anchor, rule.interval);
-            const newMonth = result.getMonth();
-            result.setDate(targetDay);
-            if (result.getMonth() !== newMonth) {
-              result = new Date(result.getFullYear(), newMonth + 1, 0);
+            const newMonth = result.getUTCMonth();
+            result.setUTCDate(targetDay);
+            if (result.getUTCMonth() !== newMonth) {
+              result = new Date(Date.UTC(result.getUTCFullYear(), newMonth + 1, 0));
             }
           }
         } else {
           // Advance interval months
           result = addMonths(anchor, rule.interval);
-          const newMonth = result.getMonth();
-          result.setDate(targetDay);
-          if (result.getMonth() !== newMonth) {
-            result = new Date(result.getFullYear(), newMonth + 1, 0);
+          const newMonth = result.getUTCMonth();
+          result.setUTCDate(targetDay);
+          if (result.getUTCMonth() !== newMonth) {
+            result = new Date(Date.UTC(result.getUTCFullYear(), newMonth + 1, 0));
           }
         }
         return result;
@@ -128,10 +134,10 @@ export function nextOccurrence(rrule: string, anchor: Date): Date {
 
     case "YEARLY": {
       const result = new Date(anchor);
-      result.setFullYear(result.getFullYear() + rule.interval);
+      result.setUTCFullYear(result.getUTCFullYear() + rule.interval);
       // Handle Feb 29 → Feb 28 in non-leap years
-      if (result.getMonth() !== anchor.getMonth()) {
-        result.setDate(0);
+      if (result.getUTCMonth() !== anchor.getUTCMonth()) {
+        result.setUTCDate(0);
       }
       return result;
     }

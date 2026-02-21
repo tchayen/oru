@@ -78,4 +78,10 @@ export const appMigrations: Migration[] = [
       d.exec("ALTER TABLE tasks ADD COLUMN recurrence TEXT");
     },
   },
+  {
+    version: 8,
+    up: (d) => {
+      d.exec("ALTER TABLE tasks ADD COLUMN due_tz TEXT");
+    },
+  },
 ];

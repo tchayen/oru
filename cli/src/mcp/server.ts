@@ -72,6 +72,13 @@ export function createMcpServer(service: TaskService): McpServer {
           .string()
           .optional()
           .describe("Due date as ISO 8601 datetime string, e.g. '2026-03-01T00:00:00.000Z'"),
+        due_tz: z
+          .string()
+          .nullable()
+          .optional()
+          .describe(
+            "IANA timezone for the due date, e.g. 'America/New_York'. When set, due_at is wall-clock time in this timezone. When null (default), due_at is floating local time.",
+          ),
         blocked_by: blockedBySchema
           .optional()
           .describe(
@@ -136,6 +143,13 @@ export function createMcpServer(service: TaskService): McpServer {
           .optional()
           .describe(
             "New due date as ISO 8601 datetime string, e.g. '2026-03-01T00:00:00.000Z'. Set to null to clear.",
+          ),
+        due_tz: z
+          .string()
+          .nullable()
+          .optional()
+          .describe(
+            "IANA timezone for the due date, e.g. 'America/New_York'. Set to null to make floating (local time).",
           ),
         blocked_by: blockedBySchema
           .optional()

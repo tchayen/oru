@@ -4,6 +4,7 @@ import {
   validateTitle,
   validateNote,
   validateLabels,
+  isValidTimezone,
   MAX_TITLE_LENGTH,
   MAX_NOTE_LENGTH,
   MAX_LABEL_LENGTH,
@@ -142,5 +143,21 @@ describe("validateLabels", () => {
   it("rejects array containing empty string among valid labels", () => {
     const result = validateLabels(["bug", "", "feature"]);
     expect(result.valid).toBe(false);
+  });
+});
+
+describe("isValidTimezone", () => {
+  it("accepts common IANA timezones", () => {
+    expect(isValidTimezone("America/New_York")).toBe(true);
+    expect(isValidTimezone("Europe/London")).toBe(true);
+    expect(isValidTimezone("Asia/Tokyo")).toBe(true);
+    expect(isValidTimezone("Pacific/Auckland")).toBe(true);
+  });
+
+  it("rejects invalid timezones", () => {
+    expect(isValidTimezone("Not/A_Timezone")).toBe(false);
+    expect(isValidTimezone("")).toBe(false);
+    expect(isValidTimezone("EST")).toBe(false);
+    expect(isValidTimezone("GMT+5")).toBe(false);
   });
 });

@@ -201,6 +201,29 @@ describe("POST /tasks", () => {
     expect(task.due_at).toBeNull();
   });
 
+  it("creates a task with due_tz", async () => {
+    const res = await req("POST", "/tasks", {
+      title: "Test",
+      due_at: "2026-03-15T09:00",
+      due_tz: "America/New_York",
+    });
+    expect(res.status).toBe(201);
+    const task = await res.json();
+    expect(task.due_tz).toBe("America/New_York");
+  });
+
+  it("returns 400 for invalid due_tz", async () => {
+    const res = await req("POST", "/tasks", {
+      title: "Test",
+      due_at: "2026-03-15T09:00",
+      due_tz: "Not/A_Timezone",
+    });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("validation");
+    expect(body.message).toContain("Invalid IANA timezone");
+  });
+
   it("returns existing task with 200 when id already exists", async () => {
     const id = "01963000001";
     const res1 = await req("POST", "/tasks", { title: "Idempotent", id });
@@ -576,6 +599,26 @@ describe("PATCH /tasks/:id", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.due_at).toBeNull();
+  });
+
+  it("updates due_tz in PATCH", async () => {
+    const task = await service.add({ title: "Test", due_at: "2026-06-01T14:00" });
+    const res = await req("PATCH", `/tasks/${task.id}`, { due_tz: "Europe/London" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.due_tz).toBe("Europe/London");
+  });
+
+  it("clears due_tz with null in PATCH", async () => {
+    const task = await service.add({
+      title: "Test",
+      due_at: "2026-06-01T14:00",
+      due_tz: "Asia/Tokyo",
+    });
+    const res = await req("PATCH", `/tasks/${task.id}`, { due_tz: null });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.due_tz).toBeNull();
   });
 
   it("returns current task when no updates provided", async () => {

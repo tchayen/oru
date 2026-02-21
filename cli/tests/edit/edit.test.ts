@@ -11,6 +11,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
     priority: "medium",
     owner: null,
     due_at: null,
+    due_tz: null,
     recurrence: null,
     blocked_by: [],
     labels: [],
@@ -89,6 +90,50 @@ describe("parseDocument", () => {
     const { fields, newNotes } = parseDocument(doc, task);
     expect(Object.keys(fields)).toHaveLength(0);
     expect(newNotes).toHaveLength(0);
+  });
+
+  it("serializes due_tz in frontmatter when set", () => {
+    const task = makeTask({ due_at: "2026-03-15T15:00:00", due_tz: "America/New_York" });
+    const doc = serializeTask(task);
+    expect(doc).toContain('due_tz = "America/New_York"');
+  });
+
+  it("omits due_tz when null", () => {
+    const task = makeTask({ due_at: "2026-03-15T15:00:00", due_tz: null });
+    const doc = serializeTask(task);
+    expect(doc).not.toContain("due_tz");
+  });
+
+  it("roundtrip with due_tz produces no changes", () => {
+    const task = makeTask({ due_at: "2026-03-15T15:00:00", due_tz: "Europe/London" });
+    const doc = serializeTask(task);
+    const { fields, newNotes } = parseDocument(doc, task);
+    expect(Object.keys(fields)).toHaveLength(0);
+    expect(newNotes).toHaveLength(0);
+  });
+
+  it("detects due_tz change", () => {
+    const task = makeTask({ due_at: "2026-03-15T15:00:00", due_tz: "America/New_York" });
+    const doc = serializeTask(task).replace("America/New_York", "Europe/London");
+    const { fields } = parseDocument(doc, task);
+    expect(fields.due_tz).toBe("Europe/London");
+  });
+
+  it("detects due_tz removal", () => {
+    const task = makeTask({ due_at: "2026-03-15T15:00:00", due_tz: "America/New_York" });
+    const doc = serializeTask(task).replace('due_tz = "America/New_York"\n', "");
+    const { fields } = parseDocument(doc, task);
+    expect(fields.due_tz).toBeNull();
+  });
+
+  it("rejects invalid due_tz", () => {
+    const task = makeTask({ due_at: "2026-03-15T15:00:00", due_tz: null });
+    // Insert an invalid due_tz line after the due line in the frontmatter
+    const doc = serializeTask(task).replace(
+      'due = "2026-03-15T15:00:00"',
+      'due = "2026-03-15T15:00:00"\ndue_tz = "Not/Valid"',
+    );
+    expect(() => parseDocument(doc, task)).toThrow("Invalid timezone");
   });
 
   it("roundtrip with metadata produces no changes", () => {

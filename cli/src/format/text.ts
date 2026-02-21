@@ -4,13 +4,24 @@ import type { Weekday } from "../config/config";
 import { bold, dim, italic, white } from "./colors";
 import { formatRecurrence } from "../recurrence/format";
 import { WEEKDAY_NUMBERS } from "../dates/weekdays";
+import { resolveToUtcMs, getTimezoneAbbr, todayInTz } from "../dates/timezone";
 
 // Parses dueAt using manual field extraction rather than new Date(str) to
 // ensure consistent local-time interpretation regardless of JS engine behavior
 // with timezone-naive strings. Matches the naive local-time storage format
 // written by formatLocal() in dates/parse.ts.
-export function isOverdue(dueAt: string, now?: Date): boolean {
+export function isOverdue(dueAt: string, now?: Date, dueTz?: string | null): boolean {
   const ref = now ?? new Date();
+
+  if (dueTz) {
+    let utcMs = resolveToUtcMs(dueAt, dueTz);
+    // For all-day tasks (00:00), compare against end of the due day
+    if (dueAt.slice(11, 16) === "00:00" || !dueAt.includes("T")) {
+      utcMs += 24 * 60 * 60 * 1000;
+    }
+    return utcMs < ref.getTime();
+  }
+
   const dueDate = new Date(
     Number(dueAt.slice(0, 4)),
     Number(dueAt.slice(5, 7)) - 1,
@@ -25,11 +36,21 @@ export function isOverdue(dueAt: string, now?: Date): boolean {
   return dueDate < ref;
 }
 
-export function isDueSoon(dueAt: string, now?: Date): boolean {
-  if (isOverdue(dueAt, now)) {
+export function isDueSoon(dueAt: string, now?: Date, dueTz?: string | null): boolean {
+  if (isOverdue(dueAt, now, dueTz)) {
     return false;
   }
   const ref = now ?? new Date();
+
+  if (dueTz) {
+    let utcMs = resolveToUtcMs(dueAt, dueTz);
+    if (dueAt.slice(11, 16) === "00:00" || !dueAt.includes("T")) {
+      utcMs += 24 * 60 * 60 * 1000;
+    }
+    const hoursUntilDue = (utcMs - ref.getTime()) / (1000 * 60 * 60);
+    return hoursUntilDue <= 48;
+  }
+
   const dueDate = new Date(
     Number(dueAt.slice(0, 4)),
     Number(dueAt.slice(5, 7)) - 1,
@@ -45,21 +66,31 @@ export function isDueSoon(dueAt: string, now?: Date): boolean {
   return hoursUntilDue <= 48;
 }
 
-function formatDue(dueAt: string, now?: Date): string {
-  // dueAt is "YYYY-MM-DDTHH:MM:SS" local time
+function formatDue(dueAt: string, now?: Date, dueTz?: string | null): string {
   const date = dueAt.slice(0, 10);
   const time = dueAt.slice(11, 16);
-  const text = time === "00:00" ? date : `${date} ${time}`;
-  if (isOverdue(dueAt, now)) {
+  let text = time === "00:00" ? date : `${date} ${time}`;
+  if (dueTz) {
+    const utcMs = resolveToUtcMs(dueAt, dueTz);
+    const abbr = getTimezoneAbbr(utcMs, dueTz);
+    text += ` ${abbr}`;
+  }
+  if (isOverdue(dueAt, now, dueTz)) {
     return bold(text);
   }
   return text;
 }
 
-function formatDueText(dueAt: string): string {
+function formatDueText(dueAt: string, dueTz?: string | null): string {
   const date = dueAt.slice(0, 10);
   const time = dueAt.slice(11, 16);
-  return time === "00:00" ? date : `${date} ${time}`;
+  let text = time === "00:00" ? date : `${date} ${time}`;
+  if (dueTz) {
+    const utcMs = resolveToUtcMs(dueAt, dueTz);
+    const abbr = getTimezoneAbbr(utcMs, dueTz);
+    text += ` ${abbr}`;
+  }
+  return text;
 }
 
 function colorPriority(p: string): string {
@@ -104,7 +135,7 @@ export function formatTaskText(task: Task, now?: Date): string {
   lines.push(`${dim(task.id)}  ${bold(task.title)}`);
   let statusLine = `  Status: ${colorStatus(task.status)}  Priority: ${colorPriority(task.priority)}`;
   if (task.due_at) {
-    statusLine += `  Due: ${formatDue(task.due_at, now)}`;
+    statusLine += `  Due: ${formatDue(task.due_at, now, task.due_tz)}`;
   }
   lines.push(statusLine);
   if (task.recurrence) {
@@ -157,7 +188,13 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
         return 0;
       }
       const time = t.due_at.slice(11, 16);
-      return time === "00:00" ? 10 : 16; // "YYYY-MM-DD" or "YYYY-MM-DD HH:MM"
+      let w = time === "00:00" ? 10 : 16; // "YYYY-MM-DD" or "YYYY-MM-DD HH:MM"
+      if (t.due_tz) {
+        const utcMs = resolveToUtcMs(t.due_at, t.due_tz);
+        const abbr = getTimezoneAbbr(utcMs, t.due_tz);
+        w += 1 + abbr.length; // " EST"
+      }
+      return w;
     }),
   );
   const labelsW = Math.max(
@@ -172,8 +209,8 @@ export function formatTasksText(tasks: Task[], now?: Date): string {
   const rows = tasks.map((t) => {
     const check = colorCheck(t.status);
     const ownerStr = t.owner ?? "";
-    const dueText = t.due_at ? formatDueText(t.due_at) : "";
-    const dueOverdue = t.due_at ? isOverdue(t.due_at, now) : false;
+    const dueText = t.due_at ? formatDueText(t.due_at, t.due_tz) : "";
+    const dueOverdue = t.due_at ? isOverdue(t.due_at, now, t.due_tz) : false;
     const labels = t.labels.length > 0 ? t.labels.join(", ") : "";
     const metaKeys = Object.keys(t.metadata);
     const meta = metaKeys.length > 0 ? metaKeys.map((k) => `${k}=${t.metadata[k]}`).join(", ") : "";
@@ -311,7 +348,16 @@ export function filterByDue(
 
   switch (filter) {
     case "today":
-      return tasks.filter((t) => t.due_at?.slice(0, 10) === todayStr);
+      return tasks.filter((t) => {
+        if (!t.due_at) {
+          return false;
+        }
+        if (t.due_tz) {
+          const tzToday = todayInTz(t.due_tz, ref);
+          return t.due_at.slice(0, 10) === tzToday;
+        }
+        return t.due_at.slice(0, 10) === todayStr;
+      });
     case "this-week": {
       const day = ref.getDay(); // 0=Sun, 1=Mon, ...
       const startIndex = WEEKDAY_NUMBERS[firstDayOfWeek];
@@ -337,7 +383,7 @@ export function filterByDue(
         if (!t.due_at) {
           return false;
         }
-        return isOverdue(t.due_at, ref);
+        return isOverdue(t.due_at, ref, t.due_tz);
       });
   }
 }

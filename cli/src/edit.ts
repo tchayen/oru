@@ -6,7 +6,7 @@ import { stringify, parse } from "smol-toml";
 import { VALID_STATUSES, VALID_PRIORITIES } from "./tasks/types";
 import type { Task, UpdateTaskInput, Status, Priority } from "./tasks/types";
 import { isValidRecurrence } from "./recurrence/validate";
-import { DUE_DATE_REGEX } from "./validation";
+import { DUE_DATE_REGEX, isValidTimezone } from "./validation";
 
 export function serializeTask(task: Task): string {
   const frontmatter: Record<string, unknown> = {
@@ -21,6 +21,10 @@ export function serializeTask(task: Task): string {
 
   if (task.due_at) {
     frontmatter.due = task.due_at;
+  }
+
+  if (task.due_tz) {
+    frontmatter.due_tz = task.due_tz;
   }
 
   if (task.recurrence) {
@@ -119,6 +123,19 @@ export function parseDocument(
       throw new Error(`Invalid due date: ${parsedDue}. The date is not a valid calendar date.`);
     }
     fields.due_at = parsedDue;
+  }
+
+  // Due timezone
+  const parsedDueTz = parsed.due_tz;
+  if (parsedDueTz === undefined || parsedDueTz === "") {
+    if (existing.due_tz !== null) {
+      fields.due_tz = null;
+    }
+  } else if (typeof parsedDueTz === "string" && parsedDueTz !== existing.due_tz) {
+    if (!isValidTimezone(parsedDueTz)) {
+      throw new Error(`Invalid timezone: ${parsedDueTz}.`);
+    }
+    fields.due_tz = parsedDueTz;
   }
 
   // Recurrence

@@ -13,6 +13,7 @@ export const TASK_FIELDS = [
   "priority",
   "owner",
   "due_at",
+  "due_tz",
   "recurrence",
   "blocked_by",
   "labels",
@@ -28,6 +29,7 @@ export type Task = {
   priority: Priority;
   owner: string | null;
   due_at: string | null;
+  due_tz: string | null;
   recurrence: string | null;
   blocked_by: string[];
   labels: string[];
@@ -45,6 +47,7 @@ export type CreateTaskInput = {
   priority?: Priority;
   owner?: string | null;
   due_at?: string | null;
+  due_tz?: string | null;
   recurrence?: string | null;
   blocked_by?: string[];
   labels?: string[];
@@ -58,6 +61,7 @@ export type UpdateTaskInput = {
   priority?: Priority;
   owner?: string | null;
   due_at?: string | null;
+  due_tz?: string | null;
   recurrence?: string | null;
   blocked_by?: string[];
   labels?: string[];

@@ -12,6 +12,7 @@ export type TaskTable = {
   metadata: string;
   created_at: string;
   due_at: string | null;
+  due_tz: string | null;
   owner: string | null;
   recurrence: string | null;
   updated_at: string;
