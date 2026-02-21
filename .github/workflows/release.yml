@@ -36,7 +36,14 @@ jobs:
         run: |
           VERSION="${{ github.event.release.tag_name }}"
           VERSION="${VERSION#v}"
-          cd cli && npm version "$VERSION" --no-git-tag-version
+          PKG_VERSION=$(node -p "require('./cli/package.json').version")
+          TAG_MINOR="${VERSION%.*}"
+          PKG_MINOR="${PKG_VERSION%.*}"
+          if [ "$TAG_MINOR" != "$PKG_MINOR" ]; then
+            echo "::error::Tag major.minor ($TAG_MINOR) does not match package.json ($PKG_MINOR)"
+            exit 1
+          fi
+          cd cli && npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - run: pnpm --filter @tchayen/oru build
 
@@ -95,7 +102,14 @@ jobs:
         run: |
           VERSION="${{ github.event.release.tag_name }}"
           VERSION="${VERSION#v}"
-          cd cli && npm version "$VERSION" --no-git-tag-version
+          PKG_VERSION=$(node -p "require('./cli/package.json').version")
+          TAG_MINOR="${VERSION%.*}"
+          PKG_MINOR="${PKG_VERSION%.*}"
+          if [ "$TAG_MINOR" != "$PKG_MINOR" ]; then
+            echo "::error::Tag major.minor ($TAG_MINOR) does not match package.json ($PKG_MINOR)"
+            exit 1
+          fi
+          cd cli && npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - run: pnpm --filter @tchayen/oru build
       - run: pnpm --filter @tchayen/oru publish --provenance --no-git-checks
@@ -125,7 +139,14 @@ jobs:
         run: |
           VERSION="${{ github.event.release.tag_name }}"
           VERSION="${VERSION#v}"
-          cd cli && npm version "$VERSION" --no-git-tag-version
+          PKG_VERSION=$(node -p "require('./cli/package.json').version")
+          TAG_MINOR="${VERSION%.*}"
+          PKG_MINOR="${PKG_VERSION%.*}"
+          if [ "$TAG_MINOR" != "$PKG_MINOR" ]; then
+            echo "::error::Tag major.minor ($TAG_MINOR) does not match package.json ($PKG_MINOR)"
+            exit 1
+          fi
+          cd cli && npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - run: pnpm --filter @tchayen/oru build
       - run: pnpm --filter @tchayen/oru publish --no-git-checks
