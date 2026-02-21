@@ -11,9 +11,9 @@ export {
   type Task,
   type CreateTaskInput,
   type UpdateTaskInput,
-} from "@oru/types";
+} from "../../../types/index.ts";
 
-import type { Status, Priority } from "@oru/types";
+import type { Status, Priority } from "../../../types/index.ts";
 
 export const DEFAULT_STATUS: Status = "todo";
 export const DEFAULT_PRIORITY: Priority = "medium";

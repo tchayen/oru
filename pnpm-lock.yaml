@@ -103,9 +103,6 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
-      '@oru/types':
-        specifier: workspace:*
-        version: link:../types
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13

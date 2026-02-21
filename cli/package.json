@@ -1,6 +1,6 @@
 {
   "name": "@tchayen/oru",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "oru - agent-friendly todo CLI with offline sync",
   "keywords": [
     "agent",
@@ -52,7 +52,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@oru/types": "workspace:*",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.13.0",
     "@types/qrcode": "^1.5.6",
