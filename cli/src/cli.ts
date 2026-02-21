@@ -1669,7 +1669,9 @@ async function main() {
 }
 
 const currentFile = fileURLToPath(import.meta.url);
-const isEntryPoint = process.argv[1] && currentFile === process.argv[1];
+// Resolve symlinks to handle npm global installs where /usr/bin/oru -> .../dist/cli.js
+const resolvedArgv1 = process.argv[1] ? fs.realpathSync(process.argv[1]) : "";
+const isEntryPoint = resolvedArgv1 && currentFile === resolvedArgv1;
 
 if (isEntryPoint) {
   main().catch((err) => {
