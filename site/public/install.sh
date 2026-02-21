@@ -138,7 +138,7 @@ download_and_extract() {
   fi
 
   mkdir -p "$BIN_DIR"
-  tar -xzf "$TAR_PATH" -C "$BIN_DIR"
+  tar -xzf "$TAR_PATH" -C "$BIN_DIR" --strip-components=1
   rm -rf "$TMP_DIR"
 
   # Make entry point executable
