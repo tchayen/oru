@@ -1,0 +1,34 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [main]
+    paths: [cli/package.json]
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for version bump
+        run: |
+          NEW=$(node -p "require('./cli/package.json').version")
+          OLD=$(git show HEAD~1:cli/package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version")
+          if [ "$NEW" = "$OLD" ]; then
+            echo "Version unchanged ($NEW), skipping"
+            exit 0
+          fi
+          echo "Version bumped: $OLD → $NEW"
+          echo "VERSION=$NEW" >> "$GITHUB_ENV"
+
+      - name: Create release
+        if: env.VERSION
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "v$VERSION" --title "v$VERSION" --generate-notes
