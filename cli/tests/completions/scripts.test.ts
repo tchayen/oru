@@ -42,6 +42,10 @@ describe("bash completions script", () => {
     expect(script).toContain("--unblock");
   });
 
+  it("contains --tz completion for add and update", () => {
+    expect(script).toContain("--tz");
+  });
+
   it("contains --limit and --offset for list", () => {
     expect(script).toContain("--limit");
     expect(script).toContain("--offset");
@@ -155,6 +159,10 @@ describe("zsh completions script", () => {
 
   it("contains --unblock completion", () => {
     expect(script).toContain("--unblock");
+  });
+
+  it("contains --tz completion for add and update", () => {
+    expect(script).toContain("--tz");
   });
 
   it("contains --clear-notes completion", () => {
@@ -289,6 +297,10 @@ describe("fish completions script", () => {
 
   it("contains --unblock completion", () => {
     expect(script).toContain("unblock");
+  });
+
+  it("contains --tz completion for add and update", () => {
+    expect(script).toContain("-l tz");
   });
 
   it("contains --clear-notes completion", () => {

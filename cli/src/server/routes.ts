@@ -16,6 +16,7 @@ import {
   blockedBySchema,
   metadataSchema,
   dueAtSchema,
+  dueTzSchema,
 } from "../validation";
 import { isValidRecurrence } from "../recurrence/validate";
 import { isValidId } from "../id";
@@ -31,6 +32,7 @@ const createTaskSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   due_at: dueAtSchema,
+  due_tz: dueTzSchema,
   blocked_by: blockedBySchema.optional(),
   labels: labelsSchema.optional(),
   notes: notesSchema.optional(),
@@ -48,6 +50,7 @@ const updateTaskSchema = z.object({
     .optional()
     .transform((v) => (v === "" ? null : v)),
   due_at: dueAtSchema,
+  due_tz: dueTzSchema,
   blocked_by: blockedBySchema.optional(),
   labels: labelsSchema.optional(),
   note: noteSchema.optional(),
@@ -183,6 +186,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       priority,
       owner,
       due_at,
+      due_tz,
       blocked_by,
       labels,
       notes,
@@ -220,6 +224,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       priority: priority as Priority | undefined,
       owner,
       due_at,
+      due_tz,
       recurrence,
       blocked_by,
       labels,
@@ -251,6 +256,7 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       priority,
       owner,
       due_at,
+      due_tz,
       blocked_by,
       labels,
       note,
@@ -296,6 +302,9 @@ export function createApp(service: TaskService, token: string, pairingCode: stri
       }
       if (due_at !== undefined) {
         updateFields.due_at = due_at;
+      }
+      if (due_tz !== undefined) {
+        updateFields.due_tz = due_tz;
       }
       if (recurrence !== undefined) {
         updateFields.recurrence = recurrence;

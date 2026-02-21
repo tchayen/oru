@@ -63,6 +63,7 @@ import {
   MAX_METADATA_KEYS,
   MAX_METADATA_KEY_LENGTH,
   MAX_METADATA_VALUE_LENGTH,
+  isValidTimezone,
 } from "./validation";
 
 import { VERSION, GIT_COMMIT } from "./version";
@@ -322,12 +323,13 @@ export function createProgram(
       "-r, --repeat <rule>",
       "Recurrence rule (e.g. daily, weekly, 'every monday', FREQ=DAILY)",
     )
+    .option("--tz <timezone>", "IANA timezone for due date (e.g. America/New_York)")
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .addHelpText(
       "after",
-      '\nExamples:\n  $ oru add "Fix login bug"\n  $ oru add "Fix login bug" -p high -d friday\n  $ oru add "Write docs" -l docs -n "Include API section"\n  $ oru add "Deploy v2" -s todo -d 2026-03-01 --assign alice\n  $ oru add "Water plants" -r "every 3 days" -d today',
+      '\nExamples:\n  $ oru add "Fix login bug"\n  $ oru add "Fix login bug" -p high -d friday\n  $ oru add "Write docs" -l docs -n "Include API section"\n  $ oru add "Deploy v2" -s todo -d 2026-03-01 --assign alice\n  $ oru add "Water plants" -r "every 3 days" -d today\n  $ oru add "London sync" -d "monday 3pm" --tz Europe/London',
     )
     .action(
       async (
@@ -342,6 +344,7 @@ export function createProgram(
           blockedBy?: string[];
           note?: string;
           repeat?: string;
+          tz?: string;
           meta?: string[];
           json?: boolean;
           plaintext?: boolean;
@@ -419,6 +422,15 @@ export function createProgram(
           return;
         }
 
+        let dueTz: string | null | undefined;
+        if (opts.tz) {
+          if (!isValidTimezone(opts.tz)) {
+            validationError(json, `Invalid timezone: "${opts.tz}".`);
+            return;
+          }
+          dueTz = opts.tz;
+        }
+
         // Normalize empty/whitespace owner to null
         const owner = opts.assign !== undefined && opts.assign.trim() === "" ? null : opts.assign;
 
@@ -429,6 +441,7 @@ export function createProgram(
           priority: opts.priority,
           owner,
           due_at: dueAt,
+          due_tz: dueTz,
           recurrence,
           blocked_by: opts.blockedBy,
           labels: opts.label ?? undefined,
@@ -596,12 +609,16 @@ export function createProgram(
     .option("-n, --note <note>", "Append a note")
     .option("--clear-notes", "Remove all notes")
     .option("-r, --repeat <rule>", "Recurrence rule ('none' to clear)")
+    .option(
+      "--tz <timezone>",
+      "IANA timezone for due date (e.g. America/New_York, 'none' to clear)",
+    )
     .option("--meta <key=value...>", "Metadata key=value pairs (key alone removes it)")
     .option("--json", "Output as JSON")
     .option("--plaintext", "Output as plain text (overrides config)")
     .addHelpText(
       "after",
-      '\nExamples:\n  $ oru update 019414a3 -s in_progress\n  $ oru update 019414a3 -l urgent -d tomorrow\n  $ oru update 019414a3 -n "Blocked on API review"\n  $ oru update 019414a3 -t "New title" -p high\n  $ oru update 019414a3 -r "every monday"',
+      '\nExamples:\n  $ oru update 019414a3 -s in_progress\n  $ oru update 019414a3 -l urgent -d tomorrow\n  $ oru update 019414a3 -n "Blocked on API review"\n  $ oru update 019414a3 -t "New title" -p high\n  $ oru update 019414a3 -r "every monday"\n  $ oru update 019414a3 --tz America/New_York',
     )
     .action(
       async (
@@ -619,6 +636,7 @@ export function createProgram(
           note?: string;
           clearNotes?: boolean;
           repeat?: string;
+          tz?: string;
           meta?: string[];
           json?: boolean;
           plaintext?: boolean;
@@ -742,6 +760,18 @@ export function createProgram(
                 validationError(json, err instanceof Error ? err.message : String(err));
                 return;
               }
+            }
+          }
+
+          if (opts.tz !== undefined) {
+            if (opts.tz.toLowerCase() === "none") {
+              updateFields.due_tz = null;
+            } else {
+              if (!isValidTimezone(opts.tz)) {
+                validationError(json, `Invalid timezone: "${opts.tz}".`);
+                return;
+              }
+              updateFields.due_tz = opts.tz;
             }
           }
 

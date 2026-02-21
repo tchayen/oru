@@ -168,6 +168,23 @@ describe("recurring task spawn", () => {
     expect(child).toBeNull();
   });
 
+  it("carries over due_tz to spawned child", async () => {
+    const parent = await service.add({
+      title: "Morning standup",
+      recurrence: "FREQ=DAILY",
+      due_at: "2026-03-10T09:00",
+      due_tz: "America/New_York",
+    });
+
+    await service.update(parent.id, { status: "done" });
+    const child = await service.getSpawnedTask(parent.id);
+
+    expect(child).not.toBeNull();
+    expect(child!.due_tz).toBe("America/New_York");
+    expect(child!.recurrence).toBe("FREQ=DAILY");
+    expect(child!.due_at).toMatch(/^2026-03-11T/);
+  });
+
   it("falls back to now as anchor when no due_at and calendar-based", async () => {
     const parent = await service.add({
       title: "No due date",

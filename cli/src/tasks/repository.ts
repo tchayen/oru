@@ -36,6 +36,7 @@ function rowToTask(row: TaskTable): Task {
     priority: row.priority as Priority,
     owner: row.owner,
     due_at: row.due_at,
+    due_tz: row.due_tz,
     recurrence: row.recurrence,
     blocked_by: safeParseJson<string[]>(row.blocked_by, []),
     labels: safeParseJson<string[]>(row.labels, []),
@@ -61,6 +62,7 @@ export async function createTask(
     priority: input.priority ?? DEFAULT_PRIORITY,
     owner: input.owner ?? null,
     due_at: input.due_at ?? null,
+    due_tz: input.due_tz ?? null,
     recurrence: input.recurrence ?? null,
     blocked_by: input.blocked_by ?? [],
     labels: input.labels ?? [],
@@ -80,6 +82,7 @@ export async function createTask(
       priority: task.priority,
       owner: task.owner,
       due_at: task.due_at,
+      due_tz: task.due_tz,
       recurrence: task.recurrence,
       blocked_by: JSON.stringify(task.blocked_by),
       labels: JSON.stringify(task.labels),
@@ -264,6 +267,9 @@ export async function updateTask(
   }
   if (input.due_at !== undefined) {
     updates.due_at = input.due_at;
+  }
+  if (input.due_tz !== undefined) {
+    updates.due_tz = input.due_tz;
   }
   if (input.recurrence !== undefined) {
     updates.recurrence = input.recurrence;

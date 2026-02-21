@@ -18,6 +18,7 @@ import { writeOp } from "./oplog/writer";
 import { isOverdue, isDueSoon } from "./format/text";
 import { nextOccurrence } from "./recurrence/next";
 import { spawnId } from "./recurrence/spawn-id";
+import { wallClockToUtcDate, utcDateToWallClock } from "./dates/timezone";
 
 function serializeOpValue(value: unknown): string | null {
   if (value === null) {
@@ -36,6 +37,7 @@ function createPayload(task: Task): Record<string, unknown> {
     priority: task.priority,
     owner: task.owner,
     due_at: task.due_at,
+    due_tz: task.due_tz,
     recurrence: task.recurrence,
     blocked_by: task.blocked_by,
     labels: task.labels,
@@ -92,15 +94,36 @@ export class TaskService {
 
     let anchor: Date;
     if (isAfter) {
-      anchor = new Date(now);
+      // For "after:" recurrence with a timezone, convert "now" (UTC instant)
+      // to wall-clock in that timezone, then encode as UTC Date for arithmetic.
+      if (task.due_tz) {
+        const fmt = new Intl.DateTimeFormat("en-US", {
+          timeZone: task.due_tz,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        });
+        const parts = fmt.formatToParts(new Date(now));
+        const g = (type: string) => Number(parts.find((p) => p.type === type)!.value);
+        const h = g("hour") === 24 ? 0 : g("hour");
+        anchor = new Date(
+          Date.UTC(g("year"), g("month") - 1, g("day"), h, g("minute"), g("second")),
+        );
+      } else {
+        anchor = wallClockToUtcDate(now.slice(0, 19));
+      }
     } else if (task.due_at) {
-      anchor = new Date(task.due_at);
+      anchor = wallClockToUtcDate(task.due_at);
     } else {
-      anchor = new Date(now);
+      anchor = wallClockToUtcDate(now.slice(0, 19));
     }
 
     const nextDue = nextOccurrence(rrule, anchor);
-    const dueAt = `${nextDue.getFullYear()}-${String(nextDue.getMonth() + 1).padStart(2, "0")}-${String(nextDue.getDate()).padStart(2, "0")}T${String(nextDue.getHours()).padStart(2, "0")}:${String(nextDue.getMinutes()).padStart(2, "0")}:${String(nextDue.getSeconds()).padStart(2, "0")}`;
+    const dueAt = utcDateToWallClock(nextDue);
 
     const childInput: CreateTaskInput = {
       id: childId,
@@ -108,6 +131,7 @@ export class TaskService {
       priority: task.priority,
       owner: task.owner,
       due_at: dueAt,
+      due_tz: task.due_tz,
       recurrence: task.recurrence,
       labels: [...task.labels],
       metadata: { ...task.metadata },
@@ -505,12 +529,12 @@ export class TaskService {
         continue;
       }
 
-      if (t.due_at && isOverdue(t.due_at, now)) {
+      if (t.due_at && isOverdue(t.due_at, now, t.due_tz)) {
         sections.overdue.push(t);
         continue;
       }
 
-      if (t.due_at && isDueSoon(t.due_at, now)) {
+      if (t.due_at && isDueSoon(t.due_at, now, t.due_tz)) {
         sections.due_soon.push(t);
         continue;
       }

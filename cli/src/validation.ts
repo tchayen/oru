@@ -116,6 +116,18 @@ export const metadataSchema = z
     `Metadata value exceeds maximum length of ${MAX_METADATA_VALUE_LENGTH} characters.`,
   );
 
+const VALID_TIMEZONES: ReadonlySet<string> = new Set(Intl.supportedValuesOf("timeZone"));
+
+export function isValidTimezone(tz: string): boolean {
+  return VALID_TIMEZONES.has(tz);
+}
+
+export const dueTzSchema = z
+  .string()
+  .refine((v) => isValidTimezone(v), "Invalid IANA timezone.")
+  .nullable()
+  .optional();
+
 export const dueAtSchema = z
   .string()
   .regex(

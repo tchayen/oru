@@ -2808,4 +2808,76 @@ describe("CLI parse", () => {
     expect(process.exitCode).toBe(1);
     process.exitCode = 0;
   });
+
+  // --tz flag tests
+  it("add --tz sets due_tz", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "London sync",
+      "--due",
+      "2026-03-20",
+      "--tz",
+      "Europe/London",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.due_tz).toBe("Europe/London");
+    expect(parsed.due_at).toBe("2026-03-20T00:00:00");
+  });
+
+  it("add --tz rejects invalid timezone", async () => {
+    const p = createProgram(db, capture());
+    await p.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "Bad tz",
+      "--due",
+      "2026-03-20",
+      "--tz",
+      "Not/A_Timezone",
+      "--json",
+    ]);
+    const parsed = JSON.parse(output.trim());
+    expect(parsed.error).toBe("validation");
+    expect(process.exitCode).toBe(1);
+    process.exitCode = 0;
+  });
+
+  it("update --tz sets due_tz", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync(["node", "oru", "add", "TZ task", "--due", "2026-03-20", "--json"]);
+    const created = JSON.parse(output.trim());
+    const id = created.id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--tz", "America/New_York", "--json"]);
+    const updated = JSON.parse(output.trim());
+    expect(updated.due_tz).toBe("America/New_York");
+  });
+
+  it("update --tz none clears due_tz", async () => {
+    const p1 = createProgram(db, capture());
+    await p1.parseAsync([
+      "node",
+      "oru",
+      "add",
+      "TZ clear",
+      "--due",
+      "2026-03-20",
+      "--tz",
+      "America/New_York",
+      "--json",
+    ]);
+    const created = JSON.parse(output.trim());
+    const id = created.id;
+
+    const p2 = createProgram(db, capture());
+    await p2.parseAsync(["node", "oru", "update", id, "--tz", "none", "--json"]);
+    const updated = JSON.parse(output.trim());
+    expect(updated.due_tz).toBeNull();
+  });
 });

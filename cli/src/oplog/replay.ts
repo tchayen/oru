@@ -96,6 +96,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
       ? (data.owner as string)
       : null;
   let dueAt: string | null = typeof data.due_at === "string" ? data.due_at : null;
+  let dueTz: string | null = typeof data.due_tz === "string" ? data.due_tz : null;
   let recurrence: string | null = typeof data.recurrence === "string" ? data.recurrence : null;
   let blockedBy = JSON.stringify(
     Array.isArray(data.blocked_by) ? filterStringArray(data.blocked_by) : [],
@@ -224,6 +225,10 @@ function rebuildTask(db: Database.Database, taskId: string): void {
           dueAt = op.value && op.value.trim().length > 0 ? op.value : null;
           applied = true;
           break;
+        case "due_tz":
+          dueTz = op.value && op.value.trim().length > 0 ? op.value : null;
+          applied = true;
+          break;
         case "blocked_by":
           if (op.value && isValidJson(op.value)) {
             const parsed = JSON.parse(op.value);
@@ -274,14 +279,15 @@ function rebuildTask(db: Database.Database, taskId: string): void {
 
   // Upsert the task
   db.prepare(
-    `INSERT INTO tasks (id, title, status, priority, owner, due_at, recurrence, blocked_by, labels, notes, metadata, created_at, updated_at, deleted_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO tasks (id, title, status, priority, owner, due_at, due_tz, recurrence, blocked_by, labels, notes, metadata, created_at, updated_at, deleted_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        status = excluded.status,
        priority = excluded.priority,
        owner = excluded.owner,
        due_at = excluded.due_at,
+       due_tz = excluded.due_tz,
        recurrence = excluded.recurrence,
        blocked_by = excluded.blocked_by,
        labels = excluded.labels,
@@ -296,6 +302,7 @@ function rebuildTask(db: Database.Database, taskId: string): void {
     priority,
     owner,
     dueAt,
+    dueTz,
     recurrence,
     blockedBy,
     labels,

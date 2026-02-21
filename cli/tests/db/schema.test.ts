@@ -34,8 +34,8 @@ describe("schema", () => {
       | { value: string }
       | undefined;
     expect(row).toBeDefined();
-    // Version 7 after all migrations run
-    expect(row!.value).toBe("7");
+    // Version 8 after all migrations run
+    expect(row!.value).toBe("8");
     db.close();
   });
 
