@@ -105,7 +105,7 @@ jobs:
       - name: Deploy to Cloudflare Pages
         id: deploy
         run: |
-          OUTPUT=$(pnpm --filter oru-site exec wrangler pages deploy site/dist --project-name=oru --branch=${{ github.event_name == 'pull_request' && github.head_ref || 'main' }} --commit-hash=${{ github.sha }})
+          OUTPUT=$(pnpm --filter oru-site exec wrangler pages deploy dist --project-name=oru --branch=${{ github.event_name == 'pull_request' && github.head_ref || 'main' }} --commit-hash=${{ github.sha }})
           echo "$OUTPUT"
           echo "url=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.pages\.dev' | tail -1)" >> "$GITHUB_OUTPUT"
         env:
