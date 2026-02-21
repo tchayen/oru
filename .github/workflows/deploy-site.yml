@@ -86,6 +86,17 @@ jobs:
       deployments: write
       pull-requests: write
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
       - uses: actions/download-artifact@v4
         with:
           name: site-dist
@@ -94,7 +105,7 @@ jobs:
       - name: Deploy to Cloudflare Pages
         id: deploy
         run: |
-          OUTPUT=$(npx wrangler pages deploy site/dist --project-name=oru --branch=${{ github.event_name == 'pull_request' && github.head_ref || 'main' }} --commit-hash=${{ github.sha }})
+          OUTPUT=$(pnpm --filter oru-site exec wrangler pages deploy dist --project-name=oru --branch=${{ github.event_name == 'pull_request' && github.head_ref || 'main' }} --commit-hash=${{ github.sha }})
           echo "$OUTPUT"
           echo "url=$(echo "$OUTPUT" | grep -oE 'https://[^ ]+\.pages\.dev' | tail -1)" >> "$GITHUB_OUTPUT"
         env:
