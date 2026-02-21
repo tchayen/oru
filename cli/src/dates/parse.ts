@@ -56,6 +56,7 @@ const MONTH_NAMES: Record<string, number> = {
  * - Week: "next week", "end of week"
  * - Month: "next month", "end of month"
  * - Day names: "monday", "mon", "next friday", "next fri"
+ * - Ordinal day-of-month: "1st", "2nd", "11th", "21st" (next occurrence)
  * - Relative durations: "in 3 days", "in 2 weeks", "in 1 month"
  * - Month + day: "march 20", "mar 20", "20th march", "march 3rd"
  * - With time: "today 10am", "tom 3p", "tomorrow 14:30", "2026-02-15 9a"
@@ -189,6 +190,17 @@ function parseDatePart(
     const dayNum = DAY_NAMES[dayInput];
     if (dayNum !== undefined) {
       return findNextWeekday(ref, dayNum);
+    }
+  }
+
+  // Bare ordinal day-of-month: "1st", "2nd", "11th", "21st"
+  {
+    const ordinalMatch = lower.match(/^(\d{1,2})(?:st|nd|rd|th)$/);
+    if (ordinalMatch) {
+      const day = Number(ordinalMatch[1]);
+      if (day >= 1 && day <= 31) {
+        return findNextDayOfMonth(ref, day);
+      }
     }
   }
 
@@ -376,6 +388,19 @@ function formatLocal(d: Date): string {
 
 function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function findNextDayOfMonth(ref: Date, targetDay: number): Date | null {
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(ref.getFullYear(), ref.getMonth() + i, targetDay);
+    if (d.getDate() !== targetDay) {
+      continue;
+    }
+    if (d >= startOfDay(ref)) {
+      return d;
+    }
+  }
+  return null;
 }
 
 function findNextWeekday(ref: Date, target: number): Date {
