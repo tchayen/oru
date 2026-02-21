@@ -11,9 +11,9 @@ export {
   type Task,
   type CreateTaskInput,
   type UpdateTaskInput,
-} from "../../../types/index.ts";
+} from "../../../types/index";
 
-import type { Status, Priority } from "../../../types/index.ts";
+import type { Status, Priority } from "../../../types/index";
 
 export const DEFAULT_STATUS: Status = "todo";
 export const DEFAULT_PRIORITY: Priority = "medium";
