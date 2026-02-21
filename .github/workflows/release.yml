@@ -46,10 +46,9 @@ jobs:
       - run: pnpm --filter @tchayen/oru build
 
       - name: Create production deployment
-        working-directory: cli
         run: |
-          mkdir -p staging
-          pnpm --config.inject-workspace-packages=true deploy --prod staging
+          mkdir -p cli/staging
+          pnpm --filter @tchayen/oru --config.inject-workspace-packages=true deploy --prod cli/staging
 
       - name: Package tarball
         working-directory: cli
