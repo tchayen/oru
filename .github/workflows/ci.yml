@@ -259,3 +259,19 @@ jobs:
                 body,
               });
             }
+
+  ci:
+    if: always()
+    needs: [check, integration, bundle-size]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [[ "${{ needs.check.result }}" != "success" ]]; then
+            exit 1
+          fi
+          if [[ "${{ needs.integration.result }}" != "success" && "${{ needs.integration.result }}" != "skipped" ]]; then
+            exit 1
+          fi
+          if [[ "${{ needs.bundle-size.result }}" != "success" && "${{ needs.bundle-size.result }}" != "skipped" ]]; then
+            exit 1
+          fi
