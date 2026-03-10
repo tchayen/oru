@@ -3,16 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
-    paths:
-      - "cli/**"
-      - "types/**"
-      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "cli/**"
-      - "types/**"
-      - ".github/workflows/ci.yml"
 
 concurrency:
   group: ci-${{ github.ref }}
