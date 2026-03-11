@@ -67,3 +67,16 @@ jobs:
               }
               core.setFailed(lines.join("\n"));
             }
+
+      - name: Reject em dashes and en dashes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title || "";
+            const body = context.payload.pull_request.body || "";
+            const text = title + "\n" + body;
+            // Strip HTML comments before checking.
+            const cleaned = text.replace(/<!--[\s\S]*?-->/g, "");
+            if (/[\u2013\u2014]/.test(cleaned)) {
+              core.setFailed("PR title/description contains em dash (\u2014) or en dash (\u2013). Use a regular hyphen (-) instead.");
+            }
